@@ -6,6 +6,10 @@
     <title>Brownie Studio - Order Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+
     <style>
         body {
             box-sizing: border-box;
@@ -287,77 +291,19 @@
     </header>
 
     <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="card max-w-md w-full hover-lift">
-            <!-- Login Form -->
-            <div id="login-form">
-                <div class="text-center mb-6">
-                    <div class="text-4xl mb-2 float">🍫</div>
-                    <h3 class="text-2xl font-bold text-gradient">เข้าสู่ระบบ</h3>
-                    <p class="text-gray-500 text-sm mt-1">ยินดีต้อนรับกลับมา!</p>
-                </div>
-                
-                <form onsubmit="handleLogin(event)" class="space-y-4">
-                    <div>
-                        <label for="login-username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <input type="text" id="login-username" required class="input-modern w-full" placeholder="กรอก username">
-                    </div>
-                    <div>
-                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="login-password" required class="input-modern w-full" placeholder="กรอกรหัสผ่าน">
-                    </div>
-                    <button type="submit" class="btn-primary w-full py-3 rounded-xl font-medium">
-                        เข้าสู่ระบบ
-                    </button>
-                </form>
-                
-                <div class="mt-6 text-center">
-                    <p class="text-gray-500 text-sm">
-                        ยังไม่มีบัญชี? 
-                        <button onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-700 font-medium">สมัครสมาชิก</button>
-                    </p>
-                </div>
-            </div>
+<div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="card max-w-md w-full hover-lift text-center">
+      <div class="text-4xl mb-4">🍫</div>
+      <h3 class="text-2xl font-bold text-gradient mb-2">เข้าสู่ระบบด้วย LINE</h3>
+      <p class="text-gray-500 text-sm mb-6">กดปุ่มด้านล่างเพื่อเข้าสู่ระบบผ่านบัญชี LINE</p>
 
-            <!-- Register Form -->
-            <div id="register-form" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="text-4xl mb-2 float">✨</div>
-                    <h3 class="text-2xl font-bold text-gradient">สมัครสมาชิก</h3>
-                    <p class="text-gray-500 text-sm mt-1">เริ่มต้นการเดินทางกับเรา</p>
-                </div>
-                
-                <form onsubmit="handleRegister(event)" class="space-y-4">
-                    <div>
-                        <label for="register-username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <input type="text" id="register-username" required class="input-modern w-full" placeholder="เลือก username">
-                    </div>
-                    <div>
-                        <label for="register-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="register-password" required class="input-modern w-full" placeholder="สร้างรหัสผ่าน" minlength="6">
-                    </div>
-                    <div>
-                        <label for="register-name" class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label>
-                        <input type="text" id="register-name" required class="input-modern w-full" placeholder="ชื่อจริงหรือชื่อเล่น">
-                    </div>
-                    <div>
-                        <label for="register-line" class="block text-sm font-medium text-gray-700 mb-2">LINE ID</label>
-                        <input type="text" id="register-line" required class="input-modern w-full" placeholder="LINE ID สำหรับติดต่อ">
-                    </div>
-                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white w-full py-3 rounded-xl font-medium">
-                        สมัครสมาชิก
-                    </button>
-                </form>
-                
-                <div class="mt-6 text-center">
-                    <p class="text-gray-500 text-sm">
-                        มีบัญชีแล้ว? 
-                        <button onclick="showLoginForm()" class="text-blue-600 hover:text-blue-700 font-medium">เข้าสู่ระบบ</button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+      <button onclick="liff.login()" class="bg-green-500 hover:bg-green-600 text-white w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" width="24" height="24" alt="LINE">
+          เข้าสู่ระบบด้วย LINE
+      </button>
+  </div>
+</div>
+
 
     <!-- Main App -->
     <main id="main-app" class="max-w-6xl mx-auto px-4 py-8 hidden">
@@ -1358,32 +1304,46 @@
             document.getElementById('order-modal').classList.add('hidden');
         }
 
-        function confirmOrder() {
-            const totalPrice = parseInt(document.getElementById('total-price').textContent);
-            const earnedPoints = totalPrice;
-            
-            const orderData = createOrderRecord(totalPrice, earnedPoints, currentUser);
-            
-            currentUser.points += earnedPoints;
-            currentPoints = currentUser.points;
-            document.getElementById('points').textContent = currentUser.points;
-            
-            if (!currentUser.orderHistory) {
-                currentUser.orderHistory = [];
-            }
-            currentUser.orderHistory.unshift(orderData);
-            
-            createFloatingCoins();
-            
-            let successMsg = `สั่งซื้อสำเร็จ! ได้รับแต้มสะสม +${earnedPoints} แต้ม!`;
-            
-            showSuccessMessage(successMsg);
-            
-            setTimeout(() => {
-                resetForm();
-                closeOrderModal();
-            }, 3000);
-        }
+        async function confirmOrder() {
+  const totalPrice = parseInt(document.getElementById('total-price').textContent);
+  const earnedPoints = totalPrice;
+
+  const orderData = createOrderRecord(totalPrice, earnedPoints, currentUser);
+
+  // ✅ บันทึกคำสั่งซื้อไปยัง Supabase
+  await supabase.from('orders').insert({
+    user_id: currentUser.id,
+    order_number: orderData.orderNumber,
+    total_price: orderData.totalPrice,
+    earned_points: orderData.earnedPoints,
+    created_at: new Date().toISOString()
+  });
+
+  // ✅ อัปเดตแต้มในฐานข้อมูล Supabase ด้วย
+  await supabase.from('users')
+    .update({ points: currentUser.points + earnedPoints })
+    .eq('id', currentUser.id);
+
+  // ✅ อัปเดตข้อมูลในหน้าเว็บ
+  currentUser.points += earnedPoints;
+  currentPoints = currentUser.points;
+  document.getElementById('points').textContent = currentUser.points;
+
+  if (!currentUser.orderHistory) {
+    currentUser.orderHistory = [];
+  }
+  currentUser.orderHistory.unshift(orderData);
+
+  createFloatingCoins();
+
+  let successMsg = `สั่งซื้อสำเร็จ! ได้รับแต้มสะสม +${earnedPoints} แต้ม!`;
+  showSuccessMessage(successMsg);
+
+  setTimeout(() => {
+    resetForm();
+    closeOrderModal();
+  }, 3000);
+}
 
         function createOrderRecord(totalPrice, earnedPoints, user) {
             const now = new Date();
@@ -2655,5 +2615,103 @@
 
 
     </script>
+    </script>
+
+<!-- เริ่มส่วนเชื่อม Supabase + LINE LIFF -->
+<script>
+const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
+const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+
+// เริ่มต้น Supabase client
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// ฟังก์ชันเริ่มต้น LINE LIFF
+async function initLiff() {
+  await liff.init({ liffId });
+  
+  if (!liff.isLoggedIn()) {
+    liff.login();
+  } else {
+    const profile = await liff.getProfile();
+    document.getElementById("login-modal").classList.add("hidden");
+    document.getElementById("main-app").classList.remove("hidden");
+    await loginWithSupabase(profile);
+  }
+}
+
+// ฟังก์ชันล็อกอินด้วย Supabase (บันทึกข้อมูลผู้ใช้)
+async function loginWithSupabase(profile) {
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("*")
+    .eq("line_id", profile.userId)
+    .single();
+
+  if (!existingUser) {
+    await supabase.from("users").insert({
+      line_id: profile.userId,
+      display_name: profile.displayName,
+      picture_url: profile.pictureUrl,
+      points: 0,
+    });
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("*")
+    .eq("line_id", profile.userId)
+    .single();
+
+  currentUser = user;
+  document.getElementById("points").textContent = user.points || 0;
+  document.getElementById("user-status").innerHTML =
+    `<img src="${user.picture_url}" class="w-6 h-6 rounded-full" /> <span>${user.display_name}</span>`;
+}
+// ✅ โหลดประวัติคำสั่งซื้อจากฐานข้อมูล
+const orders = await loadOrderHistory(currentUser.id);
+renderOrderHistory(orders);
+// 🔹 ดึงประวัติคำสั่งซื้อจาก Supabase
+async function loadOrderHistory(userId) {
+  const { data: orders, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("โหลดประวัติออเดอร์ผิดพลาด:", error);
+    return [];
+  }
+
+  return orders || [];
+}
+
+// 🔹 แสดงประวัติคำสั่งซื้อบนหน้าเว็บ
+function renderOrderHistory(orders) {
+  const container = document.getElementById("order-history");
+  if (!container) return;
+
+  if (orders.length === 0) {
+    container.innerHTML = `<p class="text-gray-500 text-center">ยังไม่มีประวัติคำสั่งซื้อ</p>`;
+    return;
+  }
+
+  container.innerHTML = orders.map(order => `
+    <div class="p-3 rounded-xl bg-white shadow mb-3 border border-gray-100">
+      <div class="flex justify-between">
+        <span class="font-medium">หมายเลขออเดอร์: ${order.order_number}</span>
+        <span class="text-sm text-gray-400">${new Date(order.created_at).toLocaleString('th-TH')}</span>
+      </div>
+      <div class="mt-2 text-sm text-gray-700">ยอดรวม: ${order.total_price} บาท</div>
+      <div class="text-sm text-green-600">แต้มที่ได้รับ: +${order.earned_points}</div>
+    </div>
+  `).join('');
+}
+
+initLiff();
+</script>
+<!-- จบส่วนเชื่อม Supabase + LINE LIFF -->
+
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9942ca47f4c1f4cf',t:'MTc2MTQwNjU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
