@@ -2616,103 +2616,66 @@
 
     </script>
     </script>
+    <!-- โหลด SDK ก่อน -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-<!-- เริ่มส่วนเชื่อม Supabase + LINE LIFF -->
 <script>
-const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
-const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+  // --- ข้อมูลโปรเจกต์ของโต๋ ---
+  const liffId = "2008357926-Ly07A5w2"; // ✅ LIFF ID
+  const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
 
-// เริ่มต้น Supabase client
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  // --- สร้าง Supabase client ---
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// ฟังก์ชันเริ่มต้น LINE LIFF
-async function initLiff() {
-  await liff.init({ liffId });
-  if (!liff.isLoggedIn()) {
-    liff.login();
-  } else {
-    const profile = await liff.getProfile();
-    await loginWithSupabase(profile);
-  }
-}
+  // --- เริ่มต้น LIFF ---
+  async function initLiff() {
+    try {
+      await liff.init({ liffId }); // ✅ ใช้ค่าที่ประกาศไว้ข้างบน
 
-initLiff();
+      if (!liff.isLoggedIn()) {
+        liff.login(); // ถ้ายังไม่ได้ login จะให้ login
+        return;
+      }
 
+      // ถ้า login แล้ว ดึงข้อมูลโปรไฟล์ผู้ใช้
+      const profile = await liff.getProfile();
+      console.log("Profile:", profile);
 
-// ฟังก์ชันล็อกอินด้วย Supabase (บันทึกข้อมูลผู้ใช้)
-async function loginWithSupabase(profile) {
-  const { data: existingUser } = await supabase
-    .from("users")
-    .select("*")
-    .eq("line_id", profile.userId)
-    .single();
-
-  if (!existingUser) {
-    await supabase.from("users").insert({
-      line_id: profile.userId,
-      display_name: profile.displayName,
-      picture_url: profile.pictureUrl,
-      points: 0,
-    });
+      // เก็บข้อมูลเข้า Supabase
+      await saveUserToSupabase(profile);
+    } catch (err) {
+      console.error("LIFF init error:", err);
+    }
   }
 
-  const { data: user } = await supabase
-    .from("users")
-    .select("*")
-    .eq("line_id", profile.userId)
-    .single();
+  // --- ฟังก์ชันบันทึกข้อมูลผู้ใช้ ---
+  async function saveUserToSupabase(profile) {
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("*")
+      .eq("line_id", profile.userId)
+      .single();
 
-  currentUser = user;
-  document.getElementById("points").textContent = user.points || 0;
-  document.getElementById("user-status").innerHTML =
-    `<img src="${user.picture_url}" class="w-6 h-6 rounded-full" /> <span>${user.display_name}</span>`;
-  // ✅ โหลดประวัติคำสั่งซื้อจากฐานข้อมูล
-const orders = await loadOrderHistory(currentUser.id);
-renderOrderHistory(orders);  
-}
-
-// 🔹 ดึงประวัติคำสั่งซื้อจาก Supabase
-async function loadOrderHistory(userId) {
-  const { data: orders, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("โหลดประวัติออเดอร์ผิดพลาด:", error);
-    return [];
+    if (!existingUser) {
+      await supabase.from("users").insert([
+        {
+          line_id: profile.userId,
+          display_name: profile.displayName,
+          picture_url: profile.pictureUrl,
+        },
+      ]);
+      console.log("👤 เพิ่มผู้ใช้ใหม่ในฐานข้อมูลแล้ว");
+    } else {
+      console.log("👤 มีผู้ใช้นี้อยู่แล้ว");
+    }
   }
 
-  return orders || [];
-}
-
-// 🔹 แสดงประวัติคำสั่งซื้อบนหน้าเว็บ
-function renderOrderHistory(orders) {
-  const container = document.getElementById("order-history");
-  if (!container) return;
-
-  if (orders.length === 0) {
-    container.innerHTML = `<p class="text-gray-500 text-center">ยังไม่มีประวัติคำสั่งซื้อ</p>`;
-    return;
-  }
-
-  container.innerHTML = orders.map(order => `
-    <div class="p-3 rounded-xl bg-white shadow mb-3 border border-gray-100">
-      <div class="flex justify-between">
-        <span class="font-medium">หมายเลขออเดอร์: ${order.order_number}</span>
-        <span class="text-sm text-gray-400">${new Date(order.created_at).toLocaleString('th-TH')}</span>
-      </div>
-      <div class="mt-2 text-sm text-gray-700">ยอดรวม: ${order.total_price} บาท</div>
-      <div class="text-sm text-green-600">แต้มที่ได้รับ: +${order.earned_points}</div>
-    </div>
-  `).join('');
-}
-
-initLiff();
+  // --- เริ่มทำงานเมื่อโหลดหน้าเสร็จ ---
+  document.addEventListener("DOMContentLoaded", initLiff);
 </script>
-<!-- จบส่วนเชื่อม Supabase + LINE LIFF -->
 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9942ca47f4c1f4cf',t:'MTc2MTQwNjU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+  <scrip>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9942ca47f4c1f4cf',t:'MTc2MTQwNjU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
