@@ -213,7 +213,7 @@
 
   <script>
     // ===== Google Sheet API (Apps Script) =====
-    const SHEET_API = 'https://script.google.com/macros/s/AKfycbwMQCT0So7bJUIvG3kWMz5psytQrzMBhixs9Y4snYWtfYilgy9gf7vzaYt2ifBe8mvzsQ/exec';
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbzljvMQbYipJWOwKAUCNIJIixXaHGdfXHJEX9nvRjXI1CLSABCaPEEda5FkDWqGIMdhOw/exec';
     async function sheetFetch(payload){
       const res = await fetch(SHEET_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), mode:'cors' });
       let data={}; try{ data = await res.json(); }catch(_){ data={}; }
