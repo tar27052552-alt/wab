@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เข้าสู่ระบบด้วย LINE</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เข้าสู่ระบบด้วย LINE</title>
+
+  <!-- ✅ เพิ่ม TailwindCSS + Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 flex flex-col items-center justify-center min-h-screen">
+
+  <!-- Centered LINE Login Card -->
+  <section id="center-login" class="bg-white rounded-2xl shadow-lg p-8 w-[90%] max-w-md text-center border border-gray-200">
+    <div class="text-5xl mb-3">⭐</div>
+    <h2 class="text-2xl font-bold mb-2">เข้าสู่ระบบเพื่อรับสิทธิ์สมาชิก</h2>
+    <p class="text-gray-600 mb-6">สะสมแต้ม ดูประวัติการสั่งซื้อ รับโค้ดส่วนลด และกิจกรรมพิเศษ</p>
+    <button id="btn-login-center" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-semibold text-lg transition">เข้าสู่ระบบด้วย LINE</button>
+  </section>
+
+  <!-- Phone Modal -->
+  <div id="phone-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50">
+    <div class="bg-white rounded-xl p-6 shadow-xl w-[90%] max-w-md text-center">
+      <h3 class="text-xl font-semibold mb-2">ยืนยันเบอร์ติดต่อ</h3>
+      <p class="text-gray-600 mb-4">กรุณากรอกเบอร์ติดต่อของคุณเพื่อใช้งานครบถ้วน</p>
+      <input id="phone-input" type="tel" placeholder="เช่น 0812345678" pattern="\d{9,10}" class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 text-center focus:outline-none focus:ring-2 focus:ring-green-400" />
+      <div class="flex justify-between gap-3">
+        <button id="phone-cancel" class="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300">ข้าม</button>
+        <button id="phone-save" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">บันทึก</button>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">* สามารถแก้ไขได้ภายหลังในโปรไฟล์</p>
+    </div>
+  </div>
+
+  <input type="hidden" id="currentUserId" value="">
+  <input type="hidden" id="currentUserName" value="">
+  <input type="hidden" id="currentUserAvatar" value="">
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
+
+
+</body>
+</html>
