@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Task Flow — Fixed clickable details + Done button</title>
+  <title>Task Flow — Stable build (fix stray braces & Sheet sync)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body{box-sizing:border-box;font-family:'Prompt','Inter',-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.01em}
-    .glass-effect{background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2)}
+    .glass{background:rgba(255,255,255,.95);backdrop-filter:blur(18px);border:1px solid rgba(2,132,199,.06)}
     .task-card{transition:all .25s ease;border:1px solid rgba(226,232,240,.8);cursor:pointer}
     .task-card:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.08);border-color:rgba(99,102,241,.2)}
     .calendar-day{transition:all .2s ease}
@@ -18,7 +18,7 @@
 </head>
 <body class="h-full bg-gradient-to-br from-sky-50 via-white to-sky-100">
   <!-- NAV -->
-  <nav class="glass-effect shadow-sm border-b border-slate-200/50">
+  <nav class="glass shadow-sm border-b border-slate-200/50">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
       <div class="h-16 flex items-center justify-between">
         <h1 class="text-xl font-semibold text-slate-800 tracking-tight">TaskFlow</h1>
@@ -33,7 +33,7 @@
   <main class="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-10">
     <!-- Calendar + Upcoming -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2 glass-effect rounded-2xl p-6">
+      <div class="lg:col-span-2 glass rounded-2xl p-6">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-semibold text-slate-800" id="calendar-title">January 2024</h2>
           <div class="flex gap-2">
@@ -46,14 +46,14 @@
         </div>
         <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
       </div>
-      <div class="glass-effect rounded-2xl p-6">
+      <div class="glass rounded-2xl p-6">
         <h3 class="text-xl font-semibold text-slate-800 mb-4">งานที่ใกล้ถึงกำหนด</h3>
         <div id="upcoming-tasks" class="space-y-3"></div>
       </div>
     </section>
 
     <!-- Homework -->
-    <section class="glass-effect rounded-2xl p-6">
+    <section class="glass rounded-2xl p-6">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-semibold text-slate-800">การบ้าน</h2>
         <div class="flex gap-2">
@@ -71,7 +71,7 @@
     </section>
 
     <!-- Activities -->
-    <section class="glass-effect rounded-2xl p-6">
+    <section class="glass rounded-2xl p-6">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-semibold text-slate-800">กิจกรรม</h2>
         <button onclick="showAddActivity()" class="btn bg-slate-900 text-white">เพิ่มกิจกรรม</button>
@@ -179,6 +179,23 @@
     </div>
   </div>
 
+  <!-- Subject Settings Modal (minimal) -->
+  <div id="subject-settings-modal" class="fixed inset-0 modal-backdrop hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">ตั้งค่าวิชา</h3>
+          <button onclick="closeSubjectSettings()" class="text-gray-500">✕</button>
+        </div>
+        <div class="flex gap-2 mb-3">
+          <input id="new-subject" class="flex-1 px-3 py-2 rounded-xl border border-slate-200" placeholder="ชื่อวิชา" />
+          <button onclick="addSubject()" class="btn bg-sky-600 text-white">เพิ่ม</button>
+        </div>
+        <div id="subjects-list" class="space-y-2 max-h-60 overflow-auto"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Delete Confirm -->
   <div id="delete-modal" class="fixed inset-0 modal-backdrop hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -195,13 +212,25 @@
   </div>
 
   <script>
+    // ===== Google Sheet API (Apps Script) =====
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbwMQCT0So7bJUIvG3kWMz5psytQrzMBhixs9Y4snYWtfYilgy9gf7vzaYt2ifBe8mvzsQ/exec';
+    async function sheetFetch(payload){
+      const res = await fetch(SHEET_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), mode:'cors' });
+      let data={}; try{ data = await res.json(); }catch(_){ data={}; }
+      if(!res.ok || !data.ok){ console.error('[Sheet]', payload.action, 'failed', data); throw new Error(data.error||'Sheet request failed'); }
+      return data;
+    }
+    async function sheetList(){
+      const res = await fetch(`${SHEET_API}?route=list`, { mode:'cors' });
+      return res.json();
+    }
+
     // ===== State =====
     let currentDate=new Date();
     let subjects=['คณิตศาสตร์','ภาษาไทย','ภาษาอังกฤษ','วิทยาศาสตร์','สังคมศึกษา'];
     let homework=[{id:1,subject:'คณิตศาสตร์',title:'แบบฝึกหัดบทที่ 5',dueDate:'2024-01-25',status:'pending'},{id:2,subject:'ภาษาอังกฤษ',title:'เขียนเรียงความ My Family',dueDate:'2024-01-20',status:'pending'}];
-    // เพิ่ม status ให้กิจกรรมเพื่อรองรับ "ทำเสร็จแล้ว"
     let activities=[{id:1,title:'งานวิทยาศาสตร์',description:'จัดทำโครงงานเรื่องพลังงานทดแทน',startDate:'2024-01-22',endDate:'2024-01-30',status:'planned'}];
-    let editingId=null; // ใช้ร่วมตอนแก้ไข
+    let editingId=null; // ใช้ตอนแก้ไข
     let deleteTarget=null; // {type:'homework'|'activity', id}
 
     // ===== Utils =====
@@ -282,7 +311,7 @@
     }
     function openUpcoming(type,id){ if(type==='homework'){showHomeworkDetail(id)} else{showActivityDetail(id)} }
 
-    // ===== Homework list (clickable block) =====
+    // ===== Homework list (clickable) =====
     let activeFilter='all';
     function filterHomework(f){
       activeFilter=f;
@@ -303,7 +332,7 @@
       c.innerHTML=data.map(h=>{
         const d=daysUntil(h.dueDate);
         let badge='';
-        if(h.status==='completed') badge='<span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">เสร็จแล้ว</span>';
+        if(h.status==='completed') badge=''; // ไม่แสดงคำว่า "เสร็จแล้ว" ในรายละเอียดตามคำขอ
         else if(h.status==='overdue') badge='<span class="bg-rose-100 text-rose-800 text-xs px-2 py-1 rounded-full">เลยกำหนด</span>';
         else if(d<=3) badge=`<span class='bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full'>เหลืออีก ${d} วัน</span>`;
         else badge=`<span class='bg-sky-100 text-sky-800 text-xs px-2 py-1 rounded-full'>เหลืออีก ${d} วัน</span>`;
@@ -323,14 +352,14 @@
       }).join('');
     }
 
-    // ===== Activities list (clickable block) =====
+    // ===== Activities list (clickable) =====
     function updateActivities(){
       const c=document.getElementById('activities-list'); if(!c) return;
       if(!activities.length){c.innerHTML='<div class="text-center text-gray-500 py-8">ยังไม่มีกิจกรรม</div>';return}
       const sorted=[...activities].sort((a,b)=>parseLocal(a.startDate)-parseLocal(b.startDate));
       c.innerHTML=sorted.map(a=>{
         const isCompleted=a.status==='completed';
-        const statusBadge=isCompleted?'<span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">เสร็จแล้ว</span>':'';
+        const statusBadge=isCompleted?'':' ';
         return `<div class='task-card bg-white rounded-xl p-4' data-type='activity' data-id='${a.id}'>
           <div class='flex items-start justify-between'>
             <div>
@@ -372,7 +401,7 @@
           <div class='text-slate-600'>วิชา: ${h.subject}</div>
           <div class='text-sm text-slate-500'>กำหนดส่ง: ${thaiDate(h.dueDate)}</div>
           <div class='flex flex-wrap gap-2 pt-1'>
-            ${h.status!=='completed'?`<button class='btn bg-emerald-600 text-white' onclick='markHomeworkDone(${h.id})'>ทำเสร็จแล้ว</button>`:'<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs">เสร็จแล้ว</span>'}
+            ${h.status!=='completed'?`<button class='btn bg-emerald-600 text-white' onclick='markHomeworkDone(${h.id})'>ทำเสร็จแล้ว</button>`:''}
             <button class='btn bg-sky-600 text-white' onclick='editHomework(${h.id})'>แก้ไข</button>
             <button class='btn bg-rose-600 text-white' onclick="openDeleteConfirm('homework', ${h.id})">ลบ</button>
           </div>
@@ -389,7 +418,7 @@
           <div class='text-slate-600'>${a.description||''}</div>
           <div class='text-sm text-slate-500'>${thaiDate(a.startDate)} - ${thaiDate(a.endDate)}</div>
           <div class='flex gap-2 pt-1'>
-            ${a.status!=='completed'?`<button class='btn bg-emerald-600 text-white' onclick='markActivityDone(${a.id})'>ทำเสร็จแล้ว</button>`:'<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs">เสร็จแล้ว</span>'}
+            ${a.status!=='completed'?`<button class='btn bg-emerald-600 text-white' onclick='markActivityDone(${a.id})'>ทำเสร็จแล้ว</button>`:''}
             <button class='btn bg-sky-600 text-white' onclick='editActivity(${a.id})'>แก้ไข</button>
             <button class='btn bg-rose-600 text-white' onclick="openDeleteConfirm('activity', ${a.id})">ลบ</button>
           </div>
@@ -401,16 +430,62 @@
     function populateSubjectDropdown(){ const dd=document.getElementById('homework-subject'); if(dd) dd.innerHTML=subjects.map(s=>`<option value='${s}'>${s}</option>`).join(''); }
     function showAddHomework(){ editingId=null; populateSubjectDropdown(); const f=document.getElementById('homework-form'); if(f) f.reset(); openModal('add-homework-modal'); }
     function closeAddHomework(){ closeModal('add-homework-modal'); }
-    function saveHomework(e){ e.preventDefault(); const subject=document.getElementById('homework-subject').value; const title=document.getElementById('homework-title').value.trim(); const dueDate=document.getElementById('homework-date').value; const status=document.getElementById('homework-status').value; if(!subject||!title||!dueDate) return; if(editingId){ const i=homework.findIndex(h=>h.id===editingId); if(i>-1) homework[i]={...homework[i],subject,title,dueDate,status}; editingId=null; } else { homework.push({id:Date.now(),subject,title,dueDate,status}); } closeAddHomework(); displayHomework(); updateUpcoming(); updateCalendar(); }
+    async function saveHomework(e){
+      e.preventDefault();
+      const subject=document.getElementById('homework-subject').value;
+      const title=document.getElementById('homework-title').value.trim();
+      const dueDate=document.getElementById('homework-date').value;
+      const status=document.getElementById('homework-status').value;
+      if(!subject||!title||!dueDate) return;
+      if(editingId){
+        const i=homework.findIndex(h=>h.id===editingId);
+        if(i>-1) homework[i]={...homework[i],subject,title,dueDate,status};
+        try{ await sheetFetch({action:'update', id: editingId, type:'homework', subject, title, dueDate, status}); }catch(err){ console.warn(err); }
+        editingId=null;
+      } else {
+        const id = Date.now();
+        homework.push({id,subject,title,dueDate,status});
+        try{ await sheetFetch({action:'add', id, type:'homework', subject, title, dueDate, status}); }catch(err){ console.warn(err); }
+      }
+      closeAddHomework();
+      displayHomework(); updateUpcoming(); updateCalendar();
+    }
     function editHomework(id){ const h=homework.find(x=>x.id===id); if(!h) return; editingId=id; populateSubjectDropdown(); document.getElementById('homework-subject').value=h.subject; document.getElementById('homework-title').value=h.title; document.getElementById('homework-date').value=h.dueDate; document.getElementById('homework-status').value=h.status; closeModal('detail-modal'); openModal('add-homework-modal'); }
-    function markHomeworkDone(id){ const h=homework.find(x=>x.id===id); if(!h) return; h.status='completed'; displayHomework(); updateUpcoming(); updateCalendar(); showHomeworkDetail(id); }
+    async function markHomeworkDone(id){
+      const h=homework.find(x=>x.id===id); if(!h) return; h.status='completed';
+      try{ await sheetFetch({action:'update', id, type:'homework', status:'completed'}); }catch(err){ console.warn(err); }
+      displayHomework(); updateUpcoming(); updateCalendar(); showHomeworkDetail(id);
+    }
 
     // ===== CRUD (Activity) =====
     function showAddActivity(){ editingId=null; const f=document.getElementById('activity-form'); if(f) f.reset(); openModal('add-activity-modal'); }
     function closeAddActivity(){ closeModal('add-activity-modal'); }
-    function saveActivity(e){ e.preventDefault(); const title=document.getElementById('activity-title').value.trim(); const description=document.getElementById('activity-description').value.trim(); const startDate=document.getElementById('activity-start-date').value; const endDate=document.getElementById('activity-end-date').value; if(!title||!startDate||!endDate) return; if(editingId){ const i=activities.findIndex(a=>a.id===editingId); if(i>-1) activities[i]={...activities[i],title,description,startDate,endDate}; editingId=null; } else { activities.push({id:Date.now(),title,description,startDate,endDate,status:'planned'}); } closeAddActivity(); updateActivities(); updateUpcoming(); updateCalendar(); }
+    async function saveActivity(e){
+      e.preventDefault();
+      const title=document.getElementById('activity-title').value.trim();
+      const description=document.getElementById('activity-description').value.trim();
+      const startDate=document.getElementById('activity-start-date').value;
+      const endDate=document.getElementById('activity-end-date').value;
+      if(!title||!startDate||!endDate) return;
+      if(editingId){
+        const i=activities.findIndex(a=>a.id===editingId);
+        if(i>-1) activities[i]={...activities[i],title,description,startDate,endDate};
+        try{ await sheetFetch({action:'update', id: editingId, type:'activity', title, description, startDate, endDate}); }catch(err){ console.warn(err); }
+        editingId=null;
+      } else {
+        const id = Date.now();
+        activities.push({id,title,description,startDate,endDate,status:'planned'});
+        try{ await sheetFetch({action:'add', id, type:'activity', title, description, startDate, endDate, status:'planned'}); }catch(err){ console.warn(err); }
+      }
+      closeAddActivity();
+      updateActivities(); updateUpcoming(); updateCalendar();
+    }
     function editActivity(id){ const a=activities.find(x=>x.id===id); if(!a) return; editingId=id; document.getElementById('activity-title').value=a.title; document.getElementById('activity-description').value=a.description; document.getElementById('activity-start-date').value=a.startDate; document.getElementById('activity-end-date').value=a.endDate; closeModal('detail-modal'); openModal('add-activity-modal'); }
-    function markActivityDone(id){ const a=activities.find(x=>x.id===id); if(!a) return; a.status='completed'; updateActivities(); updateUpcoming(); updateCalendar(); showActivityDetail(id); }
+    async function markActivityDone(id){
+      const a=activities.find(x=>x.id===id); if(!a) return; a.status='completed';
+      try{ await sheetFetch({action:'update', id, type:'activity', status:'completed'}); }catch(err){ console.warn(err); }
+      updateActivities(); updateUpcoming(); updateCalendar(); showActivityDetail(id);
+    }
 
     // ===== Subjects =====
     function showSubjectSettings(){ updateSubjectsList(); openModal('subject-settings-modal'); }
@@ -422,22 +497,36 @@
     // ===== Delete confirm =====
     function openDeleteConfirm(type,id){ deleteTarget={type,id}; closeModal('add-homework-modal'); closeModal('add-activity-modal'); closeModal('detail-modal'); openModal('delete-modal'); }
     function closeDeleteConfirm(){ deleteTarget=null; closeModal('delete-modal'); }
-    function confirmDelete(){ if(!deleteTarget) return; const {type,id}=deleteTarget; if(type==='homework'){ homework=homework.filter(h=>h.id!==id); displayHomework(); updateUpcoming(); updateCalendar(); } else { activities=activities.filter(a=>a.id!==id); updateActivities(); updateUpcoming(); updateCalendar(); } closeDeleteConfirm(); }
+    async function confirmDelete(){
+      if(!deleteTarget) return; const {type,id}=deleteTarget;
+      try{ await sheetFetch({action:'delete', id}); }catch(err){ console.warn(err); }
+      if(type==='homework'){ homework=homework.filter(h=>h.id!==id); displayHomework(); updateUpcoming(); updateCalendar(); }
+      else { activities=activities.filter(a=>a.id!==id); updateActivities(); updateUpcoming(); updateCalendar(); }
+      closeDeleteConfirm();
+    }
 
-    // ===== Modal helpers with guards (fix classList null) =====
+    // ===== Modal helpers =====
     function openModal(id){ const el=document.getElementById(id); if(!el) return; el.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
     function closeModal(id){ const el=document.getElementById(id); if(!el) return; el.classList.add('hidden'); const ids=['day-modal','detail-modal','add-homework-modal','add-activity-modal','subject-settings-modal','delete-modal']; const anyOpen=ids.some(mid=>{ const m=document.getElementById(mid); return m && !m.classList.contains('hidden'); }); if(!anyOpen) document.body.classList.remove('overflow-hidden'); }
     function closeDetail(){ closeModal('detail-modal'); }
     function closeDayModal(){ closeModal('day-modal'); }
 
     // ===== Init =====
-    document.addEventListener('DOMContentLoaded',()=>{
-      // สร้าง Subject dropdown ถ้ามีฟอร์ม
+    async function bootstrap(){
+      try{
+        const data = await sheetList();
+        if(data && data.rows && Array.isArray(data.rows)){
+          const rows = data.rows;
+          homework = rows.filter(r=>r.type==='homework').map(r=>({ id: r.id||Number(r.id), subject: r.subject||'', title: r.title||'', dueDate: r.dueDate||'', status: r.status||'pending' }));
+          activities = rows.filter(r=>r.type==='activity').map(r=>({ id: r.id||Number(r.id), title: r.title||'', description: r.description||'', startDate: r.startDate||'', endDate: r.endDate||'', status: r.status||'planned' }));
+        }
+      }catch(err){ console.warn('โหลดจากชีตไม่สำเร็จ ใช้ข้อมูลจำลองแทน', err); }
+
       populateSubjectDropdown();
       updateCalendar(); updateUpcoming(); displayHomework(); updateActivities();
-      // self test
       try{ const grid=document.getElementById('calendar-grid'); if(grid) console.assert(grid.children.length===42,'calendar should render 42 cells'); }catch{}
-    });
+    }
+    document.addEventListener('DOMContentLoaded', bootstrap);
   </script>
 </body>
 </html>
