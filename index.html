@@ -2629,16 +2629,16 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 // ฟังก์ชันเริ่มต้น LINE LIFF
 async function initLiff() {
   await liff.init({ liffId });
-  
   if (!liff.isLoggedIn()) {
     liff.login();
   } else {
     const profile = await liff.getProfile();
-    document.getElementById("login-modal").classList.add("hidden");
-    document.getElementById("main-app").classList.remove("hidden");
     await loginWithSupabase(profile);
   }
 }
+
+initLiff();
+
 
 // ฟังก์ชันล็อกอินด้วย Supabase (บันทึกข้อมูลผู้ใช้)
 async function loginWithSupabase(profile) {
@@ -2667,10 +2667,11 @@ async function loginWithSupabase(profile) {
   document.getElementById("points").textContent = user.points || 0;
   document.getElementById("user-status").innerHTML =
     `<img src="${user.picture_url}" class="w-6 h-6 rounded-full" /> <span>${user.display_name}</span>`;
-}
-// ✅ โหลดประวัติคำสั่งซื้อจากฐานข้อมูล
+  // ✅ โหลดประวัติคำสั่งซื้อจากฐานข้อมูล
 const orders = await loadOrderHistory(currentUser.id);
-renderOrderHistory(orders);
+renderOrderHistory(orders);  
+}
+
 // 🔹 ดึงประวัติคำสั่งซื้อจาก Supabase
 async function loadOrderHistory(userId) {
   const { data: orders, error } = await supabase
