@@ -86,120 +86,105 @@ input[type="tel"] { width:100%; padding:10px 12px; border:1px solid #e5e7eb; bor
 </div></div></div>
 <div id="toast">กำลังบันทึก...</div>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-var LIFF_ID="2008357926-Ly07A5w2", SHEET_API="https://script.google.com/macros/s/AKfycbwyBDSpga8eMusXXDVnm1Bg19p45yoDSK_UpVDbq6j9FFlWPDN9MNnKdK0BZaAC2Ide/exec", liffReady=false, liffProfile=null, liffPhone=null;
-function storageKey(uid){ return 'suankhanom:user:'+uid+':phone'; }
-function setDebug(m){ var el=document.getElementById('login-debug'); if(el) el.textContent=m; if(window.console&&console.log) console.log('[LOGIN]',m); }
-function showToast(msg,err){ var t=document.getElementById('toast'); if(!t)return; t.textContent=msg; t.className=err?'error show':'show'; setTimeout(function(){ t.className=''; },3000); }
-function initApp(){ var overlay=document.getElementById('login-overlay'), loginBtn=document.getElementById('manual-login-btn'), mainApp=document.getElementById('main-app'); if(typeof liff==='undefined'){ setDebug('LIFF SDK not loaded'); return; }
-  liff.init({liffId:LIFF_ID}).then(function(){ liffReady=true; setDebug('LIFF init OK · inClient='+(liff.isInClient&&liff.isInClient()));
-    if(!liff.isLoggedIn()){ overlay.style.display='flex'; loginBtn.onclick=function(ev){ ev.preventDefault(); try{ if(liff.isInClient&&liff.isInClient()){ liff.login(); } else { window.location.href='https://liff.line.me/'+LIFF_ID; } }catch(e){ window.location.href='https://liff.line.me/'+LIFF_ID; } }; if(mainApp) mainApp.style.display='none';
-    } else { onLoggedIn().then(function(){ if(overlay&&overlay.parentNode) overlay.parentNode.removeChild(overlay); if(mainApp) mainApp.style.display='block'; }); }
-  }).catch(function(e){ setDebug('init error: '+e); overlay.style.display='flex'; }); }
-function onLoggedIn(){ return liff.getProfile().then(function(p){ liffProfile={ userId:p.userId, displayName:p.displayName, pictureUrl:p.pictureUrl };
-  try{ liffPhone=localStorage.getItem(storageKey(p.userId)); }catch(_){} if(!liffPhone) openPhoneModal(); else updateUIForMember();
-}).catch(function(e){ setDebug('getProfile error: '+e); }); }
-function updateUIForMember(){ var s=document.getElementById('login-status'); if(s){ s.textContent='สวัสดี '+(liffProfile&&liffProfile.displayName?liffProfile.displayName:'')+' · '+(liffPhone||''); s.style.display='inline'; } }
-function openPhoneModal(){ document.getElementById('phone-modal').style.display='grid'; }
-function closePhoneModal(){ document.getElementById('phone-modal').style.display='none'; updateUIForMember(); }
-var phoneSave=document.getElementById('phone-save'); if(phoneSave) phoneSave.onclick=function(){ var v=(document.getElementById('phone-input').value||'').replace(/\s+/g,''); if(!/^\d{9,10}$/.test(v)){ alert('กรุณากรอกเบอร์ให้ถูกต้อง (9-10 หลัก)'); return; }
-  try{ if(liffProfile&&liffProfile.userId) localStorage.setItem(storageKey(liffProfile.userId), v); }catch(_){} liffPhone=v; closePhoneModal(); };
-var phoneCancel=document.getElementById('phone-cancel'); if(phoneCancel) phoneCancel.onclick=closePhoneModal;
-function fetchOrdersFromSheet(uid){ var url=SHEET_API+'?action=getOrders&userId='+encodeURIComponent(uid); return fetch(url,{method:'GET'}).then(function(r){ return r.json(); }); }
-function saveOrderToSheet(uid, order){ return fetch(SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'}},body:JSON.stringify({action:'addOrder',userId:uid,order:order})}).then(function(r){ return r.json(); }); }
-window.addOrderToHistory=function(order){ if(!liffProfile||!liffProfile.userId) return; var payload={ id:order.id||Math.floor(Date.now()/1000), items:order.items||[], totalPrice:order.totalPrice||0, createdAt:order.createdAt||new Date().toISOString(), user:{ name:(liffProfile&&liffProfile.displayName)?liffProfile.displayName:'', phone:liffPhone||'' } }; return saveOrderToSheet(liffProfile.userId, payload); };
-window.renderOrders=function(uid){ var listEl=document.getElementById('orders-list'), emptyEl=document.getElementById('orders-empty'); listEl.innerHTML='<div style="color:#6b7280">กำลังโหลดข้อมูล...</div>'; emptyEl.style.display='none';
-  fetchOrdersFromSheet(uid).then(function(data){ var orders=(data&&data.orders)?data.orders:[]; listEl.innerHTML=''; if(!orders.length){ emptyEl.style.display='block'; return; }
-    for(var i=0;i<orders.length;i++){ var o=orders[i], wrap=document.createElement('div'); wrap.className='order-card'; var dateStr=o.createdAt?new Date(o.createdAt).toLocaleString('th-TH'):'';
-      var items=(o.items&&o.items.length)?o.items:[]; var itemsHtml=''; for(var j=0;j<items.length;j++){ var it=items[j]; itemsHtml+='<li>'+(it.name||it.base||'รายการ')+' x '+(it.qty||1)+(it.topping?' (หน้า '+it.topping+')':'')+'</li>'; }
-      wrap.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-weight:700;">ออเดอร์ #'+(o.id||'-')+'</div><div style="color:#6b7280;font-size:13px;">'+dateStr+'</div></div>'+'<ul style="margin:0 0 6px 16px;padding:0;">'+itemsHtml+'</ul>'+'<div style="font-weight:700;">รวม: '+(o.totalPrice||0)+' บาท</div>'; listEl.appendChild(wrap); }
-  }).catch(function(e){ listEl.innerHTML='<div style="color:#ef4444">ไม่สามารถโหลดประวัติคำสั่งซื้อได้</div>'; if(window.console&&console.error) console.error(e); }); };
-(function(){ var openBtn=document.getElementById('my-account-btn'), modal=document.getElementById('account-modal'), closeBtn=document.getElementById('account-close'), refreshBtn=document.getElementById('account-refresh');
-  function openModal(){ if(!liffProfile||!liffProfile.userId){ alert('กรุณาเข้าสู่ระบบด้วย LINE ก่อน'); return; } document.getElementById('profile-name').textContent=(liffProfile&&liffProfile.displayName)?liffProfile.displayName:'-'; document.getElementById('profile-phone').textContent=liffPhone||'-'; document.getElementById('profile-userid').textContent=(liffProfile&&liffProfile.userId)?liffProfile.userId:'-'; if(liffProfile&&liffProfile.pictureUrl) document.getElementById('profile-picture').src=liffProfile.pictureUrl; renderOrders(liffProfile.userId); modal.className='show'; modal.setAttribute('aria-hidden','false'); }
-  function closeModal(){ modal.className=''; modal.setAttribute('aria-hidden','true'); }
-  if(openBtn) openBtn.onclick=openModal; if(closeBtn) closeBtn.onclick=closeModal; if(modal) modal.addEventListener('click',function(e){ if(e.target===modal) closeModal(); }); document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.className==='show') closeModal(); }); if(refreshBtn) refreshBtn.onclick=function(){ if(liffProfile&&liffProfile.userId) renderOrders(liffProfile.userId); };
-})(); 
-var simBtn=document.getElementById('btn-sim-order'); if(simBtn) simBtn.onclick=function(){ var order={ "id":'ORD-'+Math.floor(Date.now()/1000), "items":[{"name":"บราวนี่หนึบ","qty":1},{"name":"บราวนี่ฟัดจ์","qty":2,"topping":"อัลมอนด์"}], "totalPrice":75,"createdAt":new Date().toISOString() }; showToast('กำลังบันทึกออเดอร์...',false); var p=addOrderToHistory(order); if(p&&p.then) p.then(function(){ showToast('บันทึกออเดอร์สำเร็จ!',false); }).catch(function(e){ showToast('บันทึกไม่สำเร็จ',true); if(console&&console.error) console.error(e); }); };
-document.addEventListener('visibilitychange', function(){ if(!document.hidden) initApp(); });
-document.addEventListener('DOMContentLoaded', initApp);
-</script>
+
+
 
 <script>
-// --- Phone-first-run behavior (modal only) ---
-
-// Hide inline phone UI if it exists (id-based and heuristic for stray blocks)
-function hideInlinePhone(){
-  var el = document.getElementById('phone-inline');
-  if (el) el.style.display = 'none';
-  // Fallback: hide any tel input outside #phone-modal (legacy block)
-  var allTel = document.querySelectorAll('input[type="tel"]');
-  for (var i=0; i<allTel.length; i++){
-    var n = allTel[i];
-    if (!n.closest('#phone-modal')){
-      var container = n.closest('section,div,form') || n.parentElement;
-      if (container) container.style.display = 'none';
+  // --- Phone-first-run behavior (modal only) ---
+  function hideInlinePhone(){
+    var el = document.getElementById('phone-inline');
+    if (el) el.style.display = 'none';
+    var allTel = document.querySelectorAll('input[type="tel"]');
+    for (var i=0; i<allTel.length; i++){
+      var n = allTel[i];
+      if (!n.closest('#phone-modal')){
+        var container = n.closest('section,div,form') || n.parentElement;
+        if (container) container.style.display = 'none';
+      }
     }
   }
-}
 
-// Patch onLoggedIn so phone is asked only once (via modal)
-if (typeof onLoggedIn === 'function'){
-  var _origOnLoggedIn = onLoggedIn;
-  onLoggedIn = function(){
-    return liff.getProfile().then(function(p){
-      liffProfile = { userId: p.userId, displayName: p.displayName, pictureUrl: p.pictureUrl };
-      try { liffPhone = localStorage.getItem(storageKey(p.userId)); } catch(_){}
-      hideInlinePhone();
-      if (!liffPhone) openPhoneModal(); else updateUIForMember();
-    }).catch(function(e){ if (window.console && console.error) console.error(e); });
-  };
-} else {
-  // fallback if not defined (shouldn't happen)
-  function onLoggedIn(){
-    return liff.getProfile().then(function(p){
-      liffProfile = { userId: p.userId, displayName: p.displayName, pictureUrl: p.pictureUrl };
-      try { liffPhone = localStorage.getItem(storageKey(p.userId)); } catch(_){}
-      hideInlinePhone();
-      if (!liffPhone) openPhoneModal(); else updateUIForMember();
-    });
+  // Patch onLoggedIn correctly
+  if (typeof onLoggedIn === 'function') {
+    var _origOnLoggedIn = onLoggedIn;
+    onLoggedIn = function(){
+      return liff.getProfile()
+        .then(function(p){
+          liffProfile = { 
+            userId: p.userId, 
+            displayName: p.displayName, 
+            pictureUrl: p.pictureUrl 
+          };
+          try { 
+            liffPhone = localStorage.getItem(storageKey(p.userId)); 
+          } catch(e){}
+          hideInlinePhone();
+          if (!liffPhone) {
+            openPhoneModal();
+          } else {
+            updateUIForMember();
+          }
+        })
+        .catch(function(e){ console.error(e); });
+    };
+  } else {
+    function onLoggedIn(){
+      return liff.getProfile()
+        .then(function(p){
+          liffProfile = { 
+            userId: p.userId, 
+            displayName: p.displayName, 
+            pictureUrl: p.pictureUrl 
+          };
+          try { 
+            liffPhone = localStorage.getItem(storageKey(p.userId)); 
+          } catch(e){}
+          hideInlinePhone();
+          if (!liffPhone) {
+            openPhoneModal();
+          } else {
+            updateUIForMember();
+          }
+        })
+        .catch(function(e){ console.error(e); });
+    }
   }
-}
 
-// Hook save/cancel inside phone modal
-(function(){
-  var phoneSave = document.getElementById('phone-save');
-  var phoneCancel = document.getElementById('phone-cancel');
-  if (phoneSave) phoneSave.onclick = function(){
-    var v = (document.getElementById('phone-input').value || '').replace(/\s+/g,'');
-    if (!/^\d{9,10}$/.test(v)) { alert('กรุณากรอกเบอร์ให้ถูกต้อง (9-10 หลัก)'); return; }
-    try { if (liffProfile && liffProfile.userId) localStorage.setItem(storageKey(liffProfile.userId), v); } catch(_){}
-    liffPhone = v;
-    hideInlinePhone();
-    if (typeof closePhoneModal === 'function') closePhoneModal();
-    if (typeof updateUIForMember === 'function') updateUIForMember();
-  };
-  if (phoneCancel) phoneCancel.onclick = function(){
-    if (typeof closePhoneModal === 'function') closePhoneModal();
-  };
-})();
+  // Hook save/cancel inside phone modal
+  (function(){
+    var phoneSave = document.getElementById('phone-save');
+    var phoneCancel = document.getElementById('phone-cancel');
+    if (phoneSave) phoneSave.onclick = function(){
+      var v = (document.getElementById('phone-input').value || '').replace(/\s+/g,'');
+      if (!/^\d{9,10}$/.test(v)) { alert('กรุณากรอกเบอร์ให้ถูกต้อง (9-10 หลัก)'); return; }
+      try { if (liffProfile && liffProfile.userId) localStorage.setItem(storageKey(liffProfile.userId), v); } catch(_){}
+      liffPhone = v;
+      hideInlinePhone();
+      if (typeof closePhoneModal === 'function') closePhoneModal();
+      if (typeof updateUIForMember === 'function') updateUIForMember();
+    };
+    if (phoneCancel) phoneCancel.onclick = function(){
+      if (typeof closePhoneModal === 'function') closePhoneModal();
+    };
+  })();
 
-// Add "แก้ไขเบอร์" button next to "บัญชีของฉัน"
-document.addEventListener('DOMContentLoaded', function(){
-  var right = document.querySelector('#liff-header .right');
-  if (!right) return;
-  if (document.getElementById('edit-phone-btn')) return;
-  var b = document.createElement('button');
-  b.id = 'edit-phone-btn';
-  b.className = 'btn';
-  b.style.marginLeft = '8px';
-  b.textContent = 'แก้ไขเบอร์';
-  b.onclick = function(){
-    var inp = document.getElementById('phone-input');
-    if (inp) inp.value = liffPhone || '';
-    if (typeof openPhoneModal === 'function') openPhoneModal();
-  };
-  right.appendChild(b);
-});
+  // Add "แก้ไขเบอร์" button next to "บัญชีของฉัน"
+  document.addEventListener('DOMContentLoaded', function(){
+    var right = document.querySelector('#liff-header .right');
+    if (!right) return;
+    if (document.getElementById('edit-phone-btn')) return;
+    var b = document.createElement('button');
+    b.id = 'edit-phone-btn';
+    b.className = 'btn';
+    b.style.marginLeft = '8px';
+    b.textContent = 'แก้ไขเบอร์';
+    b.onclick = function(){
+      var inp = document.getElementById('phone-input');
+      if (inp) inp.value = liffPhone || '';
+      if (typeof openPhoneModal === 'function') openPhoneModal();
+    };
+    right.appendChild(b);
+  });
 </script>
 
 </body></html>
