@@ -330,29 +330,33 @@
   };
   </script>
 <div id="toast">กำลังบันทึก...</div><script>
-(function setupLoginButton(){
+(function setupLoginButton() {
   const LINK = document.getElementById('manual-login-link');
   const BTN  = document.getElementById('manual-login-btn');
-  if (!LINK || !BTN) { return setTimeout(setupLoginButton, 300); }
+  if (!LINK || !BTN) {
+    setTimeout(setupLoginButton, 300);
+    return;
+  }
 
-  function openLIFFExternal(){
+  function openLIFFExternal() {
     // fallback: navigate via anchor href (works outside LINE)
     LINK.click();
   }
 
   BTN.addEventListener('click', async (e) => {
-    try{
-      e.preventDefault();
+    e.preventDefault();
+    try {
       if (typeof liff !== 'undefined') {
-        // Ensure init before checking environment
-        try { await liff.init({ liffId: '2008357926-Ly07A5w2' }); } catch(_) {}
+        try {
+          await liff.init({ liffId: '2008357926-Ly07A5w2' });
+        } catch (_) {}
         if (typeof liff.isInClient === 'function' && liff.isInClient()) {
           liff.login();
           return;
         }
       }
       openLIFFExternal();
-    }catch(err){
+    } catch (err) {
       console.error('Login button error:', err);
       openLIFFExternal();
     }
