@@ -7,45 +7,45 @@
   <title>สวนขนม · บราวนี่โฮมเมด</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {{ --cream:#FFF9F3; --brown:#6B4E3D; --line:#16A34A; --border:#E5E7EB; --text:#111827; }}
-    * {{ box-sizing:border-box; }}
-    body {{ margin:0; background:var(--cream); font-family:'Prompt',sans-serif; color:var(--text); }}
-    h1,h2,h3 {{ margin:0 0 10px 0; }}
-    small, .muted {{ color:#6b7280; }}
+    :root { --cream:#FFF9F3; --brown:#6B4E3D; --line:#16A34A; --border:#E5E7EB; --text:#111827; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--cream); font-family:'Prompt',sans-serif; color:var(--text); }
+    h1,h2,h3 { margin:0 0 10px 0; }
+    small, .muted { color:#6b7280; }
 
-    #liff-header {{ position:sticky; top:0; z-index:30; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--border); }}
-    #liff-header .wrap {{ max-width:1100px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }}
-    #liff-header strong {{ font-size:20px; }}
-    .btn {{ cursor:pointer; border-radius:12px; padding:10px 14px; border:1px solid var(--border); background:#F3F4F6; font-weight:600; font-size:15px; }}
-    .btn-line {{ background:var(--line); color:#fff; border-color:var(--line); }}
-    .btn:disabled {{ opacity:.6; cursor:not-allowed; }}
+    #liff-header { position:sticky; top:0; z-index:30; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--border); }
+    #liff-header .wrap { max-width:1100px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
+    #liff-header strong { font-size:20px; }
+    .btn { cursor:pointer; border-radius:12px; padding:10px 14px; border:1px solid var(--border); background:#F3F4F6; font-weight:600; font-size:15px; }
+    .btn-line { background:var(--line); color:#fff; border-color:var(--line); }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
 
-    #login-overlay {{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--cream); z-index:50; }}
-    #login-overlay.hidden {{ display:none !important; pointer-events:none !important; opacity:0 !important; }}
-    .card {{ width:min(520px,92vw); text-align:center; }}
-    .brand {{ color:var(--brown); font-weight:700; font-size:22px; margin-bottom:14px; }}
+    #login-overlay { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--cream); z-index:50; }
+    #login-overlay.hidden { display:none !important; pointer-events:none !important; opacity:0 !important; }
+    .card { width:min(520px,92vw); text-align:center; }
+    .brand { color:var(--brown); font-weight:700; font-size:22px; margin-bottom:14px; }
 
-    .container {{ max-width:1100px; margin:20px auto; padding:0 16px; }}
-    .grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }}
-    .item {{ background:#fff; border:1px solid #eee; border-radius:16px; padding:16px; cursor:pointer; transition:transform .08s ease; }}
-    .item:hover {{ transform:translateY(-2px); }}
-    .item div:first-child {{ font-size:18px; font-weight:700; }}
-    .item div:last-child {{ color:#6b7280; }}
+    .container { max-width:1100px; margin:20px auto; padding:0 16px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+    .item { background:#fff; border:1px solid #eee; border-radius:16px; padding:16px; cursor:pointer; transition:transform .08s ease; }
+    .item:hover { transform:translateY(-2px); }
+    .item div:first-child { font-size:18px; font-weight:700; }
+    .item div:last-child { color:#6b7280; }
 
-    #account-modal {{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:60; }}
-    #account-modal .panel {{ background:#fff; width:min(760px,92vw); max-height:88vh; overflow:auto; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.18); }}
-    #account-modal .panel header {{ padding:16px 18px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; font-weight:700; }}
-    #account-modal .content {{ padding:18px; }}
-    #profile {{ display:grid; grid-template-columns:180px 1fr; gap:16px; align-items:start; }}
-    #profile img {{ width:120px; height:120px; border-radius:999px; object-fit:cover; box-shadow:0 4px 10px rgba(0,0,0,.08) }}
-    #orders-list {{ display:grid; gap:12px; }}
-    .order-card {{ border:1px solid #eee; border-radius:12px; padding:12px 14px; background:#fff; }}
+    #account-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:60; }
+    #account-modal .panel { background:#fff; width:min(760px,92vw); max-height:88vh; overflow:auto; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.18); }
+    #account-modal .panel header { padding:16px 18px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; font-weight:700; }
+    #account-modal .content { padding:18px; }
+    #profile { display:grid; grid-template-columns:180px 1fr; gap:16px; align-items:start; }
+    #profile img { width:120px; height:120px; border-radius:999px; object-fit:cover; box-shadow:0 4px 10px rgba(0,0,0,.08) }
+    #orders-list { display:grid; gap:12px; }
+    .order-card { border:1px solid #eee; border-radius:12px; padding:12px 14px; background:#fff; }
 
-    #toast {{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#111827; color:#fff;
-             padding:10px 14px; border-radius:12px; font-size:14px; box-shadow:0 8px 20px rgba(0,0,0,.2); display:none; z-index:80; }}
-    #toast.error {{ background:#B91C1C; }}
-    #toast.show {{ display:block; animation:fadeToast .2s ease; }}
-    @keyframes fadeToast {{ from {{ opacity:.5; transform:translate(-50%,10px); }} to {{ opacity:1; transform:translate(-50%,0); }} }}
+    #toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#111827; color:#fff;
+             padding:10px 14px; border-radius:12px; font-size:14px; box-shadow:0 8px 20px rgba(0,0,0,.2); display:none; z-index:80; }
+    #toast.error { background:#B91C1C; }
+    #toast.show { display:block; animation:fadeToast .2s ease; }
+    @keyframes fadeToast { from { opacity:.5; transform:translate(-50%,10px); } to { opacity:1; transform:translate(-50%,0); } }
   </style>
 </head>
 <body>
@@ -181,7 +181,7 @@
   function closePhoneModal(){ document.getElementById('phone-modal').style.display = 'none'; updateUIForMember(); }
   var phoneSave = document.getElementById('phone-save'); if (phoneSave) phoneSave.onclick = function(){
     var v = (document.getElementById('phone-input').value || '').replace(/\s+/g,'');
-    if (!/^\d{{9,10}}$/.test(v)) { alert('กรุณากรอกเบอร์ให้ถูกต้อง (9-10 หลัก)'); return; }
+    if (!/^\d{9,10}$/.test(v)) { alert('กรุณากรอกเบอร์ให้ถูกต้อง (9-10 หลัก)'); return; }
     try { if (liffProfile && liffProfile.userId) localStorage.setItem(storageKey(liffProfile.userId), v); } catch(_){}
     liffPhone = v; closePhoneModal();
   };
@@ -235,9 +235,9 @@
   window.addDemoItem=function(name){ alert('เลือก: '+name+' (เดโม่)'); };
   var simBtn=document.getElementById('btn-sim-order');
   if (simBtn) simBtn.onclick=function(){
-    var order={{"id":'ORD-'+Math.floor(Date.now()/1000),
-               "items":[{{"name":"บราวนี่หนึบ","qty":1}}, {{"name":"บราวนี่ฟัดจ์","qty":2,"topping":"อัลมอนด์"}}],
-               "totalPrice":75,"createdAt":new Date().toISOString()}};
+    var order={"id":'ORD-'+Math.floor(Date.now()/1000),
+               "items":[{"name":"บราวนี่หนึบ","qty":1}, {"name":"บราวนี่ฟัดจ์","qty":2,"topping":"อัลมอนด์"}],
+               "totalPrice":75,"createdAt":new Date().toISOString()};
     showToast('กำลังบันทึกออเดอร์...', false);
     var p=addOrderToHistory(order);
     if (p && p.then) p.then(function(){ showToast('บันทึกออเดอร์สำเร็จ!', false); })
