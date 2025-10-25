@@ -144,7 +144,7 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
   const LIFF_ID = "2008357926-Ly07A5w2";
-  const SHEET_API = "https://script.google.com/macros/s/1hkDyw28ye-d0EW56D_UcFLp16qFO29MpBR4_ZPWQfIA/exec";
+  const SHEET_API = "https://script.google.com/macros/s/AKfycbwyBDSpga8eMusXXDVnm1Bg19p45yoDSK_UpVDbq6j9FFlWPDN9MNnKdK0BZaAC2Ide/exec";
 
   let liffReady = false;
   let liffProfile = null;  // {userId, displayName, pictureUrl}
@@ -230,10 +230,10 @@
   }
   async function saveOrderToSheet(uid, order){
     const res = await fetch(SHEET_API, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'addOrder', userId: uid, order })
-    });
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'addOrder', userId: uid, order })
+    });});
     return await res.json();
   }
 
