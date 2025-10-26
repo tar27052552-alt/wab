@@ -32,61 +32,78 @@
     <div id="loading" class="hidden text-gray-500 mt-4">กำลังเข้าสู่ระบบ...</div>
   </div>
 
-  <script>
-    const liffId = "2008357926-Ly07A5w2";
-    const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  <!-- โหลด Supabase และ LINE LIFF SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
+<script>
+const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
+const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function initLiff() {
-      document.getElementById("loginBtn").classList.add("hidden");
-      document.getElementById("loading").classList.remove("hidden");
+async function initLiff() {
+  try {
+    await liff.init({ liffId });
+    console.log("✅ LIFF Loaded");
 
-      try {
-        await liff.init({ liffId });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        await saveUserToSupabase(profile);
-
-        // ✅ ล็อกอินเสร็จแล้ว ไปหน้า index.html (หน้าหลัก)
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 1000);
-      } catch (error) {
-        console.error("❌ LIFF Error:", error);
-      }
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
     }
 
-    async function saveUserToSupabase(profile) {
-      try {
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("*")
-          .eq("line_id", profile.userId)
-          .maybeSingle();
+    const profile = await liff.getProfile();
+    console.log("👤 Profile:", profile);
 
-        if (!existingUser) {
-          await supabase.from("users").insert([
-            {
-              display_name: profile.displayName,
-              picture_url: profile.pictureUrl,
-              line_id: profile.userId,
-              points: 0,
-            },
-          ]);
-          console.log("🟢 เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
-        } else {
-          console.log("👋 ผู้ใช้นี้มีอยู่แล้วในระบบ");
-        }
-      } catch (err) {
-        console.error("❌ บันทึกผู้ใช้ล้มเหลว:", err);
-      }
+    // บันทึกหรือเช็กผู้ใช้ใน Supabase
+    await saveUserToSupabase(profile);
+
+    // ✅ ไปหน้า home.html หลังล็อกอินสำเร็จ
+    setTimeout(() => {
+      console.log("➡️ Redirecting to home.html...");
+      window.location.href = "home.html";
+    }, 1000);
+  } catch (err) {
+    console.error("❌ LIFF init error:", err);
+  }
+}
+
+async function saveUserToSupabase(profile) {
+  try {
+    const { data: existingUser, error: findError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("line_id", profile.userId)
+      .single();
+
+    if (findError && findError.code !== "PGRST116") {
+      console.error("Find user error:", findError);
+      return;
     }
-  </script>
+
+    if (!existingUser) {
+      const { error } = await supabase.from("users").insert([
+        {
+          display_name: profile.displayName,
+          picture_url: profile.pictureUrl,
+          line_id: profile.userId,
+          points: 0,
+        },
+      ]);
+
+      if (error) console.error("Insert error:", error);
+      else console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
+    } else {
+      console.log("🟢 พบผู้ใช้ใน Supabase แล้ว");
+    }
+  } catch (err) {
+    console.error("saveUserToSupabase error:", err);
+  }
+}
+
+initLiff();
+</script>
+
 </body>
 </html>
