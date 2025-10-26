@@ -262,7 +262,7 @@
             <div>
               <div class="text-sm text-gray-500">แต้มสะสม</div>
               <div class="font-semibold text-gray-900">
-                <span id="points">128</span> แต้ม
+                <div>แต้มสะสม: <span id="userPoints" class="text-orange-600 font-semibold">0</span></div>
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@
             >
               <div id="user-status" class="flex items-center space-x-2">
                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>ออนไลน์</span>
+                <div id="userName" class="font-medium">กำลังโหลด...</div>
               </div>
             </div>
             <button
@@ -3529,65 +3529,72 @@
       })();
     </script>
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-  const liffId = "2008357926-Ly07A5w2"; // ✅ LIFF ID ของโต๋
-  const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co"; // ✅ Project URL
+  const liffId = "2008357926-Ly07A5w2";
+  const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
   const supabaseKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   async function init() {
     try {
       await liff.init({ liffId });
-
       if (!liff.isLoggedIn()) {
-        alert("กรุณาเข้าสู่ระบบก่อน 😊");
         window.location.href = "index.html";
         return;
       }
 
       const profile = await liff.getProfile();
-      console.log("✅ เข้าสู่ระบบ:", profile.displayName);
+      console.log("👤", profile.displayName);
 
-      // ดึงข้อมูลจาก Supabase
-      const { data: user, error } = await supabase
+      // ตรวจว่ามีใน Supabase หรือยัง
+      const { data: existingUser } = await supabase
         .from("users")
         .select("*")
         .eq("line_id", profile.userId)
-        .single();
+        .maybeSingle();
 
-      if (error || !user) {
-        console.warn("⚠️ ไม่พบผู้ใช้ในฐานข้อมูล:", error);
-        alert("ยังไม่มีข้อมูลในระบบ กรุณาล็อกอินใหม่");
-        window.location.href = "index.html";
-        return;
+      if (!existingUser) {
+        await supabase.from("users").insert([
+          {
+            line_id: profile.userId,
+            display_name: profile.displayName,
+            picture_url: profile.pictureUrl,
+            points: 0,
+          },
+        ]);
+        console.log("🟢 เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
       }
 
-      // ✅ แสดงข้อมูลผู้ใช้
-      document.getElementById("userName").textContent = profile.displayName;
-      document.getElementById("userPic").src = profile.pictureUrl;
-      document.getElementById("userPoints").textContent = user.points ?? 0;
+      // แสดงชื่อผู้ใช้ + แต้มสะสม
+      const { data: userData } = await supabase
+        .from("users")
+        .select("points")
+        .eq("line_id", profile.userId)
+        .single();
 
-    } catch (err) {
-      console.error("❌ โหลดหน้า Home ผิดพลาด:", err);
-      alert("มีปัญหาในการโหลดข้อมูล กรุณาล็อกอินใหม่");
+      if (userData) {
+        const nameEl = document.querySelector("#userName");
+        const pointEl = document.querySelector("#userPoints");
+        if (nameEl) nameEl.textContent = profile.displayName;
+        if (pointEl) pointEl.textContent = userData.points + " แต้ม";
+      }
+
+    } catch (error) {
+      console.error("❌ LIFF / Supabase error:", error);
       window.location.href = "index.html";
     }
   }
 
-  function goToShop() {
-    alert("🛍 กำลังไปยังหน้าร้านแต้ม (สามารถเชื่อมลิงก์เพิ่มได้)");
-  }
-
   async function logout() {
     await liff.logout();
-    alert("ออกจากระบบเรียบร้อย 👋");
     window.location.href = "index.html";
   }
 
   init();
-  </script>
+</script>
+
 
   </body>
 </html>
