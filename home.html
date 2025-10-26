@@ -3531,6 +3531,22 @@
       })();
     </script>
     <script>
+window.addEventListener("load", () => {
+  const userName = localStorage.getItem("userName");
+  const userPic = localStorage.getItem("userPic");
+
+  if (userName && userPic) {
+    document.getElementById("userName").textContent = userName;
+    document.getElementById("userPic").src = userPic;
+    document.getElementById("main-app").classList.remove("hidden");
+  } else {
+    // ถ้าไม่มีข้อมูลให้กลับไปหน้า login
+    window.location.href = "index.html";
+  }
+});
+</script>
+    <script>
+
   // ===============================================================
   // 1. CONFIGURATION & CLIENT INITIALIZATION
   // ===============================================================
