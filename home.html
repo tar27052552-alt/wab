@@ -3530,58 +3530,64 @@
     </script>
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
 <script>
-const liffId = "2008357926-Ly07A5w2";
-const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const liffId = "2008357926-Ly07A5w2"; // ✅ LIFF ID ของโต๋
+  const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co"; // ✅ Project URL
+  const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-async function checkLogin() {
-  try {
-    await liff.init({ liffId });
+  async function init() {
+    try {
+      await liff.init({ liffId });
 
-    if (!liff.isLoggedIn()) {
-      alert("กรุณาเข้าสู่ระบบก่อน 😊");
+      if (!liff.isLoggedIn()) {
+        alert("กรุณาเข้าสู่ระบบก่อน 😊");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      console.log("✅ เข้าสู่ระบบ:", profile.displayName);
+
+      // ดึงข้อมูลจาก Supabase
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("line_id", profile.userId)
+        .single();
+
+      if (error || !user) {
+        console.warn("⚠️ ไม่พบผู้ใช้ในฐานข้อมูล:", error);
+        alert("ยังไม่มีข้อมูลในระบบ กรุณาล็อกอินใหม่");
+        window.location.href = "index.html";
+        return;
+      }
+
+      // ✅ แสดงข้อมูลผู้ใช้
+      document.getElementById("userName").textContent = profile.displayName;
+      document.getElementById("userPic").src = profile.pictureUrl;
+      document.getElementById("userPoints").textContent = user.points ?? 0;
+
+    } catch (err) {
+      console.error("❌ โหลดหน้า Home ผิดพลาด:", err);
+      alert("มีปัญหาในการโหลดข้อมูล กรุณาล็อกอินใหม่");
       window.location.href = "index.html";
-      return;
     }
+  }
 
-    const profile = await liff.getProfile();
-    console.log("👤 เข้าสู่ระบบ:", profile.displayName);
+  function goToShop() {
+    alert("🛍 กำลังไปยังหน้าร้านแต้ม (สามารถเชื่อมลิงก์เพิ่มได้)");
+  }
 
-    // ตรวจสอบผู้ใช้ใน Supabase
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("line_id", profile.userId)
-      .single();
-
-    if (error) {
-      console.error("❌ Supabase error:", error);
-      alert("ไม่พบข้อมูลผู้ใช้ในระบบ กรุณาล็อกอินใหม่");
-      window.location.href = "index.html";
-      return;
-    }
-
-    // ถ้าผู้ใช้มีอยู่ในระบบ → แสดงข้อมูล
-    document.getElementById("userName").textContent = profile.displayName;
-    document.getElementById("userPoints").textContent = user.points + " แต้ม";
-    console.log("🟢 โหลดข้อมูลสำเร็จ:", user);
-  } catch (err) {
-    console.error("⚠️ checkLogin error:", err);
-    alert("เกิดข้อผิดพลาด กรุณาล็อกอินใหม่");
+  async function logout() {
+    await liff.logout();
+    alert("ออกจากระบบเรียบร้อย 👋");
     window.location.href = "index.html";
   }
-}
 
-checkLogin();
-</script>
-  <div style="padding:20px; text-align:center;">
-    <h2 id="userName">กำลังโหลด...</h2>
-    <p>แต้มสะสม: <span id="userPoints">0</span></p>
-  </div>
+  init();
+  </script>
 
   </body>
 </html>
