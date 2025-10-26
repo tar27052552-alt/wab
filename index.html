@@ -1,107 +1,70 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>เข้าสู่ระบบ | บราวนี่โฮมเมด</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-  <style>
-    body {
-      font-family: 'Prompt', sans-serif;
-      background: linear-gradient(to bottom right, #fdfdfd, #e7edf1);
-      min-height: 100vh;
-    }
-  </style>
-</head>
-
-<body class="flex flex-col items-center justify-center min-h-screen text-center px-4">
-  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-sm">
-    <img src="https://cdn-icons-png.flaticon.com/512/2975/2975175.png" alt="Brownie" class="mx-auto w-20 mb-5" />
-    <h1 class="text-2xl font-bold mb-3 text-gray-800">เข้าสู่ระบบด้วย LINE</h1>
-    <p class="text-gray-600 mb-6">เพื่อเข้าใช้งานระบบบราวนี่โฮมเมด</p>
-
-    <button id="loginBtn" onclick="initLiff()"
-      class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow transition-all duration-200">
-      เข้าสู่ระบบด้วย LINE
-    </button>
-
-    <div id="loading" class="hidden text-gray-500 mt-4">กำลังเข้าสู่ระบบ...</div>
-  </div>
-
-  <!-- โหลด Supabase และ LINE LIFF SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
 <script>
-const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
+const liffId = "2008357926-Ly07A5w2";
 const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+
 async function initLiff() {
-  try {
-    await liff.init({ liffId });
-    console.log("✅ LIFF Loaded");
+try {
+await liff.init({ liffId });
+console.log("✅ LIFF Loaded");
 
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
 
-    const profile = await liff.getProfile();
-    console.log("👤 Profile:", profile);
-
-    await saveUserToSupabase(profile);
-
-    // ✅ บันทึกข้อมูลใน localStorage เพื่อส่งต่อหน้า home
-    localStorage.setItem("userName", profile.displayName);
-    localStorage.setItem("userPic", profile.pictureUrl);
-    localStorage.setItem("userId", profile.userId);
-
-    // ✅ ไปหน้า home
-    window.location.href = "home.html";
-  } catch (err) {
-    console.error("❌ Error initializing LIFF:", err);
-  }
+if (!liff.isLoggedIn()) {
+liff.login();
+return;
 }
+
+
+const profile = await liff.getProfile();
+console.log("👤 Profile:", profile);
+
+
+await saveUserToSupabase(profile);
+localStorage.setItem("userName", profile.displayName);
+localStorage.setItem("userPic", profile.pictureUrl);
+localStorage.setItem("userId", profile.userId);
+
+
+window.location.href = "home.html";
+} catch (err) {
+console.error("❌ Error initializing LIFF:", err);
+}
+}
+
 
 async function saveUserToSupabase(profile) {
-  try {
-    const { data: existingUser, error: findError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("line_id", profile.userId)
-      .single();
+try {
+const { data: existingUser, error: findError } = await supabase
+.from("users")
+.select("*")
+.eq("line_id", profile.userId)
+.single();
 
-    if (findError && findError.code !== "PGRST116") throw findError;
 
-    if (!existingUser) {
-      const { error } = await supabase.from("users").insert([
-        {
-          display_name: profile.displayName,
-          picture_url: profile.pictureUrl,
-          line_id: profile.userId,
-          points: 0,
-        },
-      ]);
-      if (error) throw error;
-      console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
-    } else {
-      console.log("🟢 พบผู้ใช้ใน Supabase แล้ว");
-    }
-  } catch (err) {
-    console.error("saveUserToSupabase error:", err);
-  }
+if (findError && findError.code !== "PGRST116") throw findError;
+
+
+if (!existingUser) {
+const { error } = await supabase.from("users").insert([
+{
+display_name: profile.displayName,
+picture_url: profile.pictureUrl,
+line_id: profile.userId,
+points: 0,
+},
+]);
+if (error) throw error;
+console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
+} else {
+console.log("🟢 พบผู้ใช้ใน Supabase แล้ว");
 }
-
-// เริ่มทำงานเมื่อเปิดหน้า
-initLiff();
+} catch (err) {
+console.error("saveUserToSupabase error:", err);
+}
+}
 </script>
-
-
 </body>
 </html>
