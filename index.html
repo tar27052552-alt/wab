@@ -5,104 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>บราวนี่โฮมเมด - สั่งออนไลน์</title>
 
-  <!-- ✅ โหลด Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-  <style>
-    body {
-      font-family: 'Prompt', sans-serif;
-      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
-      min-height: 100vh;
-    }
-  </style>
-
-  <!-- ✅ โหลด Supabase + LINE LIFF SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    body { font-family: 'Prompt', sans-serif; background: #f9fafb; }
+  </style>
 </head>
 
-<body class="flex items-center justify-center">
+<body class="flex items-center justify-center min-h-screen">
   <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-sm text-center">
     <img src="https://cdn-icons-png.flaticon.com/512/2975/2975175.png" class="mx-auto w-16 mb-4" alt="Brownie" />
     <h1 class="text-2xl font-bold mb-2">เข้าสู่ระบบด้วย LINE</h1>
     <p class="text-gray-600 mb-6">กดปุ่มด้านล่างเพื่อเข้าสู่ระบบผ่านบัญชี LINE</p>
 
-    <button onclick="initLiff()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow">
+    <button onclick="initLiff()" id="loginBtn"
+      class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow">
       เข้าสู่ระบบด้วย LINE
     </button>
 
-    <div id="profile" class="mt-6 hidden">
-      <img id="userImage" src="" class="w-16 h-16 rounded-full mx-auto mb-2" />
-      <h2 id="userName" class="text-xl font-semibold"></h2>
-      <p id="userId" class="text-gray-500 text-sm"></p>
-    </div>
+    <div id="loading" class="hidden text-gray-500 mt-4">กำลังเข้าสู่ระบบ...</div>
   </div>
 
   <script>
-    // 🌟 ตั้งค่าคงที่
-    const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
+    const liffId = "2008357926-Ly07A5w2"; 
     const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    let currentUser = null;
-
-    // ✅ ฟังก์ชันเริ่มต้น LIFF
-    async function initLiff() {
-      try {
-        await liff.init({ liffId });
-        console.log("✅ LIFF Loaded");
-
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        console.log("👤 Profile:", profile);
-        currentUser = profile;
-
-        document.getElementById("profile").classList.remove("hidden");
-        document.getElementById("userImage").src = profile.pictureUrl;
-        document.getElementById("userName").innerText = profile.displayName;
-        document.getElementById("userId").innerText = profile.userId;
-
-        await saveUserToSupabase(profile);
-      } catch (err) {
-        console.error("❌ LIFF init error:", err);
-      }
-    }
-
-    // ✅ ฟังก์ชันบันทึกผู้ใช้ใน Supabase
-    async function saveUserToSupabase(profile) {
-      try {
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("*")
-          .eq("line_id", profile.userId)
-          .single();
-
-        if (existingUser) {
-          console.log("👋 ผู้ใช้นี้มีอยู่แล้ว:", existingUser.display_name);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("users")
-          .insert([{
-            display_name: profile.displayName,
-            picture_url: profile.pictureUrl,
-            line_id: profile.userId,
-            points: 0
-          }]);
-
-        if (error) throw error;
-        console.log("✅ เพิ่มผู้ใช้ใหม่แล้ว:", data);
-      } catch (err) {
-        console.error("❌ บันทึกผู้ใช้ล้มเหลว:", err);
-      }
-    }
-  </script>
-</body>
-</html>
+    const supabaseKey =
+      "eyJhbGciOiJIU
