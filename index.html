@@ -247,12 +247,20 @@
     // ===============================================================
     // 1. CONFIGURATION
     // ===============================================================
+    // ⚠️ TODO: เปลี่ยนเป็นค่าจริงของคุณ
     const LIFF_ID = "2008357926-Ly07A5w2";
-    const SUPABASE_URL = "https://kpxgskwtxwkqoztkkrwu.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwdmdza3d0eHdrcW96dGtrcnd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQyNDQ4MDcsImV4cCI6MjAxOTgyMDgwN30.i9w7_YgW3-V8T2N_05P_6qHw6k3qWb0P_3o_rO0t6gU";
+    const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co"; // เช่น https://xxxxx.supabase.co
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4"; // anon/public key
 
     // Initialize Supabase
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase;
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log("✅ Supabase initialized");
+    } catch (error) {
+      console.error("❌ Supabase initialization failed:", error);
+      alert("ไม่สามารถเชื่อมต่อ Database ได้ กรุณาตรวจสอบการตั้งค่า");
+    }
 
     // ===============================================================
     // 2. STATE VARIABLES
