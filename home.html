@@ -1,32 +1,2623 @@
 <!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>หน้าแรก - SUAN KHANOM</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        font-family: "Prompt", sans-serif;
-        background: #f9fafb;
-      }
-    </style>
-  </head>
-  <body class="p-8 text-center">
-    <h1 class="text-3xl font-bold mb-3 text-brown-700">
-      🍫 ยินดีต้อนรับสู่ร้านบราวนี่โฮมเมด
-    </h1>
-    <p class="text-gray-600 mb-8">เข้าสู่ระบบด้วย LINE สำเร็จแล้ว!</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บราวนี่โฮมเมด - หน้าแรก</title>
 
-    <a
-      href="index.html"
-      class="inline-block bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-semibold"
-    >
-      ออกจากระบบ
-    </a>
-  </body>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Modern Gradient Background */
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+        }
+        
+        /* Smooth Animations */
+        * {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Modern Glass Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Hover Effects */
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: #374151;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+        }
+        
+        /* Selection States */
+        .selected {
+            border: 4px solid #1d4ed8 !important;
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(29, 78, 216, 0.5);
+        }
+        
+        .topping-selected {
+            border: 4px solid #d97706 !important;
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(217, 119, 6, 0.5);
+        }
+        
+        /* Base Selection Colors */
+        .brownie-base.selected.cocoa-base {
+            border: 4px solid #ca8a04 !important;
+            box-shadow: 0 8px 25px rgba(202, 138, 4, 0.6);
+        }
+        
+        .brownie-base.selected.greentea-base {
+            border: 4px solid #16a34a !important;
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.6);
+        }
+        
+        .brownie-base.selected.thaitea-base {
+            border: 4px solid #c2410c !important;
+            box-shadow: 0 8px 25px rgba(194, 65, 12, 0.6);
+        }
+        
+        /* Topping Selection Colors */
+        .topping-item.topping-selected.chocolate-topping {
+            border: 4px solid #7c3aed !important;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+        }
+        
+        .topping-item.topping-selected.almond-topping {
+            border: 4px solid #d97706 !important;
+            box-shadow: 0 8px 25px rgba(217, 119, 6, 0.6);
+        }
+        
+        .topping-item.topping-selected.oreo-topping {
+            border: 4px solid #475569 !important;
+            box-shadow: 0 8px 25px rgba(71, 85, 105, 0.6);
+        }
+        
+        /* Modern Typography */
+        .text-gradient {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Success Animation */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        /* Coin Animation */
+        @keyframes coinFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) rotate(360deg) scale(0.5);
+            }
+        }
+        
+        .coin-float {
+            animation: coinFloat 2s ease-out forwards;
+        }
+        
+        /* Modern Input Styles */
+        .input-modern {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .input-modern:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Quantity Controls */
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Modern Card */
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        /* Status Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+  <!-- Header -->
+    <header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Points Section -->
+                <div class="flex items-center space-x-3">
+                    <div class="text-2xl float">🪙</div>
+                    <div>
+                        <div class="text-sm text-gray-500">แต้มสะสม</div>
+                        <div class="font-semibold text-gray-900">
+                            <span id="points">128</span> แต้ม
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Section -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div id="login-status" class="text-sm text-gray-600 hidden sm:block">
+                        <div id="user-status" class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>ออนไลน์</span>
+                        </div>
+                    </div>
+                    <button id="cart-btn" onclick="showCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl text-sm hover-lift relative">
+                        <span class="hidden sm:inline">🛒 ตะกร้า</span>
+                        <span class="sm:hidden">🛒</span>
+                        <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                    <button id="inventory-btn" onclick="showInventory()" class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift relative">
+                        <span class="hidden sm:inline">🎒 คลัง</span>
+                        <span class="sm:hidden">🎒</span>
+                        <span id="inventory-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                    <button id="shop-btn" onclick="showPointShop()" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-xl text-sm hover-lift">
+                        <span class="hidden sm:inline">🛍️ ร้านแต้ม</span>
+                        <span class="sm:hidden">🛍️</span>
+                    </button>
+                    <button id="history-btn" onclick="showOrderHistory()" class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift">
+                        <span class="hidden sm:inline">📋 ประวัติ</span>
+                        <span class="sm:hidden">📋</span>
+                    </button>
+                    <button id="logout-btn" onclick="toggleLogin()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl text-sm hover-lift">
+                        <span class="hidden sm:inline">ออกจากระบบ</span>
+                        <span class="sm:hidden">🚪</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+<div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="card max-w-md w-full hover-lift text-center">
+      <div class="text-4xl mb-4">🍫</div>
+      <h3 class="text-2xl font-bold text-gradient mb-2">เข้าสู่ระบบด้วย LINE</h3>
+      <p class="text-gray-500 text-sm mb-6">กดปุ่มด้านล่างเพื่อเข้าสู่ระบบผ่านบัญชี LINE</p>
+
+      <button onclick="liff.login()" class="bg-green-500 hover:bg-green-600 text-white w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" width="24" height="24" alt="LINE">
+          เข้าสู่ระบบด้วย LINE
+      </button>
+  </div>
+</div>
+
+
+    <!-- Main App -->
+    <main id="main-app" class="max-w-6xl mx-auto px-4 py-8 hidden">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4 float">🍫</div>
+            <h1 class="text-4xl font-bold text-gradient mb-2">Brownie Studio</h1>
+            <p class="text-gray-600 text-lg">สั่งทำพิเศษเพื่อคุณ</p>
+        </div>
+
+        <!-- Base Selection -->
+        <section class="card mb-8 hover-lift">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                <span class="mr-3">🍫</span>
+                เลือกเนื้อบราวนี่
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="brownie-base cocoa-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBase('cocoa', this)">
+                    <div class="text-center">
+                        <div class="text-6xl mb-3">🍫</div>
+                        <h3 class="font-semibold text-gray-900 mb-1">เนื้อโกโก้</h3>
+                        <p class="text-sm text-gray-500 mb-3">รสชาติโกโก้แท้เข้มข้น</p>
+                        <div class="base-quantity-controls hidden">
+                            <div class="flex items-center justify-center space-x-3">
+                                <button onclick="changeBaseQuantity('cocoa', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                <span class="base-quantity font-semibold text-lg">0</span>
+                                <button onclick="changeBaseQuantity('cocoa', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="brownie-base greentea-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBase('greentea', this)">
+                    <div class="text-center">
+                        <div class="text-6xl mb-3">🍃</div>
+                        <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาเขียว</h3>
+                        <p class="text-sm text-gray-500 mb-3">หอมกรุ่นชาเขียวแท้</p>
+                        <div class="base-quantity-controls hidden">
+                            <div class="flex items-center justify-center space-x-3">
+                                <button onclick="changeBaseQuantity('greentea', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                <span class="base-quantity font-semibold text-lg">0</span>
+                                <button onclick="changeBaseQuantity('greentea', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="brownie-base thaitea-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBase('thaitea', this)">
+                    <div class="text-center">
+                        <div class="text-6xl mb-3">🧡</div>
+                        <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาไทย</h3>
+                        <p class="text-sm text-gray-500 mb-3">หวานหอมชาไทยแท้</p>
+                        <div class="base-quantity-controls hidden">
+                            <div class="flex items-center justify-center space-x-3">
+                                <button onclick="changeBaseQuantity('thaitea', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                <span class="base-quantity font-semibold text-lg">0</span>
+                                <button onclick="changeBaseQuantity('thaitea', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Toppings Section -->
+        <section id="toppings-section" class="card mb-8 hidden hover-lift">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                <span class="mr-3">🍪</span>
+                เลือกหน้าบราวนี่
+            </h2>
+            
+            <div id="remaining-toppings" class="text-center mb-6 p-4 bg-blue-50 rounded-xl">
+                <span class="text-blue-700 font-medium">คุณต้องเลือกหน้าอีก <span id="remaining-count">0</span> ชิ้น</span>
+            </div>
+            
+            <!-- Single Base Toppings -->
+            <div id="single-base-toppings" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="topping-item chocolate-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleTopping('chocolate', this)">
+                        <div class="text-center">
+                            <div class="text-4xl mb-3">🍫</div>
+                            <h3 class="font-medium text-gray-900 mb-1">ช็อกโกแลตชิพ</h3>
+                            <p class="text-sm text-gray-500 mb-3">หอมหวานเข้มข้น</p>
+                            <div class="quantity-controls hidden">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <button onclick="changeQuantity('chocolate', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                    <span class="quantity font-semibold text-lg">0</span>
+                                    <button onclick="changeQuantity('chocolate', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="topping-item almond-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleTopping('almond', this)">
+                        <div class="text-center">
+                            <div class="text-4xl mb-3">🌰</div>
+                            <h3 class="font-medium text-gray-900 mb-1">อัลมอนด์แผ่น</h3>
+                            <p class="text-sm text-gray-500 mb-3">กรอบหอมนัท</p>
+                            <div class="quantity-controls hidden">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <button onclick="changeQuantity('almond', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                    <span class="quantity font-semibold text-lg">0</span>
+                                    <button onclick="changeQuantity('almond', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="topping-item oreo-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleTopping('oreo', this)">
+                        <div class="text-center">
+                            <div class="text-4xl mb-3">🍪</div>
+                            <h3 class="font-medium text-gray-900 mb-1">โอริโอ้บด</h3>
+                            <p class="text-sm text-gray-500 mb-3">กรอบหวานมัน</p>
+                            <div class="quantity-controls hidden">
+                                <div class="flex items-center justify-center space-x-3">
+                                    <button onclick="changeQuantity('oreo', -1, event)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">−</button>
+                                    <span class="quantity font-semibold text-lg">0</span>
+                                    <button onclick="changeQuantity('oreo', 1, event)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multiple Base Toppings -->
+            <div id="multiple-base-toppings" class="hidden space-y-8">
+                <!-- Cocoa Toppings -->
+                <div id="cocoa-toppings" class="hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🍫</span>
+                        หน้าสำหรับเนื้อโกโก้ (<span id="cocoa-remaining">0</span> ชิ้น)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('cocoa', 'chocolate', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍫</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">ช็อกโกแลตชิพ</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('cocoa', 'almond', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🌰</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">อัลมอนด์แผ่น</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('cocoa', 'oreo', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍪</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">โอริโอ้บด</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Green Tea Toppings -->
+                <div id="greentea-toppings" class="hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🍃</span>
+                        หน้าสำหรับเนื้อชาเขียว (<span id="greentea-remaining">0</span> ชิ้น)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('greentea', 'chocolate', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍫</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">ช็อกโกแลตชิพ</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('greentea', 'almond', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🌰</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">อัลมอนด์แผ่น</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('greentea', 'oreo', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍪</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">โอริโอ้บด</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thai Tea Toppings -->
+                <div id="thaitea-toppings" class="hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🧡</span>
+                        หน้าสำหรับเนื้อชาไทย (<span id="thaitea-remaining">0</span> ชิ้น)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('thaitea', 'chocolate', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍫</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">ช็อกโกแลตชิพ</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('thaitea', 'almond', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🌰</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">อัลมอนด์แผ่น</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="toggleBaseTopping('thaitea', 'oreo', this)">
+                            <div class="text-center">
+                                <div class="text-3xl mb-2">🍪</div>
+                                <h4 class="font-medium text-gray-900 text-sm mb-2">โอริโอ้บด</h4>
+                                <div class="base-topping-quantity">
+                                    <span class="font-semibold text-sm text-gray-600">0 ชิ้น</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Summary -->
+        <section id="order-summary" class="card mb-8 hidden hover-lift">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                <span class="mr-3">📋</span>
+                สรุปออเดอร์
+            </h2>
+            <div id="summary-content" class="space-y-3 text-gray-700">
+                <!-- Summary content -->
+            </div>
+        </section>
+
+        <!-- Add to Cart & Total -->
+        <section class="card text-center hover-lift">
+            <div id="price-breakdown" class="mb-6">
+                <div class="text-3xl font-bold text-gradient">
+                    ราคารวม: <span id="total-price">0</span> บาท
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="add-to-cart-btn" onclick="addToCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center" disabled>
+                    <span class="mr-2">🛒</span>
+                    เพิ่มลงตะกร้า
+                </button>
+                <button id="check-order-btn" onclick="showOrderCheck()" class="btn-primary px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center" disabled>
+                    <span class="mr-2">📋</span>
+                    สั่งซื้อเลย
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Order Confirmation Modal -->
+    <div id="order-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-md w-full hover-lift">
+            <h3 class="text-2xl font-bold text-gradient mb-6 text-center">ยืนยันการสั่งซื้อ</h3>
+            <div id="final-summary" class="bg-gray-50 rounded-xl p-4 mb-6">
+                <!-- Final summary -->
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closeOrderModal()" class="btn-secondary flex-1 py-3 rounded-xl font-medium">
+                    ยกเลิก
+                </button>
+                <button onclick="confirmOrder()" class="btn-primary flex-1 py-3 rounded-xl font-medium">
+                    ยืนยันสั่งซื้อ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order History Modal -->
+    <div id="history-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-2xl w-full max-h-[80vh] overflow-hidden hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">📋</span>
+                    ประวัติการสั่งซื้อ
+                </h3>
+                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div id="history-content" class="max-h-[60vh] overflow-y-auto">
+                <!-- History content -->
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="closeHistoryModal()" class="btn-primary px-6 py-2 rounded-xl font-medium">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Point Shop Modal -->
+    <div id="shop-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-4xl w-full max-h-[80vh] overflow-hidden hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">🛍️</span>
+                    ร้านแลกแต้ม
+                </h3>
+                <button onclick="closeShopModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div class="mb-4 text-center">
+                <div class="text-lg font-semibold text-gray-700">
+                    แต้มของคุณ: <span class="text-purple-600 font-bold" id="shop-points">0</span> แต้ม
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[50vh] overflow-y-auto">
+                <!-- Discount Cards -->
+                <div class="shop-item card border-2 border-purple-200 hover:border-purple-400 cursor-pointer hover-lift" onclick="buyItem('discount10', 50)">
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🎫</div>
+                        <h4 class="font-semibold text-gray-900 mb-2">บัตรลดราคา 10%</h4>
+                        <p class="text-sm text-gray-500 mb-3">ลดราคา 10% จากยอดสั่งซื้อ</p>
+                        <div class="text-lg font-bold text-purple-600">50 แต้ม</div>
+                    </div>
+                </div>
+                
+                <div class="shop-item card border-2 border-purple-200 hover:border-purple-400 cursor-pointer hover-lift" onclick="buyItem('discount20', 100)">
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🎫</div>
+                        <h4 class="font-semibold text-gray-900 mb-2">บัตรลดราคา 20%</h4>
+                        <p class="text-sm text-gray-500 mb-3">ลดราคา 20% จากยอดสั่งซื้อ</p>
+                        <div class="text-lg font-bold text-purple-600">100 แต้ม</div>
+                    </div>
+                </div>
+                
+                <div class="shop-item card border-2 border-purple-200 hover:border-purple-400 cursor-pointer hover-lift" onclick="buyItem('discount30', 150)">
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🎫</div>
+                        <h4 class="font-semibold text-gray-900 mb-2">บัตรลดราคา 30%</h4>
+                        <p class="text-sm text-gray-500 mb-3">ลดราคา 30% จากยอดสั่งซื้อ</p>
+                        <div class="text-lg font-bold text-purple-600">150 แต้ม</div>
+                    </div>
+                </div>
+                
+                <!-- Free Brownie -->
+                <div class="shop-item card border-2 border-orange-200 hover:border-orange-400 cursor-pointer hover-lift" onclick="buyItem('freeBrownie', 80)">
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🍫</div>
+                        <h4 class="font-semibold text-gray-900 mb-2">บราวนี่ฟรี 1 ชิ้น</h4>
+                        <p class="text-sm text-gray-500 mb-3">เลือกเนื้อและหน้าได้ตามใจชอบ</p>
+                        <div class="text-lg font-bold text-orange-600">80 แต้ม</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="closeShopModal()" class="btn-primary px-6 py-2 rounded-xl font-medium">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Modal -->
+    <div id="inventory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-2xl w-full max-h-[80vh] overflow-hidden hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">🎒</span>
+                    คลังของฉัน
+                </h3>
+                <button onclick="closeInventoryModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div id="inventory-content" class="max-h-[60vh] overflow-y-auto">
+                <!-- Inventory content -->
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="closeInventoryModal()" class="btn-primary px-6 py-2 rounded-xl font-medium">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-6xl w-full max-h-[95vh] overflow-y-auto hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">🛒</span>
+                    ตะกร้าสินค้า
+                </h3>
+                <button onclick="closeCartModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div id="cart-content" class="mb-6">
+                <!-- Cart items will be populated here -->
+            </div>
+            
+            <!-- Cart Summary -->
+            <div id="cart-summary" class="border-t border-gray-200 pt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold">จำนวนรวม:</span>
+                    <span id="cart-total-items" class="text-lg font-semibold">0 ชิ้น</span>
+                </div>
+                
+                <!-- Discount Section -->
+                <div class="mb-4">
+                    <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                        <span class="mr-2">🎫</span>
+                        เลือกบัตรลดราคา
+                    </h4>
+                    
+                    <div id="cart-available-discounts" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <!-- Available discounts will be populated here -->
+                    </div>
+                    
+                    <div id="cart-discount-section" class="mb-4 hidden">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-green-600">🎫</span>
+                                <span class="text-green-800 font-medium" id="cart-selected-discount">ไม่มีส่วนลด</span>
+                            </div>
+                            <button onclick="removeCartDiscount()" class="text-red-500 hover:text-red-700 text-sm">ยกเลิก</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Promo Code Section -->
+                <div class="mb-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="promo-code" placeholder="ใส่โค้ดส่วนลด" class="input-modern flex-1" maxlength="20">
+                        <button onclick="applyPromoCode()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-medium">
+                            ใช้โค้ด
+                        </button>
+                    </div>
+                    <div id="promo-message" class="text-sm mt-2 hidden"></div>
+                </div>
+                
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between text-lg">
+                        <span>ราคาเดิม:</span>
+                        <span id="cart-original-price">0 บาท</span>
+                    </div>
+                    <div id="cart-discount-amount" class="flex justify-between text-green-600 hidden">
+                        <span>ส่วนลด:</span>
+                        <span id="cart-discount-value">-0 บาท</span>
+                    </div>
+                    <div class="flex justify-between text-xl font-bold border-t border-gray-200 pt-2">
+                        <span>ราคารวม:</span>
+                        <span id="cart-final-price" class="text-blue-600">0 บาท</span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="clearCart()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium">
+                        🗑️ ล้างตะกร้า
+                    </button>
+                    <button onclick="continueShoppingFromCart()" class="btn-secondary px-6 py-3 rounded-xl font-medium">
+                        🛍️ เลือกซื้อต่อ
+                    </button>
+                    <button id="checkout-btn" onclick="proceedToCheckout()" class="btn-primary flex-1 px-6 py-3 rounded-xl font-medium disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                        ✅ ยืนยันการสั่ง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-2xl w-full max-h-[90vh] overflow-hidden hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">💳</span>
+                    ชำระเงิน
+                </h3>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div class="max-h-[70vh] overflow-y-auto">
+                <!-- Order Summary -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+                    <h4 class="font-semibold text-gray-900 mb-3">สรุปคำสั่งซื้อ</h4>
+                    <div id="checkout-summary" class="space-y-2">
+                        <!-- Checkout summary will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">วิธีการชำระเงิน</h4>
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <div class="text-blue-600">ℹ️</div>
+                            <span class="font-medium text-blue-800">ชำระเงินตอนได้รับสินค้า</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mb-3">คุณสามารถชำระเงินได้เมื่อได้รับสินค้าแล้ว ไม่ต้องจ่ายล่วงหน้า</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-white rounded-lg p-3 border border-blue-200">
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-2xl">💵</div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">เงินสด</div>
+                                        <div class="text-xs text-gray-600">จ่ายตอนรับสินค้า</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-200">
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-2xl">🏦</div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">บัญชีธนาคาร</div>
+                                        <div class="text-xs text-gray-600">โอนตอนรับสินค้า</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุเพิ่มเติม (ไม่บังคับ)</label>
+                    <textarea id="customer-notes" rows="3" class="input-modern w-full resize-none" placeholder="เช่น ขอแพ็คแยก, ไม่ใส่น้ำแข็ง, ฯลฯ"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3 pt-6 border-t border-gray-200">
+                <button onclick="closeCheckoutModal()" class="btn-secondary flex-1 py-3 rounded-xl font-medium">
+                    ยกเลิก
+                </button>
+                <button id="confirm-payment-btn" onclick="confirmPayment()" class="btn-primary flex-1 py-3 rounded-xl font-medium">
+                    ยืนยันการสั่งซื้อ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Free Brownie Selection Modal -->
+    <div id="free-brownie-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card max-w-4xl w-full max-h-[80vh] overflow-hidden hover-lift">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gradient flex items-center">
+                    <span class="mr-3">🍫</span>
+                    เลือกบราวนี่ฟรี
+                </h3>
+                <button onclick="closeFreeBrownieModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div class="max-h-[60vh] overflow-y-auto">
+                <!-- Base Selection for Free Brownie -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-3">🍫</span>
+                        เลือกเนื้อบราวนี่
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="free-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeBase('cocoa', this)">
+                            <div class="text-center">
+                                <div class="text-6xl mb-3">🍫</div>
+                                <h5 class="font-semibold text-gray-900">เนื้อโกโก้</h5>
+                                <p class="text-sm text-gray-500">รสชาติโกโก้แท้เข้มข้น</p>
+                            </div>
+                        </div>
+                        
+                        <div class="free-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeBase('greentea', this)">
+                            <div class="text-center">
+                                <div class="text-6xl mb-3">🍃</div>
+                                <h5 class="font-semibold text-gray-900">เนื้อชาเขียว</h5>
+                                <p class="text-sm text-gray-500">หอมกรุ่นชาเขียวแท้</p>
+                            </div>
+                        </div>
+                        
+                        <div class="free-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeBase('thaitea', this)">
+                            <div class="text-center">
+                                <div class="text-6xl mb-3">🧡</div>
+                                <h5 class="font-semibold text-gray-900">เนื้อชาไทย</h5>
+                                <p class="text-sm text-gray-500">หวานหอมชาไทยแท้</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topping Selection for Free Brownie -->
+                <div id="free-topping-section" class="mb-8 hidden">
+                    <h4 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="mr-3">🍪</span>
+                        เลือกหน้าบราวนี่
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="free-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeTopping('chocolate', this)">
+                            <div class="text-center">
+                                <div class="text-4xl mb-3">🍫</div>
+                                <h5 class="font-medium text-gray-900">ช็อกโกแลตชิพ</h5>
+                                <p class="text-sm text-gray-500">หอมหวานเข้มข้น</p>
+                            </div>
+                        </div>
+                        
+                        <div class="free-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeTopping('almond', this)">
+                            <div class="text-center">
+                                <div class="text-4xl mb-3">🌰</div>
+                                <h5 class="font-medium text-gray-900">อัลมอนด์แผ่น</h5>
+                                <p class="text-sm text-gray-500">กรอบหอมนัท</p>
+                            </div>
+                        </div>
+                        
+                        <div class="free-topping card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectFreeTopping('oreo', this)">
+                            <div class="text-center">
+                                <div class="text-4xl mb-3">🍪</div>
+                                <h5 class="font-medium text-gray-900">โอริโอ้บด</h5>
+                                <p class="text-sm text-gray-500">กรอบหวานมัน</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex space-x-3">
+                <button onclick="closeFreeBrownieModal()" class="btn-secondary flex-1 py-3 rounded-xl font-medium">
+                    ยกเลิก
+                </button>
+                <button id="confirm-free-brownie" onclick="confirmFreeBrownie()" class="btn-primary flex-1 py-3 rounded-xl font-medium" disabled>
+                    รับบราวนี่ฟรี
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="success-message" class="fixed top-20 right-4 card shadow-lg hidden z-50 slide-in-right">
+        <div class="flex items-center space-x-3">
+            <div class="text-2xl">🎉</div>
+            <div id="success-text" class="font-medium text-gray-900"></div>
+        </div>
+    </div>
+
+
+
+    <!-- Floating Coins Container -->
+    <div id="floating-coins" class="fixed inset-0 pointer-events-none z-40"></div>
+
+    <script>
+        let selectedBases = {};
+        let selectedToppings = {};
+        let baseToppings = {};
+        let currentPoints = 128;
+        let isLoggedIn = false;
+        let currentUser = null;
+        let userInventory = {};
+
+        let freeBase = null;
+        let freeTopping = null;
+        let cart = [];
+        let cartDiscount = null;
+        let selectedPaymentMethod = null;
+        let appliedPromoCode = null;
+        
+        const baseNames = {
+            'cocoa': 'เนื้อโกโก้',
+            'greentea': 'เนื้อชาเขียว',
+            'thaitea': 'เนื้อชาไทย'
+        };
+        
+        const toppingNames = {
+            'chocolate': 'ช็อกโกแลตชิพ',
+            'almond': 'อัลมอนด์แผ่น',
+            'oreo': 'โอริโอ้บด'
+        };
+
+        // Initialize
+        window.addEventListener('load', function() {
+            showLoginModal();
+        });
+
+        // Base Selection Functions
+        function toggleBase(base, element) {
+            // Clear all other base selections first (single selection mode)
+            Object.keys(selectedBases).forEach(existingBase => {
+                if (existingBase !== base) {
+                    delete selectedBases[existingBase];
+                    const existingElement = document.querySelector(`.${existingBase}-base`);
+                    if (existingElement) {
+                        existingElement.classList.remove('selected');
+                        const controls = existingElement.querySelector('.base-quantity-controls');
+                        if (controls) {
+                            controls.classList.add('hidden');
+                            controls.querySelector('.base-quantity').textContent = '0';
+                        }
+                    }
+                }
+            });
+            
+            // Clear all toppings when changing base
+            selectedToppings = {};
+            baseToppings = {};
+            document.querySelectorAll('.topping-item').forEach(el => {
+                el.classList.remove('topping-selected');
+                const controls = el.querySelector('.quantity-controls');
+                if (controls) {
+                    controls.classList.add('hidden');
+                    controls.querySelector('.quantity').textContent = '0';
+                }
+                const quantitySpan = el.querySelector('.base-topping-quantity span');
+                if (quantitySpan) {
+                    quantitySpan.textContent = '0 ชิ้น';
+                }
+            });
+            
+            if (!selectedBases[base]) {
+                selectedBases[base] = 1;
+                element.classList.add('selected');
+                element.querySelector('.base-quantity-controls').classList.remove('hidden');
+                element.querySelector('.base-quantity').textContent = '1';
+            } else {
+                selectedBases[base]++;
+                element.querySelector('.base-quantity').textContent = selectedBases[base];
+            }
+            
+            const toppingsSection = document.getElementById('toppings-section');
+            if (Object.keys(selectedBases).length > 0) {
+                toppingsSection.classList.remove('hidden');
+                updateToppingsDisplay();
+            }
+            
+            updateOrderSummary();
+        }
+
+        function changeBaseQuantity(base, change, event) {
+            event.stopPropagation();
+            
+            if (selectedBases[base]) {
+                selectedBases[base] += change;
+                
+                if (selectedBases[base] <= 0) {
+                    delete selectedBases[base];
+                    delete baseToppings[base];
+                    const baseElement = event.target.closest('.brownie-base');
+                    baseElement.classList.remove('selected');
+                    baseElement.querySelector('.base-quantity-controls').classList.add('hidden');
+                    baseElement.querySelector('.base-quantity').textContent = '0';
+                    
+                    if (Object.keys(selectedBases).length === 0) {
+                        document.getElementById('toppings-section').classList.add('hidden');
+                        selectedToppings = {};
+                        baseToppings = {};
+                    } else {
+                        updateToppingsDisplay();
+                    }
+                } else {
+                    event.target.closest('.base-quantity-controls').querySelector('.base-quantity').textContent = selectedBases[base];
+                    updateToppingsDisplay();
+                }
+                
+                updateOrderSummary();
+            }
+        }
+
+        function updateToppingsDisplay() {
+            const selectedBaseCount = Object.keys(selectedBases).length;
+            const singleBaseToppings = document.getElementById('single-base-toppings');
+            const multipleBaseToppings = document.getElementById('multiple-base-toppings');
+            
+            // Always use single base toppings since we only allow one base type at a time
+            if (selectedBaseCount === 1) {
+                singleBaseToppings.classList.remove('hidden');
+                multipleBaseToppings.classList.add('hidden');
+                updateRemainingCount();
+            } else {
+                singleBaseToppings.classList.add('hidden');
+                multipleBaseToppings.classList.add('hidden');
+            }
+        }
+
+        function updateRemainingCount() {
+            const totalBases = Object.values(selectedBases).reduce((sum, qty) => sum + qty, 0);
+            const totalToppings = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0);
+            const remaining = totalBases - totalToppings;
+            
+            document.getElementById('remaining-count').textContent = Math.max(0, remaining);
+            
+            const remainingDiv = document.getElementById('remaining-toppings');
+            if (remaining <= 0) {
+                remainingDiv.classList.add('hidden');
+            } else {
+                remainingDiv.classList.remove('hidden');
+            }
+        }
+
+        function updateBaseRemainingCount(base) {
+            const baseQuantity = selectedBases[base] || 0;
+            const baseToppingTotal = baseToppings[base] ? Object.values(baseToppings[base]).reduce((sum, qty) => sum + qty, 0) : 0;
+            const remaining = baseQuantity - baseToppingTotal;
+            
+            const remainingSpan = document.getElementById(`${base}-remaining`);
+            if (remainingSpan) {
+                remainingSpan.textContent = Math.max(0, remaining);
+            }
+        }
+
+        // Topping Functions
+        function toggleTopping(topping, element) {
+            const totalBases = Object.values(selectedBases).reduce((sum, qty) => sum + qty, 0);
+            const totalToppings = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0);
+            
+            if (!selectedToppings[topping]) {
+                if (totalToppings < totalBases) {
+                    selectedToppings[topping] = 1;
+                    element.classList.add('topping-selected');
+                    element.querySelector('.quantity-controls').classList.remove('hidden');
+                    element.querySelector('.quantity').textContent = '1';
+                }
+            } else {
+                if (totalToppings < totalBases) {
+                    selectedToppings[topping]++;
+                    element.querySelector('.quantity').textContent = selectedToppings[topping];
+                }
+            }
+            
+            updateRemainingCount();
+            updateOrderSummary();
+        }
+
+        function changeQuantity(topping, change, event) {
+            event.stopPropagation();
+            
+            const totalBases = Object.values(selectedBases).reduce((sum, qty) => sum + qty, 0);
+            const totalToppings = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0);
+            
+            if (selectedToppings[topping]) {
+                const newQuantity = selectedToppings[topping] + change;
+                
+                if (newQuantity <= 0) {
+                    delete selectedToppings[topping];
+                    const toppingElement = event.target.closest('.topping-item');
+                    toppingElement.classList.remove('topping-selected');
+                    toppingElement.querySelector('.quantity-controls').classList.add('hidden');
+                    toppingElement.querySelector('.quantity').textContent = '0';
+                } else if (totalToppings - selectedToppings[topping] + newQuantity <= totalBases) {
+                    selectedToppings[topping] = newQuantity;
+                    event.target.closest('.quantity-controls').querySelector('.quantity').textContent = newQuantity;
+                }
+                
+                updateRemainingCount();
+                updateOrderSummary();
+            }
+        }
+
+        function toggleBaseTopping(base, topping, element) {
+            if (!baseToppings[base]) {
+                baseToppings[base] = {};
+            }
+            
+            const baseQuantity = selectedBases[base] || 0;
+            const baseToppingTotal = Object.values(baseToppings[base]).reduce((sum, qty) => sum + qty, 0);
+            
+            if (!baseToppings[base][topping]) {
+                if (baseToppingTotal < baseQuantity) {
+                    baseToppings[base][topping] = 1;
+                    element.classList.add('topping-selected');
+                    element.querySelector('.base-topping-quantity span').textContent = '1 ชิ้น';
+                }
+            } else {
+                if (baseToppingTotal < baseQuantity) {
+                    baseToppings[base][topping]++;
+                    element.querySelector('.base-topping-quantity span').textContent = `${baseToppings[base][topping]} ชิ้น`;
+                }
+            }
+            
+            updateBaseRemainingCount(base);
+            updateOrderSummary();
+        }
+
+        // Order Summary
+        function updateOrderSummary() {
+            const summarySection = document.getElementById('order-summary');
+            const summaryContent = document.getElementById('summary-content');
+            const totalPriceElement = document.getElementById('total-price');
+            const checkOrderBtn = document.getElementById('check-order-btn');
+            
+            const hasItems = Object.keys(selectedBases).length > 0 || Object.keys(baseToppings).length > 0 || Object.keys(selectedToppings).length > 0;
+            
+            if (!hasItems) {
+                summarySection.classList.add('hidden');
+                totalPriceElement.textContent = '0';
+                checkOrderBtn.disabled = true;
+                return;
+            }
+            
+            let summaryHTML = '';
+            let originalPrice = 0;
+            let totalBrownieCount = 0;
+            
+            // Since we only allow one base type at a time, simplify the calculation
+            Object.entries(selectedBases).forEach(([base, quantity]) => {
+                totalBrownieCount += quantity;
+                summaryHTML += `<div class="flex justify-between items-center py-2">
+                    <span class="font-medium">${baseNames[base]} x ${quantity} ชิ้น</span>
+                    <span class="text-gray-600">${quantity * 25} บาท</span>
+                </div>`;
+            });
+            
+            Object.entries(selectedToppings).forEach(([topping, quantity]) => {
+                summaryHTML += `<div class="flex justify-between items-center py-2 pl-4">
+                    <span class="text-sm">• หน้า ${toppingNames[topping]} x ${quantity} ชิ้น</span>
+                    <span class="text-gray-600 text-sm">${quantity * 15} บาท</span>
+                </div>`;
+            });
+            
+            const basePrice = totalBrownieCount * 25;
+            const toppingPrice = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0) * 15;
+            originalPrice = basePrice + toppingPrice;
+            
+            if (totalBrownieCount > 0) {
+                summaryHTML += `<div class="border-t border-gray-200 pt-3 mt-3">
+                    <div class="flex justify-between items-center font-semibold text-lg">
+                        <span>จำนวนบราวนี่รวม: ${totalBrownieCount} ชิ้น</span>
+                    </div>
+                </div>`;
+            }
+            
+            summaryContent.innerHTML = summaryHTML;
+            summarySection.classList.remove('hidden');
+            
+            // Show original price only (no discount on main page)
+            totalPriceElement.textContent = originalPrice;
+            
+            checkOrderBtn.disabled = originalPrice === 0;
+            
+            // Update add to cart button
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            addToCartBtn.disabled = originalPrice === 0;
+        }
+
+        // Order Functions
+        function showOrderCheck() {
+            const modal = document.getElementById('order-modal');
+            const finalSummary = document.getElementById('final-summary');
+            
+            let summaryHTML = '';
+            let originalPrice = 0;
+            let totalBrownieCount = 0;
+            
+            // Simplified order summary for single base type
+            Object.entries(selectedBases).forEach(([base, quantity]) => {
+                totalBrownieCount += quantity;
+                summaryHTML += `<div class="flex justify-between py-1">
+                    <span class="font-medium">${baseNames[base]} x ${quantity} ชิ้น</span>
+                    <span>${quantity * 25} บาท</span>
+                </div>`;
+            });
+            
+            if (Object.keys(selectedToppings).length > 0) {
+                Object.entries(selectedToppings).forEach(([topping, quantity]) => {
+                    summaryHTML += `<div class="flex justify-between py-1 text-sm">
+                        <span>• ${toppingNames[topping]} x ${quantity} ชิ้น</span>
+                        <span>${quantity * 15} บาท</span>
+                    </div>`;
+                });
+            }
+            
+            const basePrice = totalBrownieCount * 25;
+            const toppingPrice = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0) * 15;
+            originalPrice = basePrice + toppingPrice;
+            
+            summaryHTML += `<div class="border-t border-gray-200 pt-3 mt-3 font-bold">
+                <div class="flex justify-between">
+                    <span>จำนวนรวม: ${totalBrownieCount} ชิ้น</span>
+                </div>
+                <div class="flex justify-between text-lg">
+                    <span>รวมทั้งหมด:</span>
+                    <span>${originalPrice} บาท</span>
+                </div>
+            </div>`;
+            
+            finalSummary.innerHTML = summaryHTML;
+            modal.classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.add('hidden');
+        }
+
+        async function confirmOrder() {
+  const totalPrice = parseInt(document.getElementById('total-price').textContent);
+  const earnedPoints = totalPrice;
+
+  const orderData = createOrderRecord(totalPrice, earnedPoints, currentUser);
+
+  // ✅ บันทึกคำสั่งซื้อไปยัง Supabase
+  await supabase.from('orders').insert({
+    user_id: currentUser.id,
+    order_number: orderData.orderNumber,
+    total_price: orderData.totalPrice,
+    earned_points: orderData.earnedPoints,
+    created_at: new Date().toISOString()
+  });
+
+  // ✅ อัปเดตแต้มในฐานข้อมูล Supabase ด้วย
+  await supabase.from('users')
+    .update({ points: currentUser.points + earnedPoints })
+    .eq('id', currentUser.id);
+
+  // ✅ อัปเดตข้อมูลในหน้าเว็บ
+  currentUser.points += earnedPoints;
+  currentPoints = currentUser.points;
+  document.getElementById('points').textContent = currentUser.points;
+
+  if (!currentUser.orderHistory) {
+    currentUser.orderHistory = [];
+  }
+  currentUser.orderHistory.unshift(orderData);
+
+  createFloatingCoins();
+
+  let successMsg = `สั่งซื้อสำเร็จ! ได้รับแต้มสะสม +${earnedPoints} แต้ม!`;
+  showSuccessMessage(successMsg);
+
+  setTimeout(() => {
+    resetForm();
+    closeOrderModal();
+  }, 3000);
+}
+
+        function createOrderRecord(totalPrice, earnedPoints, user) {
+            const now = new Date();
+            const orderNumber = 'BR' + now.getTime().toString().slice(-6);
+            
+            let items = [];
+            let totalBrownieCount = 0;
+            
+            // Simplified order record creation for single base type
+            Object.entries(selectedBases).forEach(([base, quantity]) => {
+                totalBrownieCount += quantity;
+                items.push({
+                    type: 'base',
+                    name: baseNames[base],
+                    quantity: quantity,
+                    price: quantity * 25
+                });
+            });
+            
+            Object.entries(selectedToppings).forEach(([topping, quantity]) => {
+                items.push({
+                    type: 'topping',
+                    name: toppingNames[topping],
+                    quantity: quantity,
+                    price: quantity * 15
+                });
+            });
+            
+            return {
+                orderNumber: orderNumber,
+                date: now.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                customerName: user ? user.name : 'ไม่ระบุ',
+                customerLine: user ? user.lineName : 'ไม่ระบุ',
+                items: items,
+                totalBrownieCount: totalBrownieCount,
+                totalPrice: totalPrice,
+                earnedPoints: earnedPoints,
+                status: 'สำเร็จ'
+            };
+        }
+
+        function resetForm() {
+            selectedBases = {};
+            selectedToppings = {};
+            baseToppings = {};
+            
+            document.querySelectorAll('.brownie-base').forEach(el => {
+                el.classList.remove('selected');
+                const controls = el.querySelector('.base-quantity-controls');
+                if (controls) {
+                    controls.classList.add('hidden');
+                    controls.querySelector('.base-quantity').textContent = '0';
+                }
+            });
+            
+            document.querySelectorAll('#single-base-toppings .topping-item').forEach(el => {
+                el.classList.remove('topping-selected');
+                const controls = el.querySelector('.quantity-controls');
+                if (controls) {
+                    controls.classList.add('hidden');
+                    controls.querySelector('.quantity').textContent = '0';
+                }
+            });
+            
+            document.querySelectorAll('#multiple-base-toppings .topping-item').forEach(el => {
+                el.classList.remove('topping-selected');
+                const quantitySpan = el.querySelector('.base-topping-quantity span');
+                if (quantitySpan) {
+                    quantitySpan.textContent = '0 ชิ้น';
+                }
+            });
+            
+            document.getElementById('toppings-section').classList.add('hidden');
+            document.getElementById('order-summary').classList.add('hidden');
+            document.getElementById('total-price').textContent = '0';
+            document.getElementById('check-order-btn').disabled = true;
+        }
+
+        // History Functions
+        function showOrderHistory() {
+            if (!isLoggedIn || !currentUser) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            const modal = document.getElementById('history-modal');
+            const content = document.getElementById('history-content');
+            
+            if (!currentUser.orderHistory || currentUser.orderHistory.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4 float">📋</div>
+                        <p class="text-gray-600 text-lg font-medium">ยังไม่มีประวัติการสั่งซื้อ</p>
+                        <p class="text-gray-400 text-sm mt-2">เมื่อคุณสั่งซื้อแล้ว ประวัติจะแสดงที่นี่</p>
+                    </div>
+                `;
+            } else {
+                let historyHTML = '';
+                
+                currentUser.orderHistory.forEach((order, index) => {
+                    historyHTML += `
+                        <div class="card mb-4 hover-lift">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">คำสั่งซื้อ #${order.orderNumber}</h4>
+                                    <p class="text-sm text-gray-500">${order.date}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-gray-900">${order.totalPrice} บาท</div>
+                                    <div class="text-sm text-green-600">+${order.earnedPoints} แต้ม</div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1 mb-3">
+                                ${order.items.map(item => `
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-700">${item.name} x ${item.quantity}</span>
+                                        <span class="text-gray-500">${item.price} บาท</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                <div class="text-sm text-gray-500">
+                                    รวม ${order.totalBrownieCount} ชิ้น
+                                    ${order.paymentMethod ? `• ${order.paymentMethod}` : ''}
+                                    ${order.promoCode ? `• โค้ด ${order.promoCode}` : ''}
+
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="badge ${order.status === 'ยกเลิก' ? 'bg-red-100 text-red-800' : 
+                                                      order.status === 'รอดำเนินการ' ? 'bg-yellow-100 text-yellow-800' :
+                                                      order.status === 'กำลังเตรียม' ? 'bg-blue-100 text-blue-800' :
+                                                      order.status === 'พร้อมส่ง' ? 'bg-purple-100 text-purple-800' :
+                                                      order.status === 'ส่งแล้ว' ? 'bg-indigo-100 text-indigo-800' :
+                                                      'badge-success'}">
+                                        ${order.status}
+                                    </div>
+
+                                    <button onclick="deleteOrder(${index})" class="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1 rounded hover:bg-red-50">
+                                        🗑️ ลบ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                content.innerHTML = historyHTML;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        // Auth Functions
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (username && password) {
+                isLoggedIn = true;
+                currentUser = {
+                    username: username,
+                    name: 'สมาชิกคนพิเศษ',
+                    lineName: 'line_user123',
+                    points: 200,
+                    orderHistory: [
+                        {
+                            orderNumber: 'BR123456',
+                            date: '15 ธันวาคม 2567, 14:30',
+                            items: [
+                                { type: 'base', name: 'เนื้อโกโก้', quantity: 2, price: 50 },
+                                { type: 'topping', name: 'ช็อกโกแลตชิพ', quantity: 2, price: 30 }
+                            ],
+                            totalBrownieCount: 2,
+                            totalPrice: 80,
+                            earnedPoints: 80,
+                            status: 'สำเร็จ'
+                        }
+                    ]
+                };
+                
+                // Initialize inventory with some sample items
+                userInventory = {
+                    discount10: 1,
+                    discount20: 0,
+                    discount30: 0
+                };
+                
+                // Initialize empty inventory for new users if not exists
+                if (!userInventory) {
+                    userInventory = {};
+                }
+                
+                currentPoints = currentUser.points;
+                
+                document.getElementById('login-modal').classList.add('hidden');
+                showMainApp();
+                updateHeaderDisplay();
+                updateInventoryBadge();
+                showSuccessMessage('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ 🎉');
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const name = document.getElementById('register-name').value;
+            const lineName = document.getElementById('register-line').value;
+            
+            if (username && password && name && lineName) {
+                isLoggedIn = true;
+                currentUser = {
+                    username: username,
+                    name: name,
+                    lineName: lineName,
+                    points: 50,
+                    orderHistory: []
+                };
+                currentPoints = 50;
+                
+                // Initialize empty inventory for new users
+                userInventory = {};
+                
+                document.getElementById('login-modal').classList.add('hidden');
+                showMainApp();
+                updateHeaderDisplay();
+                updateInventoryBadge();
+                showSuccessMessage(`สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ${name} 🎉`);
+                createFloatingCoins();
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+        }
+
+        function updateHeaderDisplay() {
+            const pointsElement = document.getElementById('points');
+            pointsElement.textContent = currentUser.points || currentPoints;
+        }
+
+        function toggleLogin() {
+            isLoggedIn = false;
+            currentUser = null;
+            currentPoints = 0;
+            userInventory = {};
+            
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            resetForm();
+            
+            // Reset all modals
+            document.getElementById('order-modal').classList.add('hidden');
+            document.getElementById('history-modal').classList.add('hidden');
+            document.getElementById('shop-modal').classList.add('hidden');
+            document.getElementById('inventory-modal').classList.add('hidden');
+            document.getElementById('free-brownie-modal').classList.add('hidden');
+            
+            showSuccessMessage('ออกจากระบบเรียบร้อยแล้ว');
+            
+            setTimeout(() => {
+                showLoginModal();
+            }, 1500);
+        }
+
+        // Point Shop Functions
+        function showPointShop() {
+            if (!isLoggedIn || !currentUser) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            const modal = document.getElementById('shop-modal');
+            const pointsElement = document.getElementById('shop-points');
+            pointsElement.textContent = currentUser.points || 0;
+            modal.classList.remove('hidden');
+        }
+
+        function closeShopModal() {
+            document.getElementById('shop-modal').classList.add('hidden');
+        }
+
+        function buyItem(itemType, cost) {
+            if (!currentUser || !isLoggedIn) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            if (currentUser.points < cost) {
+                showSuccessMessage('แต้มไม่เพียงพอ! 😅');
+                return;
+            }
+
+            if (itemType === 'freeBrownie') {
+                // Deduct points for free brownie first
+                currentUser.points -= cost;
+                currentPoints = currentUser.points;
+                document.getElementById('points').textContent = currentUser.points;
+                document.getElementById('shop-points').textContent = currentUser.points;
+                
+                // Show free brownie selection modal
+                closeShopModal();
+                showFreeBrownieModal();
+                return;
+            }
+
+            // Deduct points
+            currentUser.points -= cost;
+            currentPoints = currentUser.points;
+            document.getElementById('points').textContent = currentUser.points;
+            document.getElementById('shop-points').textContent = currentUser.points;
+
+            // Initialize inventory if not exists
+            if (!userInventory) {
+                userInventory = {};
+            }
+
+            // Add to inventory
+            if (!userInventory[itemType]) {
+                userInventory[itemType] = 0;
+            }
+            userInventory[itemType]++;
+
+            // Update inventory badge
+            updateInventoryBadge();
+
+            const itemNames = {
+                'discount10': 'บัตรลดราคา 10%',
+                'discount20': 'บัตรลดราคา 20%',
+                'discount30': 'บัตรลดราคา 30%'
+            };
+
+            showSuccessMessage(`ซื้อ${itemNames[itemType]}สำเร็จ! เข้าคลังแล้ว 🎉`);
+            createFloatingCoins();
+        }
+
+        // Inventory Functions
+        function showInventory() {
+            if (!isLoggedIn || !currentUser) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            const modal = document.getElementById('inventory-modal');
+            const content = document.getElementById('inventory-content');
+            
+            if (!userInventory || Object.keys(userInventory).length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4 float">🎒</div>
+                        <p class="text-gray-600 text-lg font-medium">คลังว่างเปล่า</p>
+                        <p class="text-gray-400 text-sm mt-2">ไปแลกของจากร้านแต้มกันเถอะ!</p>
+                    </div>
+                `;
+            } else {
+                let inventoryHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+                
+                const itemDetails = {
+                    'discount10': { name: 'บัตรลดราคา 10%', icon: '🎫', desc: 'ลดราคา 10% จากยอดสั่งซื้อ' },
+                    'discount20': { name: 'บัตรลดราคา 20%', icon: '🎫', desc: 'ลดราคา 20% จากยอดสั่งซื้อ' },
+                    'discount30': { name: 'บัตรลดราคา 30%', icon: '🎫', desc: 'ลดราคา 30% จากยอดสั่งซื้อ' },
+                    'freeBrownie': { name: 'บราวนี่ฟรี', icon: '🍫', desc: 'เลือกเนื้อและหน้าได้ตามใจชอบ' }
+                };
+                
+                Object.entries(userInventory).forEach(([itemType, quantity]) => {
+                    if (quantity > 0) {
+                        const item = itemDetails[itemType];
+                        inventoryHTML += `
+                            <div class="card border-2 border-blue-200 hover-lift">
+                                <div class="text-center">
+                                    <div class="text-4xl mb-3">${item.icon}</div>
+                                    <h4 class="font-semibold text-gray-900 mb-2">${item.name}</h4>
+                                    <p class="text-sm text-gray-500 mb-3">${item.desc}</p>
+                                    <div class="text-lg font-bold text-blue-600 mb-3">จำนวน: ${quantity} ชิ้น</div>
+                                    ${itemType.includes('discount') ? 
+                                        `<div class="text-sm text-gray-500 mt-2">ใช้ได้ในตะกร้าสินค้า</div>` :
+                                        `<button onclick="useFreeBrownie()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm">ใช้งาน</button>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                inventoryHTML += '</div>';
+                content.innerHTML = inventoryHTML;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeInventoryModal() {
+            document.getElementById('inventory-modal').classList.add('hidden');
+        }
+
+        function updateInventoryBadge() {
+            const badge = document.getElementById('inventory-badge');
+            if (!userInventory || Object.keys(userInventory).length === 0) {
+                badge.classList.add('hidden');
+                return;
+            }
+            
+            const totalItems = Object.values(userInventory).reduce((sum, qty) => sum + qty, 0);
+            
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Free Brownie Functions
+        function showFreeBrownieModal() {
+            document.getElementById('free-brownie-modal').classList.remove('hidden');
+            resetFreeBrownieSelection();
+        }
+
+        function closeFreeBrownieModal() {
+            document.getElementById('free-brownie-modal').classList.add('hidden');
+            resetFreeBrownieSelection();
+        }
+
+        function resetFreeBrownieSelection() {
+            freeBase = null;
+            freeTopping = null;
+            
+            document.querySelectorAll('.free-base').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.free-topping').forEach(el => {
+                el.classList.remove('topping-selected');
+            });
+            
+            document.getElementById('free-topping-section').classList.add('hidden');
+            document.getElementById('confirm-free-brownie').disabled = true;
+        }
+
+        function selectFreeBase(base, element) {
+            // Remove previous selection
+            document.querySelectorAll('.free-base').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Select new base
+            element.classList.add('selected');
+            freeBase = base;
+            
+            // Show topping section
+            document.getElementById('free-topping-section').classList.remove('hidden');
+            
+            // Reset topping selection
+            freeTopping = null;
+            document.querySelectorAll('.free-topping').forEach(el => {
+                el.classList.remove('topping-selected');
+            });
+            
+            updateFreeBrownieButton();
+        }
+
+        function selectFreeTopping(topping, element) {
+            // Remove previous selection
+            document.querySelectorAll('.free-topping').forEach(el => {
+                el.classList.remove('topping-selected');
+            });
+            
+            // Select new topping
+            element.classList.add('topping-selected');
+            freeTopping = topping;
+            
+            updateFreeBrownieButton();
+        }
+
+        function updateFreeBrownieButton() {
+            const button = document.getElementById('confirm-free-brownie');
+            button.disabled = !freeBase || !freeTopping;
+        }
+
+        function confirmFreeBrownie() {
+            if (!freeBase || !freeTopping) return;
+            
+            // Points already deducted in buyItem function
+            // Create order record for free brownie
+            const freeOrderData = {
+                orderNumber: 'FREE' + Date.now().toString().slice(-6),
+                date: new Date().toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                customerName: currentUser.name,
+                customerLine: currentUser.lineName,
+                items: [
+                    { type: 'base', name: `${baseNames[freeBase]} (ฟรี)`, quantity: 1, price: 0 },
+                    { type: 'topping', name: `${toppingNames[freeTopping]} (ฟรี)`, quantity: 1, price: 0 }
+                ],
+                totalBrownieCount: 1,
+                totalPrice: 0,
+                earnedPoints: 0,
+                status: 'สำเร็จ (ฟรี)',
+                isFree: true
+            };
+            
+            if (!currentUser.orderHistory) {
+                currentUser.orderHistory = [];
+            }
+            currentUser.orderHistory.unshift(freeOrderData);
+            
+            closeFreeBrownieModal();
+            showSuccessMessage(`รับบราวนี่ฟรีสำเร็จ! ${baseNames[freeBase]} หน้า${toppingNames[freeTopping]} 🍫✨`);
+            createFloatingCoins();
+        }
+
+        function useFreeBrownie() {
+            closeInventoryModal();
+            showFreeBrownieModal();
+        }
+
+        // Cart Functions
+        function addToCart() {
+            if (!isLoggedIn || !currentUser) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            const totalPrice = parseInt(document.getElementById('total-price').textContent);
+            if (totalPrice === 0) return;
+            
+            // Validate that we have both base and toppings
+            const totalBases = Object.values(selectedBases).reduce((sum, qty) => sum + qty, 0);
+            const totalToppings = Object.values(selectedToppings).reduce((sum, qty) => sum + qty, 0);
+            
+            if (totalBases === 0) {
+                showSuccessMessage('กรุณาเลือกเนื้อบราวนี่ก่อน! 🍫');
+                return;
+            }
+            
+            if (totalToppings !== totalBases) {
+                showSuccessMessage('กรุณาเลือกหน้าให้ครบทุกชิ้น! 🍪');
+                return;
+            }
+            
+            // Create cart item
+            const cartItem = {
+                id: Date.now(),
+                bases: { ...selectedBases },
+                toppings: { ...selectedToppings },
+                baseToppings: JSON.parse(JSON.stringify(baseToppings)),
+                originalPrice: totalPrice,
+                finalPrice: totalPrice,
+                timestamp: new Date().toLocaleString('th-TH')
+            };
+            
+            cart.push(cartItem);
+            updateCartBadge();
+            resetForm();
+            showSuccessMessage('เพิ่มลงตะกร้าแล้ว! 🛒');
+        }
+        
+        function showCart() {
+            if (!isLoggedIn || !currentUser) {
+                showSuccessMessage('กรุณาเข้าสู่ระบบก่อน! 😊');
+                return;
+            }
+            
+            const modal = document.getElementById('cart-modal');
+            const content = document.getElementById('cart-content');
+            
+            if (cart.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4 float">🛒</div>
+                        <p class="text-gray-600 text-lg font-medium">ตะกร้าว่างเปล่า</p>
+                        <p class="text-gray-400 text-sm mt-2">เพิ่มสินค้าลงตะกร้าเพื่อเริ่มสั่งซื้อ</p>
+                    </div>
+                `;
+            } else {
+                let cartHTML = '<div class="space-y-3">';
+                
+                cart.forEach((item, index) => {
+                    // Calculate total brownies for this item
+                    const totalBrownies = Object.values(item.bases).reduce((sum, qty) => sum + qty, 0);
+                    
+                    cartHTML += `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow mb-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-semibold text-gray-900">รายการที่ ${index + 1}</h4>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-sm text-gray-500 bg-blue-100 px-3 py-1 rounded-full font-medium">${totalBrownies} ชิ้น</span>
+                                    <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                                        🗑️ ลบ
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Item Details -->
+                            <div class="space-y-2 mb-4">
+                                ${Object.entries(item.bases).map(([base, qty]) => 
+                                    `<div class="flex justify-between items-center py-1">
+                                        <span class="text-gray-700 font-medium">🍫 ${baseNames[base]} x ${qty} ชิ้น</span>
+                                        <span class="text-gray-900 font-semibold">${qty * 25} บาท</span>
+                                    </div>`
+                                ).join('')}
+                                
+                                ${Object.entries(item.toppings || {}).map(([topping, qty]) =>
+                                    `<div class="flex justify-between items-center py-1 pl-6">
+                                        <span class="text-gray-600">• หน้า ${toppingNames[topping]} x ${qty} ชิ้น</span>
+                                        <span class="text-gray-700 font-medium">${qty * 15} บาท</span>
+                                    </div>`
+                                ).join('')}
+                            </div>
+                            
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                                <span class="text-sm text-gray-500">${item.timestamp}</span>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-blue-600">${item.originalPrice} บาท</div>
+                                    <div class="text-xs text-gray-500">รวมทั้งหมด</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cartHTML += '</div>';
+                content.innerHTML = cartHTML;
+            }
+            
+            updateCartSummary();
+            updateCartDiscounts();
+            modal.classList.remove('hidden');
+        }
+        
+        function closeCartModal() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        }
+        
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            if (cart.length > 0) {
+                badge.textContent = cart.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        function updateCartDiscounts() {
+            const discountsContainer = document.getElementById('cart-available-discounts');
+            
+            if (!userInventory || Object.keys(userInventory).length === 0) {
+                discountsContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-4 text-gray-500">
+                        ไม่มีบัตรลดราคา
+                    </div>
+                `;
+                return;
+            }
+            
+            let discountsHTML = '';
+            const discountDetails = {
+                'discount10': { name: 'บัตรลดราคา 10%', desc: 'ลด 10%' },
+                'discount20': { name: 'บัตรลดราคา 20%', desc: 'ลด 20%' },
+                'discount30': { name: 'บัตรลดราคา 30%', desc: 'ลด 30%' }
+            };
+            
+            let hasDiscounts = false;
+            Object.entries(userInventory).forEach(([itemType, quantity]) => {
+                if (itemType.includes('discount') && quantity > 0) {
+                    hasDiscounts = true;
+                    const detail = discountDetails[itemType];
+                    discountsHTML += `
+                        <div class="discount-card card border-2 border-purple-200 cursor-pointer hover:border-purple-400 hover-lift ${cartDiscount && cartDiscount.type === itemType ? 'border-purple-500 bg-purple-50' : ''}" onclick="selectCartDiscount('${itemType}', this)">
+                            <div class="text-center">
+                                <div class="text-2xl mb-2">🎫</div>
+                                <h5 class="font-medium text-gray-900 text-sm mb-1">${detail.name}</h5>
+                                <p class="text-xs text-gray-500 mb-2">${detail.desc}</p>
+                                <div class="text-sm font-bold text-purple-600">มี ${quantity} ใบ</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (!hasDiscounts) {
+                discountsHTML = `
+                    <div class="col-span-2 text-center py-4 text-gray-500">
+                        ไม่มีบัตรลดราคา
+                    </div>
+                `;
+            }
+            
+            discountsContainer.innerHTML = discountsHTML;
+        }
+        
+        function selectCartDiscount(discountType, element) {
+            if (!userInventory[discountType] || userInventory[discountType] <= 0) {
+                showSuccessMessage('ไม่มีบัตรลดราคาประเภทนี้! 😅');
+                return;
+            }
+            
+            // Remove previous selection
+            document.querySelectorAll('.discount-card').forEach(el => {
+                el.classList.remove('border-purple-500', 'bg-purple-50');
+            });
+            
+            // If clicking the same discount, deselect it
+            if (cartDiscount && cartDiscount.type === discountType) {
+                cartDiscount = null;
+                updateCartSummary();
+                return;
+            }
+            
+            // Select new discount
+            element.classList.add('border-purple-500', 'bg-purple-50');
+            
+            const discountDetails = {
+                'discount10': { name: 'บัตรลดราคา 10%', desc: 'ลด 10% จากยอดสั่งซื้อ' },
+                'discount20': { name: 'บัตรลดราคา 20%', desc: 'ลด 20% จากยอดสั่งซื้อ' },
+                'discount30': { name: 'บัตรลดราคา 30%', desc: 'ลด 30% จากยอดสั่งซื้อ' }
+            };
+            
+            cartDiscount = {
+                type: discountType,
+                name: discountDetails[discountType].name,
+                desc: discountDetails[discountType].desc
+            };
+            
+            updateCartSummary();
+            showSuccessMessage(`เลือก${cartDiscount.name}แล้ว! 🎫`);
+        }
+        
+        function updateCartSummary() {
+            const totalItems = cart.reduce((sum, item) => {
+                const itemBases = Object.values(item.bases).reduce((s, q) => s + q, 0);
+                return sum + itemBases;
+            }, 0);
+            
+            const originalTotal = cart.reduce((sum, item) => sum + item.originalPrice, 0);
+            let finalTotal = originalTotal;
+            let totalDiscount = 0;
+            
+            // Apply cart discount
+            if (cartDiscount) {
+                const discountPercent = parseInt(cartDiscount.type.replace('discount', ''));
+                const cartDiscountAmount = Math.floor(originalTotal * discountPercent / 100);
+                finalTotal = Math.max(0, originalTotal - cartDiscountAmount);
+                totalDiscount += cartDiscountAmount;
+                
+                // Show cart discount section
+                document.getElementById('cart-discount-section').classList.remove('hidden');
+                document.getElementById('cart-selected-discount').textContent = cartDiscount.name;
+            } else {
+                document.getElementById('cart-discount-section').classList.add('hidden');
+            }
+            
+            // Apply promo code discount (after cart discount)
+            if (appliedPromoCode) {
+                if (appliedPromoCode.fixedAmount) {
+                    const promoDiscount = Math.min(appliedPromoCode.discount, finalTotal);
+                    finalTotal = Math.max(0, finalTotal - promoDiscount);
+                    totalDiscount += promoDiscount;
+                } else {
+                    const promoDiscount = Math.floor(finalTotal * appliedPromoCode.discount / 100);
+                    finalTotal = Math.max(0, finalTotal - promoDiscount);
+                    totalDiscount += promoDiscount;
+                }
+            }
+            
+            document.getElementById('cart-total-items').textContent = `${totalItems} ชิ้น`;
+            document.getElementById('cart-original-price').textContent = `${originalTotal} บาท`;
+            document.getElementById('cart-final-price').textContent = `${finalTotal} บาท`;
+            
+            if (totalDiscount > 0) {
+                document.getElementById('cart-discount-amount').classList.remove('hidden');
+                document.getElementById('cart-discount-value').textContent = `-${totalDiscount} บาท`;
+            } else {
+                document.getElementById('cart-discount-amount').classList.add('hidden');
+            }
+            
+            const checkoutBtn = document.getElementById('checkout-btn');
+            checkoutBtn.disabled = cart.length === 0 || originalTotal === 0;
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartBadge();
+            showCart(); // Refresh cart display
+            showSuccessMessage('ลบรายการออกจากตะกร้าแล้ว! 🗑️');
+        }
+        
+        function clearCart() {
+            if (cart.length === 0) return;
+            
+            // Create confirmation
+            const confirmClear = document.createElement('div');
+            confirmClear.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            confirmClear.innerHTML = `
+                <div class="card max-w-md w-full hover-lift">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">🗑️</div>
+                        <h3 class="text-2xl font-bold text-gradient mb-2">ล้างตะกร้า</h3>
+                        <p class="text-gray-600">คุณต้องการลบสินค้าทั้งหมดในตะกร้าหรือไม่?</p>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="this.closest('.fixed').remove()" class="btn-secondary flex-1 py-3 rounded-xl font-medium">
+                            ยกเลิก
+                        </button>
+                        <button onclick="confirmClearCart(); this.closest('.fixed').remove()" class="bg-red-500 hover:bg-red-600 text-white flex-1 py-3 rounded-xl font-medium">
+                            ล้างตะกร้า
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmClear);
+        }
+        
+        function confirmClearCart() {
+            cart = [];
+            cartDiscount = null;
+            appliedPromoCode = null;
+            updateCartBadge();
+            showCart(); // Refresh cart display
+            showSuccessMessage('ล้างตะกร้าเรียบร้อยแล้ว! 🗑️');
+        }
+        
+        function removeCartDiscount() {
+            if (cartDiscount) {
+                cartDiscount = null;
+                updateCartSummary();
+                updateCartDiscounts(); // Refresh discount display
+                showSuccessMessage('ยกเลิกบัตรลดราคาแล้ว! 🎫');
+            }
+        }
+        
+        function continueShoppingFromCart() {
+            closeCartModal();
+        }
+        
+        // Promo Code Functions
+        const promoCodes = {
+            'WELCOME10': { discount: 10, description: 'ลด 10% สำหรับลูกค้าใหม่' },
+            'SAVE20': { discount: 20, description: 'ลด 20% สำหรับยอดซื้อขั้นต่ำ 200 บาท' },
+            'BROWNIE50': { discount: 50, description: 'ลด 50 บาท สำหรับยอดซื้อขั้นต่ำ 300 บาท', fixedAmount: true },
+            'STUDENT15': { discount: 15, description: 'ลด 15% สำหรับนักเรียน นักศึกษา' }
+        };
+        
+        function applyPromoCode() {
+            const promoInput = document.getElementById('promo-code');
+            const promoMessage = document.getElementById('promo-message');
+            const code = promoInput.value.trim().toUpperCase();
+            
+            if (!code) {
+                showPromoMessage('กรุณาใส่โค้ดส่วนลด', 'error');
+                return;
+            }
+            
+            if (!promoCodes[code]) {
+                showPromoMessage('โค้ดส่วนลดไม่ถูกต้อง', 'error');
+                return;
+            }
+            
+            const originalTotal = cart.reduce((sum, item) => sum + item.originalPrice, 0);
+            const promo = promoCodes[code];
+            
+            // Check minimum requirements
+            if (code === 'SAVE20' && originalTotal < 200) {
+                showPromoMessage('ยอดซื้อขั้นต่ำ 200 บาท', 'error');
+                return;
+            }
+            
+            if (code === 'BROWNIE50' && originalTotal < 300) {
+                showPromoMessage('ยอดซื้อขั้นต่ำ 300 บาท', 'error');
+                return;
+            }
+            
+            appliedPromoCode = { code, ...promo };
+            promoInput.value = '';
+            updateCartSummary();
+            showPromoMessage(`ใช้โค้ด ${code} สำเร็จ! ${promo.description}`, 'success');
+        }
+        
+        function showPromoMessage(message, type) {
+            const promoMessage = document.getElementById('promo-message');
+            promoMessage.textContent = message;
+            promoMessage.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+            promoMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                promoMessage.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Checkout Functions
+        function proceedToCheckout() {
+            if (cart.length === 0) return;
+            
+            const modal = document.getElementById('checkout-modal');
+            const summary = document.getElementById('checkout-summary');
+            
+            // Calculate totals with cart discount and promo code
+            let originalTotal = cart.reduce((sum, item) => sum + item.originalPrice, 0);
+            let finalTotal = originalTotal;
+            
+            // Apply cart discount first
+            if (cartDiscount) {
+                const discountPercent = parseInt(cartDiscount.type.replace('discount', ''));
+                const cartDiscountAmount = Math.floor(finalTotal * discountPercent / 100);
+                finalTotal = Math.max(0, finalTotal - cartDiscountAmount);
+            }
+            
+            // Apply promo code discount
+            if (appliedPromoCode) {
+                if (appliedPromoCode.fixedAmount) {
+                    finalTotal = Math.max(0, finalTotal - appliedPromoCode.discount);
+                } else {
+                    const promoDiscount = Math.floor(finalTotal * appliedPromoCode.discount / 100);
+                    finalTotal = Math.max(0, finalTotal - promoDiscount);
+                }
+            }
+            
+            let summaryHTML = '';
+            
+            cart.forEach((item, index) => {
+                const totalBrownies = Object.values(item.bases).reduce((sum, qty) => sum + qty, 0);
+                
+                summaryHTML += `
+                    <div class="border-b border-gray-200 pb-2 mb-2">
+                        <div class="font-medium">รายการที่ ${index + 1} (${totalBrownies} ชิ้น)</div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            ${Object.entries(item.bases).map(([base, qty]) => 
+                                `<div>• ${baseNames[base]} x ${qty} ชิ้น</div>`
+                            ).join('')}
+                            ${Object.entries(item.toppings || {}).map(([topping, qty]) => 
+                                `<div class="pl-4">- หน้า ${toppingNames[topping]} x ${qty} ชิ้น</div>`
+                            ).join('')}
+                        </div>
+                        <div class="text-right font-semibold">${item.originalPrice} บาท</div>
+                    </div>
+                `;
+            });
+            
+            // Show cart discount
+            if (cartDiscount) {
+                const discountPercent = parseInt(cartDiscount.type.replace('discount', ''));
+                const cartDiscountAmount = Math.floor(cart.reduce((sum, item) => sum + item.finalPrice, 0) * discountPercent / 100);
+                
+                summaryHTML += `
+                    <div class="text-purple-600 text-sm">
+                        ${cartDiscount.name}: -${cartDiscountAmount} บาท
+                    </div>
+                `;
+            }
+            
+            // Show promo code discount
+            if (appliedPromoCode) {
+                let baseForPromo = cart.reduce((sum, item) => sum + item.finalPrice, 0);
+                if (cartDiscount) {
+                    const discountPercent = parseInt(cartDiscount.type.replace('discount', ''));
+                    const cartDiscountAmount = Math.floor(baseForPromo * discountPercent / 100);
+                    baseForPromo = Math.max(0, baseForPromo - cartDiscountAmount);
+                }
+                
+                const promoDiscount = appliedPromoCode.fixedAmount ? 
+                    appliedPromoCode.discount : 
+                    Math.floor(baseForPromo * appliedPromoCode.discount / 100);
+                
+                summaryHTML += `
+                    <div class="text-green-600 text-sm">
+                        โค้ด ${appliedPromoCode.code}: -${promoDiscount} บาท
+                    </div>
+                `;
+            }
+            
+            summaryHTML += `
+                <div class="border-t border-gray-200 pt-2 mt-2 font-bold text-lg">
+                    ยอดรวมทั้งสิ้น: ${finalTotal} บาท
+                </div>
+            `;
+            
+            summary.innerHTML = summaryHTML;
+            
+            closeCartModal();
+            modal.classList.remove('hidden');
+        }
+        
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+            selectedPaymentMethod = null;
+        }
+        
+        function selectPaymentMethod(method, element) {
+            // Payment method selection removed - auto-confirm available
+            selectedPaymentMethod = 'cod'; // Cash on delivery
+        }
+        
+        function confirmPayment() {
+            selectedPaymentMethod = 'cod'; // Auto-set to cash on delivery
+            
+            // Calculate final total with cart discount and promo code
+            let finalTotal = cart.reduce((sum, item) => sum + item.finalPrice, 0);
+            
+            // Apply cart discount first
+            if (cartDiscount) {
+                const discountPercent = parseInt(cartDiscount.type.replace('discount', ''));
+                const cartDiscountAmount = Math.floor(finalTotal * discountPercent / 100);
+                finalTotal = Math.max(0, finalTotal - cartDiscountAmount);
+                
+                // Use the discount from inventory (limit to 1 use per order)
+                if (userInventory[cartDiscount.type] > 0) {
+                    userInventory[cartDiscount.type]--;
+                    updateInventoryBadge();
+                }
+            }
+            
+            // Apply promo code discount
+            if (appliedPromoCode) {
+                if (appliedPromoCode.fixedAmount) {
+                    finalTotal = Math.max(0, finalTotal - appliedPromoCode.discount);
+                } else {
+                    const promoDiscount = Math.floor(finalTotal * appliedPromoCode.discount / 100);
+                    finalTotal = Math.max(0, finalTotal - promoDiscount);
+                }
+            }
+            
+            const earnedPoints = finalTotal;
+            const customerNotes = document.getElementById('customer-notes').value;
+            
+            // Create order from cart
+            const orderData = createCartOrderRecord(finalTotal, earnedPoints, currentUser, selectedPaymentMethod, customerNotes);
+            
+            // Update user points
+            currentUser.points += earnedPoints;
+            currentPoints = currentUser.points;
+            document.getElementById('points').textContent = currentUser.points;
+            
+            // Add to order history
+            if (!currentUser.orderHistory) {
+                currentUser.orderHistory = [];
+            }
+            currentUser.orderHistory.unshift(orderData);
+            
+            // Clear cart and reset
+            cart = [];
+            cartDiscount = null;
+            appliedPromoCode = null;
+            selectedPaymentMethod = null;
+            updateCartBadge();
+            
+            closeCheckoutModal();
+            createFloatingCoins();
+            
+            showSuccessMessage(`สั่งซื้อสำเร็จ! (ชำระเงินตอนรับสินค้า) ได้รับแต้ม +${earnedPoints} แต้ม! ✅✨`);
+        }
+        
+        function createCartOrderRecord(totalPrice, earnedPoints, user, paymentMethod, notes) {
+            const now = new Date();
+            const orderNumber = 'BR' + now.getTime().toString().slice(-6);
+            
+            let items = [];
+            let totalBrownieCount = 0;
+            
+            cart.forEach((cartItem, cartIndex) => {
+                // Simplified cart processing for single base type
+                Object.entries(cartItem.bases).forEach(([base, quantity]) => {
+                    totalBrownieCount += quantity;
+                    items.push({
+                        type: 'base',
+                        name: baseNames[base],
+                        quantity: quantity,
+                        price: quantity * 25
+                    });
+                });
+                
+                Object.entries(cartItem.toppings).forEach(([topping, quantity]) => {
+                    items.push({
+                        type: 'topping',
+                        name: toppingNames[topping],
+                        quantity: quantity,
+                        price: quantity * 15
+                    });
+                });
+            });
+            
+            return {
+                orderNumber: orderNumber,
+                date: now.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                customerName: user ? user.name : 'ไม่ระบุ',
+                customerLine: user ? user.lineName : 'ไม่ระบุ',
+                items: items,
+                totalBrownieCount: totalBrownieCount,
+                totalPrice: totalPrice,
+                earnedPoints: earnedPoints,
+                paymentMethod: 'ชำระเงินตอนรับสินค้า',
+                customerNotes: notes || '',
+                promoCode: appliedPromoCode ? appliedPromoCode.code : null,
+                status: 'สำเร็จ'
+            };
+        }
+
+        // Utility Functions
+        function createFloatingCoins() {
+            const container = document.getElementById('floating-coins');
+            
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.innerHTML = '🪙';
+                    coin.className = 'absolute text-4xl coin-float';
+                    coin.style.left = Math.random() * window.innerWidth + 'px';
+                    coin.style.top = window.innerHeight - 100 + 'px';
+                    
+                    container.appendChild(coin);
+                    
+                    setTimeout(() => {
+                        if (container.contains(coin)) {
+                            container.removeChild(coin);
+                        }
+                    }, 2000);
+                }, i * 200);
+            }
+        }
+
+        function showSuccessMessage(message) {
+            const successMessage = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            successText.innerHTML = message;
+            successMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Order History Management Functions
+        
+        function deleteOrder(orderIndex) {
+            if (!currentUser || !currentUser.orderHistory || !currentUser.orderHistory[orderIndex]) {
+                showSuccessMessage('ไม่พบข้อมูลคำสั่งซื้อ! 😅');
+                return;
+            }
+            
+            const order = currentUser.orderHistory[orderIndex];
+            
+            // Create confirmation modal
+            const confirmModal = document.createElement('div');
+            confirmModal.id = 'delete-confirm-modal';
+            confirmModal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            confirmModal.innerHTML = `
+                <div class="card max-w-md w-full hover-lift">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <h3 class="text-2xl font-bold text-gradient mb-2">ยืนยันการลบ</h3>
+                        <p class="text-gray-600">คุณต้องการลบออเดอร์ #${order.orderNumber} หรือไม่?</p>
+                        <p class="text-sm text-red-500 mt-2">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="closeDeleteModal()" class="btn-secondary flex-1 py-3 rounded-xl font-medium">
+                            ยกเลิก
+                        </button>
+                        <button onclick="confirmDeleteOrder(${orderIndex})" class="bg-red-500 hover:bg-red-600 text-white flex-1 py-3 rounded-xl font-medium">
+                            ลบแน่นอน
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmModal);
+        }
+        
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-confirm-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        function confirmDeleteOrder(orderIndex) {
+            if (currentUser && currentUser.orderHistory && currentUser.orderHistory[orderIndex]) {
+                const deletedOrder = currentUser.orderHistory[orderIndex];
+                
+                // If it's a paid order, refund points
+                if (deletedOrder.earnedPoints > 0) {
+                    currentUser.points -= deletedOrder.earnedPoints;
+                    currentPoints = currentUser.points;
+                    document.getElementById('points').textContent = currentUser.points;
+                }
+                
+                // Remove the order
+                currentUser.orderHistory.splice(orderIndex, 1);
+                
+                closeDeleteModal();
+                showOrderHistory(); // Refresh the history display
+                showSuccessMessage(`ลบออเดอร์ #${deletedOrder.orderNumber} สำเร็จ! 🗑️`);
+            }
+        }
+
+
+
+        // Modal close on outside click
+        document.getElementById('order-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeOrderModal();
+        });
+
+        document.getElementById('history-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeHistoryModal();
+        });
+
+        document.getElementById('shop-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeShopModal();
+        });
+
+        document.getElementById('inventory-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeInventoryModal();
+        });
+
+        document.getElementById('free-brownie-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeFreeBrownieModal();
+        });
+
+        document.getElementById('cart-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCartModal();
+        });
+
+        document.getElementById('checkout-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCheckoutModal();
+        });
+
+
+    </script>
+    </script>
+
+  <scrip>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9942ca47f4c1f4cf',t:'MTc2MTQwNjU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
 </html>
