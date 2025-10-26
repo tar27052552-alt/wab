@@ -3530,57 +3530,30 @@
     </script>
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <script>
-  const liffId = "2008357926-Ly07A5w2";
-  const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const liffId = "2008357926-Ly07A5w2";
+const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-
-  window.addEventListener("load", async () => {
-    try {
-      await liff.init({ liffId });
-      console.log("✅ LIFF Loaded on Home");
-
-      if (!liff.isLoggedIn()) {
-        window.location.href = "index.html"; // กลับไปหน้า login
-        return;
-      }
-
-      const profile = await liff.getProfile();
-      console.log("👤 Logged in as:", profile.displayName);
-
-      // แสดงชื่อผู้ใช้ในมุมบน
-      document.querySelector("#user-status span").textContent =
-        "👋 " + profile.displayName;
-
-      document.getElementById("main-app").classList.remove("hidden");
-
-      // อัปเดตแต้มจากฐานข้อมูล
-      const { data } = await supabase
-        .from("users")
-        .select("points")
-        .eq("line_id", profile.userId)
-        .single();
-
-      if (data) {
-        document.getElementById("points").textContent = data.points;
-      }
-
-    } catch (err) {
-      console.error("❌ LIFF init error:", err);
-      window.location.href = "index.html"; // ถ้าโหลด LIFF ไม่ได้ ให้กลับหน้า login
-    }
-  });
-
-  async function toggleLogin() {
-    await liff.init({ liffId });
-    if (liff.isLoggedIn()) {
-      liff.logout();
-      window.location.href = "index.html"; // กลับหน้า login
-    }
+async function checkLogin() {
+  await liff.init({ liffId });
+  if (!liff.isLoggedIn()) {
+    alert("กรุณาเข้าสู่ระบบก่อน 😊");
+    window.location.href = "index.html";
+    return;
   }
+
+  const profile = await liff.getProfile();
+  document.getElementById("userName").textContent = profile.displayName;
+  console.log("👋 สวัสดี", profile.displayName);
+}
+
+checkLogin();
 </script>
+
 
   </body>
 </html>
