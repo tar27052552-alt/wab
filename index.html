@@ -1,70 +1,617 @@
 <!DOCTYPE html>
-<script>
-const liffId = "2008357926-Ly07A5w2";
-const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+<html lang="th" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brownie Studio - Order Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+      min-height: 100vh;
+    }
+    * { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      font-weight: 500;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .selected {
+      border: 4px solid #1d4ed8 !important;
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(29, 78, 216, 0.5);
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    .float { animation: float 3s ease-in-out infinite; }
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-full">
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="text-center">
+      <div class="spinner mb-4 mx-auto"></div>
+      <p class="text-white text-xl font-semibold">กำลังโหลด...</p>
+    </div>
+  </div>
 
+  <!-- Header -->
+  <header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Points Section -->
+        <div class="flex items-center space-x-3">
+          <div class="text-2xl float">🪙</div>
+          <div>
+            <div class="text-sm text-gray-500">แต้มสะสม</div>
+            <div class="font-semibold text-gray-900">
+              <span id="userPoints" class="text-orange-600 font-semibold">0</span> แต้ม
+            </div>
+          </div>
+        </div>
 
-async function initLiff() {
-try {
-await liff.init({ liffId });
-console.log("✅ LIFF Loaded");
+        <!-- User Section -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div class="flex items-center space-x-2">
+            <img id="userPic" src="" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300" />
+            <span id="userName" class="text-sm text-gray-600 hidden sm:block">กำลังโหลด...</span>
+          </div>
+          <button onclick="showCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl text-sm hover-lift relative">
+            <span class="hidden sm:inline">🛒 ตะกร้า</span>
+            <span class="sm:hidden">🛒</span>
+            <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+          </button>
+          <button onclick="showOrderHistory()" class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift">
+            <span class="hidden sm:inline">📋 ประวัติ</span>
+            <span class="sm:hidden">📋</span>
+          </button>
+          <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl text-sm hover-lift">
+            <span class="hidden sm:inline">ออกจากระบบ</span>
+            <span class="sm:hidden">🚪</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
 
+  <!-- Main App -->
+  <main id="main-app" class="max-w-6xl mx-auto px-4 py-8 hidden">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+      <div class="text-6xl mb-4 float">🫐</div>
+      <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Brownie Studio</h1>
+      <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
+    </div>
 
-if (!liff.isLoggedIn()) {
-liff.login();
-return;
-}
+    <!-- Base Selection -->
+    <section class="card mb-8 hover-lift">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+        <span class="mr-3">🫐</span>
+        เลือกเนื้อบราวนี่
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="brownie-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectBase('cocoa', this)">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🫐</div>
+            <h3 class="font-semibold text-gray-900 mb-1">เนื้อโกโก้</h3>
+            <p class="text-sm text-gray-500 mb-3">รสชาติโกโก้แท้เข้มข้น</p>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
+          </div>
+        </div>
 
+        <div class="brownie-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectBase('greentea', this)">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🍃</div>
+            <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาเขียว</h3>
+            <p class="text-sm text-gray-500 mb-3">หอมกรุ่นชาเขียวแท้</p>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
+          </div>
+        </div>
 
-const profile = await liff.getProfile();
-console.log("👤 Profile:", profile);
+        <div class="brownie-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectBase('thaitea', this)">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🧡</div>
+            <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาไทย</h3>
+            <p class="text-sm text-gray-500 mb-3">หวานหอมชาไทยแท้</p>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- Toppings Section -->
+    <section id="toppings-section" class="card mb-8 hidden hover-lift">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+        <span class="mr-3">🍪</span>
+        เลือกหน้าบราวนี่
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectTopping('chocolate', this)">
+          <div class="text-center">
+            <div class="text-4xl mb-3">🍫</div>
+            <h3 class="font-medium text-gray-900 mb-1">ช็อกโกแลตชิพ</h3>
+            <p class="text-sm text-gray-500 mb-3">หอมหวานเข้มข้น</p>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
+          </div>
+        </div>
 
-await saveUserToSupabase(profile);
-localStorage.setItem("userName", profile.displayName);
-localStorage.setItem("userPic", profile.pictureUrl);
-localStorage.setItem("userId", profile.userId);
+        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectTopping('almond', this)">
+          <div class="text-center">
+            <div class="text-4xl mb-3">🌰</div>
+            <h3 class="font-medium text-gray-900 mb-1">อัลมอนด์แผ่น</h3>
+            <p class="text-sm text-gray-500 mb-3">กรอบหอมนัท</p>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
+          </div>
+        </div>
 
+        <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectTopping('oreo', this)">
+          <div class="text-center">
+            <div class="text-4xl mb-3">🍪</div>
+            <h3 class="font-medium text-gray-900 mb-1">โอริโอ้บด</h3>
+            <p class="text-sm text-gray-500 mb-3">กรอบหวานมัน</p>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-window.location.href = "home.html";
-} catch (err) {
-console.error("❌ Error initializing LIFF:", err);
-}
-}
+    <!-- Add to Cart -->
+    <section class="card text-center hover-lift">
+      <div class="mb-6">
+        <div class="text-3xl font-bold" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          ราคารวม: <span id="total-price">0</span> บาท
+        </div>
+      </div>
+      <button id="add-to-cart-btn" onclick="addToCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+        🛒 เพิ่มลงตะกร้า
+      </button>
+    </section>
+  </main>
 
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="card max-w-2xl w-full max-h-[80vh] overflow-y-auto hover-lift">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold">🛒 ตะกร้าสินค้า</h3>
+        <button onclick="closeCart()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+      </div>
+      <div id="cart-content" class="mb-6"></div>
+      <div class="border-t pt-4">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-xl font-bold">รวมทั้งหมด:</span>
+          <span id="cart-total" class="text-2xl font-bold text-blue-600">0 บาท</span>
+        </div>
+        <button onclick="checkout()" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg">✅ ยืนยันการสั่ง</button>
+      </div>
+    </div>
+  </div>
 
-async function saveUserToSupabase(profile) {
-try {
-const { data: existingUser, error: findError } = await supabase
-.from("users")
-.select("*")
-.eq("line_id", profile.userId)
-.single();
+  <!-- Success Message -->
+  <div id="success-message" class="fixed top-20 right-4 card shadow-lg hidden z-50">
+    <div class="flex items-center space-x-3">
+      <div class="text-2xl">🎉</div>
+      <div id="success-text" class="font-medium text-gray-900"></div>
+    </div>
+  </div>
 
+  <script>
+    // ===============================================================
+    // 1. CONFIGURATION
+    // ===============================================================
+    const LIFF_ID = "2008357926-Ly07A5w2";
+    const SUPABASE_URL = "https://kpxgskwtxwkqoztkkrwu.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwdmdza3d0eHdrcW96dGtrcnd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQyNDQ4MDcsImV4cCI6MjAxOTgyMDgwN30.i9w7_YgW3-V8T2N_05P_6qHw6k3qWb0P_3o_rO0t6gU";
 
-if (findError && findError.code !== "PGRST116") throw findError;
+    // Initialize Supabase
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // ===============================================================
+    // 2. STATE VARIABLES
+    // ===============================================================
+    let currentUser = null;
+    let selectedBase = null;
+    let selectedTopping = null;
+    let cart = [];
+    let userPoints = 0;
 
-if (!existingUser) {
-const { error } = await supabase.from("users").insert([
-{
-display_name: profile.displayName,
-picture_url: profile.pictureUrl,
-line_id: profile.userId,
-points: 0,
-},
-]);
-if (error) throw error;
-console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
-} else {
-console.log("🟢 พบผู้ใช้ใน Supabase แล้ว");
-}
-} catch (err) {
-console.error("saveUserToSupabase error:", err);
-}
-}
-</script>
+    const baseNames = {
+      cocoa: "เนื้อโกโก้",
+      greentea: "เนื้อชาเขียว",
+      thaitea: "เนื้อชาไทย"
+    };
+
+    const toppingNames = {
+      chocolate: "ช็อกโกแลตชิพ",
+      almond: "อัลมอนด์แผ่น",
+      oreo: "โอริโอ้บด"
+    };
+
+    // ===============================================================
+    // 3. INITIALIZATION
+    // ===============================================================
+    async function init() {
+      try {
+        // Initialize LIFF
+        await liff.init({ liffId: LIFF_ID });
+        console.log("✅ LIFF Initialized");
+
+        // Check if logged in
+        if (!liff.isLoggedIn()) {
+          console.log("❌ Not logged in, redirecting to LINE Login...");
+          liff.login();
+          return;
+        }
+
+        // Get LINE profile
+        const profile = await liff.getProfile();
+        console.log("👤 Profile loaded:", profile);
+
+        // Save/update user in Supabase
+        await saveUserToSupabase(profile);
+
+        // Load user data
+        await loadUserData(profile.userId);
+
+        // Show main app
+        document.getElementById("loading-screen").classList.add("hidden");
+        document.getElementById("main-header").classList.remove("hidden");
+        document.getElementById("main-app").classList.remove("hidden");
+
+      } catch (error) {
+        console.error("❌ Init error:", error);
+        showMessage("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
+        setTimeout(() => {
+          liff.login();
+        }, 2000);
+      }
+    }
+
+    // ===============================================================
+    // 4. USER MANAGEMENT
+    // ===============================================================
+    async function saveUserToSupabase(profile) {
+      try {
+        const { data: existingUser, error: findError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("line_id", profile.userId)
+          .maybeSingle();
+
+        if (findError && findError.code !== "PGRST116") {
+          throw findError;
+        }
+
+        if (!existingUser) {
+          // Insert new user
+          const { error: insertError } = await supabase
+            .from("users")
+            .insert([{
+              line_id: profile.userId,
+              display_name: profile.displayName,
+              picture_url: profile.pictureUrl,
+              points: 0
+            }]);
+
+          if (insertError) throw insertError;
+          console.log("✅ New user created in Supabase");
+        } else {
+          console.log("🟢 User already exists in Supabase");
+        }
+      } catch (error) {
+        console.error("❌ Error saving user:", error);
+        throw error;
+      }
+    }
+
+    async function loadUserData(userId) {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("line_id", userId)
+          .single();
+
+        if (error) throw error;
+
+        currentUser = data;
+        userPoints = data.points || 0;
+
+        // Update UI
+        document.getElementById("userName").textContent = data.display_name;
+        document.getElementById("userPic").src = data.picture_url;
+        document.getElementById("userPoints").textContent = userPoints;
+
+        console.log("✅ User data loaded:", data);
+      } catch (error) {
+        console.error("❌ Error loading user data:", error);
+        throw error;
+      }
+    }
+
+    async function logout() {
+      if (confirm("ต้องการออกจากระบบหรือไม่?")) {
+        liff.logout();
+        window.location.reload();
+      }
+    }
+
+    // ===============================================================
+    // 5. ORDER MANAGEMENT
+    // ===============================================================
+    function selectBase(base, element) {
+      // Remove previous selection
+      document.querySelectorAll(".brownie-base").forEach(el => {
+        el.classList.remove("selected");
+      });
+
+      // Select new base
+      element.classList.add("selected");
+      selectedBase = base;
+
+      // Show toppings section
+      document.getElementById("toppings-section").classList.remove("hidden");
+
+      updateTotal();
+    }
+
+    function selectTopping(topping, element) {
+      // Remove previous selection
+      document.querySelectorAll(".topping-item").forEach(el => {
+        el.classList.remove("selected");
+      });
+
+      // Select new topping
+      element.classList.add("selected");
+      selectedTopping = topping;
+
+      updateTotal();
+    }
+
+    function updateTotal() {
+      const basePrice = selectedBase ? 25 : 0;
+      const toppingPrice = selectedTopping ? 15 : 0;
+      const total = basePrice + toppingPrice;
+
+      document.getElementById("total-price").textContent = total;
+
+      const addButton = document.getElementById("add-to-cart-btn");
+      addButton.disabled = !selectedBase || !selectedTopping;
+    }
+
+    function addToCart() {
+      if (!selectedBase || !selectedTopping) {
+        showMessage("กรุณาเลือกเนื้อและหน้าบราวนี่");
+        return;
+      }
+
+      const item = {
+        id: Date.now(),
+        base: selectedBase,
+        topping: selectedTopping,
+        price: 40,
+        baseName: baseNames[selectedBase],
+        toppingName: toppingNames[selectedTopping]
+      };
+
+      cart.push(item);
+      updateCartBadge();
+      
+      // Reset selections
+      document.querySelectorAll(".brownie-base, .topping-item").forEach(el => {
+        el.classList.remove("selected");
+      });
+      selectedBase = null;
+      selectedTopping = null;
+      updateTotal();
+
+      showMessage("เพิ่มลงตะกร้าแล้ว! 🛒");
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById("cart-badge");
+      if (cart.length > 0) {
+        badge.textContent = cart.length;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
+
+    function showCart() {
+      const modal = document.getElementById("cart-modal");
+      const content = document.getElementById("cart-content");
+
+      if (cart.length === 0) {
+        content.innerHTML = `
+          <div class="text-center py-12">
+            <div class="text-6xl mb-4">🛒</div>
+            <p class="text-gray-600 text-lg">ตะกร้าว่างเปล่า</p>
+          </div>
+        `;
+      } else {
+        let html = '<div class="space-y-3">';
+        cart.forEach((item, index) => {
+          html += `
+            <div class="card border border-gray-200 p-4">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-semibold">${item.baseName}</div>
+                  <div class="text-sm text-gray-600">หน้า: ${item.toppingName}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-blue-600">${item.price} บาท</div>
+                  <button onclick="removeFromCart(${index})" class="text-red-500 text-sm mt-1">ลบ</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        content.innerHTML = html;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById("cart-total").textContent = total + " บาท";
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeCart() {
+      document.getElementById("cart-modal").classList.add("hidden");
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCartBadge();
+      showCart();
+    }
+
+    async function checkout() {
+      if (cart.length === 0) {
+        showMessage("ตะกร้าว่างเปล่า");
+        return;
+      }
+
+      try {
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        const earnedPoints = total;
+
+        // Create order in Supabase
+        const { data: orderData, error: orderError } = await supabase
+          .from("orders")
+          .insert([{
+            user_id: currentUser.id,
+            line_id: currentUser.line_id,
+            items: cart,
+            total_price: total,
+            earned_points: earnedPoints,
+            status: "pending"
+          }])
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Update user points
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ points: userPoints + earnedPoints })
+          .eq("id", currentUser.id);
+
+        if (updateError) throw updateError;
+
+        // Update local state
+        userPoints += earnedPoints;
+        document.getElementById("userPoints").textContent = userPoints;
+        cart = [];
+        updateCartBadge();
+        closeCart();
+
+        showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
+
+      } catch (error) {
+        console.error("❌ Checkout error:", error);
+        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
+      }
+    }
+
+    async function showOrderHistory() {
+      try {
+        const { data: orders, error } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("line_id", currentUser.line_id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (orders.length === 0) {
+          showMessage("ยังไม่มีประวัติการสั่งซื้อ");
+          return;
+        }
+
+        let message = "ประวัติการสั่งซื้อ:\n\n";
+        orders.forEach((order, i) => {
+          message += `${i + 1}. ยอดรวม: ${order.total_price} บาท\n`;
+          message += `   สถานะ: ${order.status}\n`;
+          message += `   วันที่: ${new Date(order.created_at).toLocaleDateString('th-TH')}\n\n`;
+        });
+
+        alert(message);
+
+      } catch (error) {
+        console.error("❌ Error loading orders:", error);
+        showMessage("เกิดข้อผิดพลาดในการโหลดประวัติ");
+      }
+    }
+
+    // ===============================================================
+    // 6. UTILITY FUNCTIONS
+    // ===============================================================
+    function showMessage(message) {
+      const successMessage = document.getElementById("success-message");
+      const successText = document.getElementById("success-text");
+      successText.textContent = message;
+      successMessage.classList.remove("hidden");
+
+      setTimeout(() => {
+        successMessage.classList.add("hidden");
+      }, 3000);
+    }
+
+    // ===============================================================
+    // 7. START APPLICATION
+    // ===============================================================
+    window.addEventListener("load", init);
+  </script>
 </body>
 </html>
