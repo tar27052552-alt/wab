@@ -56,18 +56,17 @@ async function initLiff() {
     const profile = await liff.getProfile();
     console.log("👤 Profile:", profile);
 
+    // ... โค้ดส่วนบน ...
     // บันทึกหรือเช็กผู้ใช้ใน Supabase
     await saveUserToSupabase(profile);
 
     // ✅ ไปหน้า home.html หลังล็อกอินสำเร็จ
-    setTimeout(() => {
-      console.log("➡️ Redirecting to home.html...");
-      window.location.href = "home.html";
-    }, 1000);
+    // โค้ดเดิม: setTimeout(() => { ... }, 1000);
+    console.log("➡️ Redirecting to home.html...");
+    window.location.href = "home.html"; // ✅ Redirect ทันที
+
   } catch (err) {
-    console.error("❌ LIFF init error:", err);
-  }
-}
+// ... โค้ดส่วนล่าง ...
 
 async function saveUserToSupabase(profile) {
   try {
