@@ -3539,21 +3539,49 @@ const supabaseKey =
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function checkLogin() {
-  await liff.init({ liffId });
-  if (!liff.isLoggedIn()) {
-    alert("กรุณาเข้าสู่ระบบก่อน 😊");
-    window.location.href = "index.html";
-    return;
-  }
+  try {
+    await liff.init({ liffId });
 
-  const profile = await liff.getProfile();
-  document.getElementById("userName").textContent = profile.displayName;
-  console.log("👋 สวัสดี", profile.displayName);
+    if (!liff.isLoggedIn()) {
+      alert("กรุณาเข้าสู่ระบบก่อน 😊");
+      window.location.href = "index.html";
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    console.log("👤 เข้าสู่ระบบ:", profile.displayName);
+
+    // ตรวจสอบผู้ใช้ใน Supabase
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("line_id", profile.userId)
+      .single();
+
+    if (error) {
+      console.error("❌ Supabase error:", error);
+      alert("ไม่พบข้อมูลผู้ใช้ในระบบ กรุณาล็อกอินใหม่");
+      window.location.href = "index.html";
+      return;
+    }
+
+    // ถ้าผู้ใช้มีอยู่ในระบบ → แสดงข้อมูล
+    document.getElementById("userName").textContent = profile.displayName;
+    document.getElementById("userPoints").textContent = user.points + " แต้ม";
+    console.log("🟢 โหลดข้อมูลสำเร็จ:", user);
+  } catch (err) {
+    console.error("⚠️ checkLogin error:", err);
+    alert("เกิดข้อผิดพลาด กรุณาล็อกอินใหม่");
+    window.location.href = "index.html";
+  }
 }
 
 checkLogin();
 </script>
-
+  <div style="padding:20px; text-align:center;">
+    <h2 id="userName">กำลังโหลด...</h2>
+    <p>แต้มสะสม: <span id="userPoints">0</span></p>
+  </div>
 
   </body>
 </html>
