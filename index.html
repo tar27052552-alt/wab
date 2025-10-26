@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>เข้าสู่ระบบด้วย LINE | SUAN KHANOM</title>
-
-  <!-- Tailwind -->
+  <title>เข้าสู่ระบบ | บราวนี่โฮมเมด</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     body {
@@ -18,27 +18,26 @@
   </style>
 </head>
 
-<body class="flex flex-col items-center justify-center min-h-screen px-4 text-center">
-  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-sm border border-gray-100">
-    <img src="https://cdn-icons-png.flaticon.com/512/2975/2975175.png" class="mx-auto w-16 mb-4" alt="Brownie Logo" />
+<body class="flex flex-col items-center justify-center min-h-screen text-center px-4">
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-sm">
+    <img src="https://cdn-icons-png.flaticon.com/512/2975/2975175.png" alt="Brownie" class="mx-auto w-20 mb-5" />
+    <h1 class="text-2xl font-bold mb-3 text-gray-800">เข้าสู่ระบบด้วย LINE</h1>
+    <p class="text-gray-600 mb-6">เพื่อเข้าใช้งานระบบบราวนี่โฮมเมด</p>
 
-    <h1 class="text-2xl font-bold mb-2 text-gray-800">เข้าสู่ระบบด้วย LINE</h1>
-    <p class="text-gray-600 mb-6">กดปุ่มด้านล่างเพื่อเข้าสู่ระบบผ่านบัญชี LINE</p>
-
-    <button id="loginBtn" onclick="initLiff()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow transition-all duration-200">
+    <button id="loginBtn" onclick="initLiff()"
+      class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow transition-all duration-200">
       เข้าสู่ระบบด้วย LINE
     </button>
 
     <div id="loading" class="hidden text-gray-500 mt-4">กำลังเข้าสู่ระบบ...</div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
   <script>
     const liffId = "2008357926-Ly07A5w2";
     const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+    const supabaseKey =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     async function initLiff() {
@@ -47,23 +46,20 @@
 
       try {
         await liff.init({ liffId });
-        console.log("✅ LIFF Loaded");
-
         if (!liff.isLoggedIn()) {
           liff.login();
           return;
         }
 
         const profile = await liff.getProfile();
-        console.log("👤 Profile:", profile);
         await saveUserToSupabase(profile);
 
-        // ✅ redirect ไปหน้า home.html
+        // ✅ ล็อกอินเสร็จแล้ว ไปหน้า index.html (หน้าหลัก)
         setTimeout(() => {
-          window.location.href = "home.html";
-        }, 1200);
-      } catch (err) {
-        console.error("❌ LIFF init error:", err);
+          window.location.href = "index.html";
+        }, 1000);
+      } catch (error) {
+        console.error("❌ LIFF Error:", error);
       }
     }
 
@@ -73,21 +69,23 @@
           .from("users")
           .select("*")
           .eq("line_id", profile.userId)
-          .single();
+          .maybeSingle();
 
         if (!existingUser) {
-          await supabase.from("users").insert([{
-            line_id: profile.userId,
-            display_name: profile.displayName,
-            picture_url: profile.pictureUrl,
-            points: 0,
-          }]);
-          console.log("🟢 เพิ่มผู้ใช้ใหม่ในฐานข้อมูลแล้ว");
+          await supabase.from("users").insert([
+            {
+              display_name: profile.displayName,
+              picture_url: profile.pictureUrl,
+              line_id: profile.userId,
+              points: 0,
+            },
+          ]);
+          console.log("🟢 เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
         } else {
-          console.log("🟡 ผู้ใช้นี้มีอยู่แล้วในระบบ");
+          console.log("👋 ผู้ใช้นี้มีอยู่แล้วในระบบ");
         }
       } catch (err) {
-        console.error("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล:", err);
+        console.error("❌ บันทึกผู้ใช้ล้มเหลว:", err);
       }
     }
   </script>
