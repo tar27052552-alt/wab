@@ -39,8 +39,7 @@
 <script>
 const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
 const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function initLiff() {
@@ -56,17 +55,19 @@ async function initLiff() {
     const profile = await liff.getProfile();
     console.log("👤 Profile:", profile);
 
-   
-    // บันทึกหรือเช็กผู้ใช้ใน Supabase
     await saveUserToSupabase(profile);
 
-    // ✅ ไปหน้า home.html หลังล็อกอินสำเร็จ
-    // โค้ดเดิม: setTimeout(() => { ... }, 1000);
-    console.log("➡️ Redirecting to home.html...");
-    window.location.href = "home.html"; // ✅ Redirect ทันที
+    // ✅ บันทึกข้อมูลใน localStorage เพื่อส่งต่อหน้า home
+    localStorage.setItem("userName", profile.displayName);
+    localStorage.setItem("userPic", profile.pictureUrl);
+    localStorage.setItem("userId", profile.userId);
 
+    // ✅ ไปหน้า home
+    window.location.href = "home.html";
   } catch (err) {
-
+    console.error("❌ Error initializing LIFF:", err);
+  }
+}
 
 async function saveUserToSupabase(profile) {
   try {
@@ -76,10 +77,7 @@ async function saveUserToSupabase(profile) {
       .eq("line_id", profile.userId)
       .single();
 
-    if (findError && findError.code !== "PGRST116") {
-      console.error("Find user error:", findError);
-      return;
-    }
+    if (findError && findError.code !== "PGRST116") throw findError;
 
     if (!existingUser) {
       const { error } = await supabase.from("users").insert([
@@ -90,9 +88,8 @@ async function saveUserToSupabase(profile) {
           points: 0,
         },
       ]);
-
-      if (error) console.error("Insert error:", error);
-      else console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
+      if (error) throw error;
+      console.log("✅ เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
     } else {
       console.log("🟢 พบผู้ใช้ใน Supabase แล้ว");
     }
@@ -101,8 +98,10 @@ async function saveUserToSupabase(profile) {
   }
 }
 
+// เริ่มทำงานเมื่อเปิดหน้า
 initLiff();
 </script>
+
 
 </body>
 </html>
