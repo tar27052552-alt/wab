@@ -21,12 +21,35 @@
     <h1 class="text-2xl font-bold mb-2">เข้าสู่ระบบด้วย LINE</h1>
     <p class="text-gray-600 mb-6">กดปุ่มด้านล่างเพื่อเข้าสู่ระบบผ่านบัญชี LINE</p>
 
-    <button onclick="initLiff()" id="loginBtn"
-      class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow">
-      เข้าสู่ระบบด้วย LINE
-    </button>
+    async function initLiff() {
+  document.getElementById("loginBtn").classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
 
-    <div id="loading" class="hidden text-gray-500 mt-4">กำลังเข้าสู่ระบบ...</div>
+  try {
+    await liff.init({ liffId });
+    console.log("✅ LIFF Loaded");
+
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    console.log("👤 Profile:", profile);
+
+    await saveUserToSupabase(profile);
+
+    // ✅ รอให้ Supabase บันทึกก่อน แล้วค่อย redirect
+    setTimeout(() => {
+      console.log("➡️ Redirecting to home.html...");
+      window.location.href = "home.html";
+    }, 1500);
+
+  } catch (err) {
+    console.error("❌ LIFF init error:", err);
+  }
+}
+
   </div>
 
   <script>
