@@ -262,7 +262,7 @@
             <div>
               <div class="text-sm text-gray-500">แต้มสะสม</div>
               <div class="font-semibold text-gray-900">
-                <div>แต้มสะสม: <span id="userPoints" class="text-orange-600 font-semibold">0</span></div>
+                <div><span id="userPoints" class="text-orange-600 font-semibold">0</span>แต้ม</div>
               </div>
             </div>
           </div>
@@ -274,8 +274,13 @@
               class="text-sm text-gray-600 hidden sm:block"
             >
               <div id="user-status" class="flex items-center space-x-2">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div id="userName" class="font-medium">กำลังโหลด...</div>
+              <div id="login-status" class="text-sm text-gray-600 hidden sm:block">
+              <div id="user-status" class="flex items-center space-x-2">
+              <img id="userPic" src="" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300" />
+              <span id="userName">กำลังโหลด...</span>
+              </div>
+              </div>
+
               </div>
             </div>
             <button
@@ -3594,6 +3599,23 @@
 
   init();
 </script>
+    <script>
+  async function init() {
+    await liff.init({ liffId: "2008357926-Ly07A5w2" });
+
+    if (!liff.isLoggedIn()) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    document.getElementById("userName").textContent = profile.displayName;
+    document.getElementById("userPic").src = profile.pictureUrl;
+  }
+
+  init();
+</script>
+
 
 
   </body>
