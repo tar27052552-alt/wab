@@ -1121,62 +1121,19 @@
 
     async function updateOrderStatus(orderId, newStatus) {
       try {
-        // Get order details first
-        const { data: order, error: fetchError } = await supabase
-          .from("orders")
-          .select("*, users(line_id, display_name)")
-          .eq("id", orderId)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        // Update status
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from("orders")
           .update({ status: newStatus })
           .eq("id", orderId);
 
-        if (updateError) throw updateError;
+        if (error) throw error;
 
-        // Send LINE notification
-        await sendOrderStatusNotification(order, newStatus);
-
-        showMessage("อัพเดทสถานะและส่งแจ้งเตือนสำเร็จ");
+        showMessage("อัพเดทสถานะสำเร็จ");
         loadAdminOrders();
 
       } catch (error) {
         console.error("❌ Error updating status:", error);
-        showMessage("เกิดข้อผิดพลาด: " + error.message);
-      }
-    }
-
-    async function sendOrderStatusNotification(order, newStatus) {
-      try {
-        // Call Supabase Edge Function to send LINE notification
-        const { data, error } = await supabase.functions.invoke('send-line-notification', {
-          body: {
-            lineId: order.users.line_id,
-            orderId: order.id,
-            status: newStatus,
-            orderData: {
-              items: order.items,
-              total_price: order.total_price,
-              subtotal: order.subtotal,
-              discount: order.discount
-            }
-          }
-        });
-
-        if (error) {
-          console.error("❌ Error calling edge function:", error);
-          // Don't throw, just log
-        } else {
-          console.log("✅ Notification sent successfully");
-        }
-
-      } catch (error) {
-        console.error("❌ Error sending notification:", error);
-        // Don't throw error, just log it
+        showMessage("เกิดข้อผิดพลาด");
       }
     }
 
