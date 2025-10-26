@@ -3528,11 +3528,10 @@
         }
       })();
     </script>
-    <!-- 🔗 LIFF + Supabase Login Integration -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-  const liffId = "2008357926-Ly07A5w2"; // LIFF ID ของโต๋
+  const liffId = "2008357926-Ly07A5w2";
   const supabaseUrl = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -3540,58 +3539,47 @@
   window.addEventListener("load", async () => {
     try {
       await liff.init({ liffId });
-      console.log("✅ LIFF Loaded");
+      console.log("✅ LIFF Loaded on Home");
 
       if (!liff.isLoggedIn()) {
-        liff.login();
+        window.location.href = "index.html"; // กลับไปหน้า login
         return;
       }
 
       const profile = await liff.getProfile();
-      console.log("👤 Profile:", profile);
-      await saveUserToSupabase(profile);
+      console.log("👤 Logged in as:", profile.displayName);
 
-      // แสดงชื่อผู้ใช้ที่มุมบน
+      // แสดงชื่อผู้ใช้ในมุมบน
       document.querySelector("#user-status span").textContent =
         "👋 " + profile.displayName;
 
       document.getElementById("main-app").classList.remove("hidden");
-    } catch (err) {
-      console.error("❌ LIFF init error:", err);
-    }
-  });
 
-  async function saveUserToSupabase(profile) {
-    try {
-      const { data: existingUser } = await supabase
+      // อัปเดตแต้มจากฐานข้อมูล
+      const { data } = await supabase
         .from("users")
-        .select("*")
+        .select("points")
         .eq("line_id", profile.userId)
         .single();
 
-      if (!existingUser) {
-        await supabase.from("users").insert([{
-          line_id: profile.userId,
-          display_name: profile.displayName,
-          picture_url: profile.pictureUrl,
-          points: 0,
-        }]);
-        console.log("🟢 เพิ่มผู้ใช้ใหม่ใน Supabase แล้ว");
-      } else {
-        console.log("🟡 ผู้ใช้นี้มีอยู่แล้วในระบบ");
+      if (data) {
+        document.getElementById("points").textContent = data.points;
       }
+
     } catch (err) {
-      console.error("❌ เกิดข้อผิดพลาดในการบันทึก:", err);
+      console.error("❌ LIFF init error:", err);
+      window.location.href = "index.html"; // ถ้าโหลด LIFF ไม่ได้ ให้กลับหน้า login
     }
-  }
+  });
 
   async function toggleLogin() {
     await liff.init({ liffId });
     if (liff.isLoggedIn()) {
       liff.logout();
-      window.location.href = "login.html"; // เปลี่ยนไปหน้า login
+      window.location.href = "index.html"; // กลับหน้า login
     }
   }
 </script>
+
   </body>
 </html>
