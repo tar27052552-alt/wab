@@ -441,7 +441,7 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
 
     // Admin User IDs (เพิ่ม LINE User ID ที่ต้องการให้เป็น Admin)
-    const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2"]; // เปลี่ยนเป็น User ID ของคุณ
+    const ADMIN_IDS = ["Ud21a04a5d66c94e0b4c6f1aaf8f50c2"]; // เปลี่ยนเป็น User ID ของคุณ
 
     let supabase;
     try {
@@ -1121,19 +1121,62 @@
 
     async function updateOrderStatus(orderId, newStatus) {
       try {
-        const { error } = await supabase
+        // Get order details first
+        const { data: order, error: fetchError } = await supabase
+          .from("orders")
+          .select("*, users(line_id, display_name)")
+          .eq("id", orderId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Update status
+        const { error: updateError } = await supabase
           .from("orders")
           .update({ status: newStatus })
           .eq("id", orderId);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
-        showMessage("อัพเดทสถานะสำเร็จ");
+        // Send LINE notification
+        await sendOrderStatusNotification(order, newStatus);
+
+        showMessage("อัพเดทสถานะและส่งแจ้งเตือนสำเร็จ");
         loadAdminOrders();
 
       } catch (error) {
         console.error("❌ Error updating status:", error);
-        showMessage("เกิดข้อผิดพลาด");
+        showMessage("เกิดข้อผิดพลาด: " + error.message);
+      }
+    }
+
+    async function sendOrderStatusNotification(order, newStatus) {
+      try {
+        // Call Supabase Edge Function to send LINE notification
+        const { data, error } = await supabase.functions.invoke('send-line-notification', {
+          body: {
+            lineId: order.users.line_id,
+            orderId: order.id,
+            status: newStatus,
+            orderData: {
+              items: order.items,
+              total_price: order.total_price,
+              subtotal: order.subtotal,
+              discount: order.discount
+            }
+          }
+        });
+
+        if (error) {
+          console.error("❌ Error calling edge function:", error);
+          // Don't throw, just log
+        } else {
+          console.log("✅ Notification sent successfully");
+        }
+
+      } catch (error) {
+        console.error("❌ Error sending notification:", error);
+        // Don't throw error, just log it
       }
     }
 
