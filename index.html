@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SUAN KHANOM</title>
+  <title>Brownie Studio - Order System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -177,11 +177,31 @@
             <div class="text-6xl mb-3">🫐</div>
             <h3 class="font-semibold text-gray-900 mb-1">เนื้อโกโก้</h3>
             <p class="text-sm text-gray-500 mb-3">รสชาติโกโก้แท้เข้มข้น</p>
-            <div class="text-lg font-bold text-blue-600">10 บาท</div>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
           </div>
         </div>
 
-           <!-- Toppings Section -->
+        <div class="brownie-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectBase('greentea', this)">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🍃</div>
+            <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาเขียว</h3>
+            <p class="text-sm text-gray-500 mb-3">หอมกรุ่นชาเขียวแท้</p>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
+          </div>
+        </div>
+
+        <div class="brownie-base card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectBase('thaitea', this)">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🧡</div>
+            <h3 class="font-semibold text-gray-900 mb-1">เนื้อชาไทย</h3>
+            <p class="text-sm text-gray-500 mb-3">หวานหอมชาไทยแท้</p>
+            <div class="text-lg font-bold text-blue-600">25 บาท</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toppings Section -->
     <section id="toppings-section" class="card mb-8 hidden hover-lift">
       <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
         <span class="mr-3">🍪</span>
@@ -191,18 +211,18 @@
         <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectTopping('chocolate', this)">
           <div class="text-center">
             <div class="text-4xl mb-3">🍫</div>
-            <h3 class="font-medium text-gray-900 mb-1">ไม่มีหน้า</h3>
+            <h3 class="font-medium text-gray-900 mb-1">ช็อกโกแลตชิพ</h3>
             <p class="text-sm text-gray-500 mb-3">หอมหวานเข้มข้น</p>
-            <div class="text-lg font-bold text-blue-600">0 บาท</div>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
           </div>
         </div>
 
         <div class="topping-item card border-2 border-gray-200 cursor-pointer hover-lift" onclick="selectTopping('almond', this)">
           <div class="text-center">
             <div class="text-4xl mb-3">🌰</div>
-            <h3 class="font-medium text-gray-900 mb-1">อัลมอนด์สไลด์</h3>
+            <h3 class="font-medium text-gray-900 mb-1">อัลมอนด์แผ่น</h3>
             <p class="text-sm text-gray-500 mb-3">กรอบหอมนัท</p>
-            <div class="text-lg font-bold text-blue-600">0 บาท</div>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
           </div>
         </div>
 
@@ -211,7 +231,7 @@
             <div class="text-4xl mb-3">🍪</div>
             <h3 class="font-medium text-gray-900 mb-1">โอริโอ้บด</h3>
             <p class="text-sm text-gray-500 mb-3">กรอบหวานมัน</p>
-            <div class="text-lg font-bold text-blue-600">0 บาท</div>
+            <div class="text-lg font-bold text-blue-600">15 บาท</div>
           </div>
         </div>
       </div>
@@ -421,7 +441,7 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
 
     // Admin User IDs (เพิ่ม LINE User ID ที่ต้องการให้เป็น Admin)
-    const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"]; // เปลี่ยนเป็น User ID ของคุณ
+    const ADMIN_IDS = ["Ud21a04a5d66c94e0b4c6f1aaf8f50c2"]; // เปลี่ยนเป็น User ID ของคุณ
 
     let supabase;
     try {
@@ -444,12 +464,14 @@
     let availableCoupons = [];
 
     const baseNames = {
-      cocoa: "เนื้อโกโก้"
+      cocoa: "เนื้อโกโก้",
+      greentea: "เนื้อชาเขียว",
+      thaitea: "เนื้อชาไทย"
     };
 
     const toppingNames = {
-      chocolate: "ไม่มีหน้า",
-      almond: "อัลมอนด์สไลด์",
+      chocolate: "ช็อกโกแลตชิพ",
+      almond: "อัลมอนด์แผ่น",
       oreo: "โอริโอ้บด"
     };
 
@@ -1099,19 +1121,62 @@
 
     async function updateOrderStatus(orderId, newStatus) {
       try {
-        const { error } = await supabase
+        // Get order details first
+        const { data: order, error: fetchError } = await supabase
+          .from("orders")
+          .select("*, users(line_id, display_name)")
+          .eq("id", orderId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Update status
+        const { error: updateError } = await supabase
           .from("orders")
           .update({ status: newStatus })
           .eq("id", orderId);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
-        showMessage("อัพเดทสถานะสำเร็จ");
+        // Send LINE notification
+        await sendOrderStatusNotification(order, newStatus);
+
+        showMessage("อัพเดทสถานะและส่งแจ้งเตือนสำเร็จ");
         loadAdminOrders();
 
       } catch (error) {
         console.error("❌ Error updating status:", error);
-        showMessage("เกิดข้อผิดพลาด");
+        showMessage("เกิดข้อผิดพลาด: " + error.message);
+      }
+    }
+
+    async function sendOrderStatusNotification(order, newStatus) {
+      try {
+        // Call Supabase Edge Function to send LINE notification
+        const { data, error } = await supabase.functions.invoke('send-line-notification', {
+          body: {
+            lineId: order.users.line_id,
+            orderId: order.id,
+            status: newStatus,
+            orderData: {
+              items: order.items,
+              total_price: order.total_price,
+              subtotal: order.subtotal,
+              discount: order.discount
+            }
+          }
+        });
+
+        if (error) {
+          console.error("❌ Error calling edge function:", error);
+          // Don't throw, just log
+        } else {
+          console.log("✅ Notification sent successfully");
+        }
+
+      } catch (error) {
+        console.error("❌ Error sending notification:", error);
+        // Don't throw error, just log it
       }
     }
 
