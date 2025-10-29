@@ -451,7 +451,6 @@
     const LIFF_ID = "2008357926-Ly07A5w2";
     const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
-
     // Admin User IDs (เพิ่ม LINE User ID ที่ต้องการให้เป็น Admin)
     const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"]; // เปลี่ยนเป็น User ID ของคุณ
 
@@ -466,6 +465,7 @@
     // ===============================================================
     // 2. STATE VARIABLES
     // ===============================================================
+    let userProfile = null; // เก็บข้อมูลโปรไฟล์ LINE (global ใช้ได้ทุกฟังก์ชัน)
     let currentUser = null;
     let selectedBase = null;
     let selectedTopping = null;
@@ -501,7 +501,7 @@
           return;
         }
 
-        const profile = await liff.getProfile();
+        userProfile = await liff.getProfile(); // ✅ เก็บใน global variable
         console.log("👤 Profile loaded:", profile);
 
         await saveUserToSupabase(profile);
