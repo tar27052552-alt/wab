@@ -491,39 +491,41 @@
     // 3. INITIALIZATION
     // ===============================================================
     async function init() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        console.log("✅ LIFF Initialized");
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    console.log("✅ LIFF Initialized");
 
-        if (!liff.isLoggedIn()) {
-          console.log("❌ Not logged in, redirecting to LINE Login...");
-          liff.login();
-          return;
-        }
-
-        userProfile = await liff.getProfile(); // ✅ เก็บใน global variable
-        console.log("👤 Profile loaded:", profile);
-
-        await saveUserToSupabase(profile);
-        await loadUserData(profile.userId);
-        await loadCoupons();
-
-        // Check if admin
-        if (ADMIN_IDS.includes(profile.userId)) {
-          document.getElementById("admin-btn").classList.remove("hidden");
-        }
-
-        document.getElementById("loading-screen").classList.add("hidden");
-        document.getElementById("main-header").classList.remove("hidden");
-        document.getElementById("main-app").classList.remove("hidden");
-
-      } catch (error) {
-        console.error("❌ Init error:", error);
-        showMessage("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
-        setTimeout(() => liff.login(), 2000);
-      }
+    if (!liff.isLoggedIn()) {
+      console.log("❌ Not logged in, redirecting to LINE Login...");
+      liff.login();
+      return;
     }
 
+    // ✅ ดึงข้อมูลผู้ใช้จาก LINE แล้วเก็บไว้ในตัวแปร global
+    userProfile = await liff.getProfile();
+    console.log("👤 Profile loaded:", userProfile);
+
+    // ✅ ส่งข้อมูล userProfile ไปเก็บใน Supabase และโหลดข้อมูลเพิ่มเติม
+    await saveUserToSupabase(userProfile);
+    await loadUserData(userProfile.userId);
+    await loadCoupons();
+
+    // ✅ ตรวจสอบสิทธิ์แอดมิน
+    if (ADMIN_IDS.includes(userProfile.userId)) {
+      document.getElementById("admin-btn").classList.remove("hidden");
+    }
+
+    // ✅ แสดงหน้าเว็บหลังโหลดเสร็จ
+    document.getElementById("loading-screen").classList.add("hidden");
+    document.getElementById("main-header").classList.remove("hidden");
+    document.getElementById("main-app").classList.remove("hidden");
+
+  } catch (error) {
+    console.error("❌ Init error:", error);
+    showMessage("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
+    setTimeout(() => liff.login(), 2000);
+  }
+}
     // ===============================================================
     // 4. USER MANAGEMENT
     // ===============================================================
