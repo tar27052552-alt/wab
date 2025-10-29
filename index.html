@@ -164,6 +164,17 @@
       <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SUAN KHANOM</h1>
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
+    <!-- ✅ วางหน้านี้ต่อจากตรงนี้ได้เลย -->
+  <section id="order-history" class="hidden px-4 py-6">
+    <h2 class="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
+      <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
+    </h2>
+
+    <!-- รายการออเดอร์ -->
+    <div id="order-list" class="space-y-4">
+      <!-- JavaScript จะเติมข้อมูลตรงนี้ -->
+    </div>
+  </section>
 
     <!-- Base Selection -->
     <section class="card mb-8 hover-lift">
@@ -971,48 +982,101 @@ function showCouponMessage(message, type) {
     // ===============================================================
     // 9. ORDER HISTORY
     // ===============================================================
-    async function showOrderHistory() {
-      try {
-        const { data: orders, error } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("line_id", currentUser.line_id)
-          .order("created_at", { ascending: false });
+    async function loadOrderHistory() {
+  const orderList = document.getElementById("order-list");
+  orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
 
-        if (error) throw error;
+  try {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-        if (orders.length === 0) {
-          showMessage("ยังไม่มีประวัติการสั่งซื้อ");
-          return;
-        }
+    if (error) throw error;
 
-        let message = "📋 ประวัติการสั่งซื้อ\n\n";
-        orders.slice(0, 5).forEach((order, i) => {
-          const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
-          message += `${i + 1}. ออเดอร์ #${order.id}\n`;
-          message += `   ${totalItems} ชิ้น - ${order.total_price} บาท\n`;
-          message += `   สถานะ: ${getStatusText(order.status)}\n`;
-          message += `   วันที่: ${new Date(order.created_at).toLocaleDateString('th-TH')}\n\n`;
-        });
-
-        alert(message);
-
-      } catch (error) {
-        console.error("❌ Error loading orders:", error);
-        showMessage("เกิดข้อผิดพลาดในการโหลดประวัติ");
-      }
+    if (!orders || orders.length === 0) {
+      orderList.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-6xl mb-2">📭</div>
+          <p class="text-gray-600">ยังไม่มีคำสั่งซื้อ</p>
+        </div>`;
+      return;
     }
 
-    function getStatusText(status) {
-      const statusMap = {
-        pending: "รอดำเนินการ",
-        preparing: "กำลังเตรียม",
-        ready: "พร้อมรับ",
-        completed: "สำเร็จ",
-        cancelled: "ยกเลิก"
-      };
-      return statusMap[status] || status;
-    }
+    let html = "";
+    orders.forEach(order => {
+      const statusBadge = getStatusBadge(order.status);
+      const items = order.items.map(i => `<li>${i.name} (${i.quantity})</li>`).join("");
+      const canCancel = ["pending", "preparing"].includes(order.status);
+
+      html += `
+        <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-semibold text-purple-900">Order #${order.id}</p>
+              <p class="text-sm text-gray-500">${new Date(order.created_at).toLocaleString("th-TH")}</p>
+            </div>
+            <span class="text-sm font-medium ${statusBadge.class} px-3 py-1 rounded-full">${statusBadge.label}</span>
+          </div>
+
+          <ul class="mt-3 text-sm text-gray-700 list-disc list-inside">${items}</ul>
+
+          <div class="flex justify-between items-center mt-4">
+            <p class="font-medium text-purple-700">ยอดรวม: ${order.total_price} บาท</p>
+            ${canCancel
+              ? `<button onclick="cancelOrder(${order.id})"
+                  class="text-red-600 hover:text-red-800 font-medium text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
+                  ยกเลิกคำสั่งซื้อ
+                </button>`
+              : ""}
+          </div>
+        </div>`;
+    });
+
+    orderList.innerHTML = html;
+  } catch (error) {
+    console.error("❌ Error loading orders:", error);
+    orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+  }
+}
+
+// แสดง badge สีตามสถานะ
+function getStatusBadge(status) {
+  switch (status) {
+    case "pending": return { label: "รอดำเนินการ", class: "bg-yellow-100 text-yellow-700" };
+    case "preparing": return { label: "กำลังเตรียม", class: "bg-blue-100 text-blue-700" };
+    case "ready": return { label: "พร้อมส่ง", class: "bg-green-100 text-green-700" };
+    case "completed": return { label: "สำเร็จ", class: "bg-purple-100 text-purple-700" };
+    case "cancelled": return { label: "ถูกยกเลิก", class: "bg-red-100 text-red-700" };
+    default: return { label: status, class: "bg-gray-100 text-gray-700" };
+  }
+}
+
+// ฟังก์ชันยกเลิกออเดอร์
+async function cancelOrder(orderId) {
+  if (!confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?")) return;
+
+  try {
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("id", orderId);
+
+    if (error) throw error;
+
+    showMessage("ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว 🛑");
+    loadOrderHistory();
+  } catch (error) {
+    console.error("❌ Error cancelling order:", error);
+    showMessage("เกิดข้อผิดพลาดในการยกเลิกออเดอร์");
+  }
+}
+
+// เปิดหน้า “ประวัติคำสั่งซื้อ”
+function openOrderHistory() {
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('order-history').classList.remove('hidden');
+  loadOrderHistory();
 
     // ===============================================================
     // 10. ADMIN DASHBOARD
