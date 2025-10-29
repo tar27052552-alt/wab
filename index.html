@@ -768,132 +768,132 @@
     // 7. COUPON SYSTEM
     // ===============================================================
     async function loadCoupons() {
-      try {
-        const { data, error } = await supabase
-          .from("coupons")
-          .select("*")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("is_active", true)
+      .eq("show_in_list", true) // ✅ แสดงเฉพาะคูปองที่เลือกให้โชว์
+      .order("created_at", { ascending: false });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        availableCoupons = data || [];
-        console.log("✅ Coupons loaded:", availableCoupons.length);
-      } catch (error) {
-        console.error("❌ Error loading coupons:", error);
-      }
-    }
+    availableCoupons = data || [];
+    console.log("✅ Coupons loaded:", availableCoupons.length);
+  } catch (error) {
+    console.error("❌ Error loading coupons:", error);
+  }
+}
 
-    function showCoupons() {
-      const modal = document.getElementById("coupons-modal");
-      const content = document.getElementById("coupons-content");
+function showCoupons() {
+  const modal = document.getElementById("coupons-modal");
+  const content = document.getElementById("coupons-content");
 
-      if (availableCoupons.length === 0) {
-        content.innerHTML = `
-          <div class="col-span-2 text-center py-12">
-            <div class="text-6xl mb-4">🎫</div>
-            <p class="text-gray-600 text-lg">ยังไม่มีคูปองที่ใช้ได้</p>
-          </div>
-        `;
-      } else {
-        let html = '';
-        availableCoupons.forEach(coupon => {
-          const canUse = coupon.usage_limit > coupon.usage_count;
-          html += `
-            <div class="card border-2 ${canUse ? 'border-purple-200 hover:border-purple-400 cursor-pointer' : 'border-gray-200 opacity-50'} p-4" ${canUse ? `onclick="selectCouponFromList('${coupon.code}')"` : ''}>
-              <div class="flex items-start justify-between mb-3">
-                <div class="text-3xl">🎫</div>
-                <div class="text-xs ${canUse ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
-                  ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
-                </div>
-              </div>
-              <div class="font-bold text-lg text-purple-900 mb-1">${coupon.name}</div>
-              <div class="text-sm text-gray-600 mb-2">${coupon.description}</div>
-              <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
-              <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-              <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
+  if (availableCoupons.length === 0) {
+    content.innerHTML = `
+      <div class="col-span-2 text-center py-12">
+        <div class="text-6xl mb-4">🎫</div>
+        <p class="text-gray-600 text-lg">ยังไม่มีคูปองที่ใช้ได้</p>
+      </div>
+    `;
+  } else {
+    let html = '';
+    availableCoupons.forEach(coupon => {
+      const canUse = coupon.usage_limit > coupon.usage_count;
+      html += `
+        <div class="card border-2 ${canUse ? 'border-purple-200 hover:border-purple-400 cursor-pointer' : 'border-gray-200 opacity-50'} p-4" ${canUse ? `onclick="selectCouponFromList('${coupon.code}')"` : ''}>
+          <div class="flex items-start justify-between mb-3">
+            <div class="text-3xl">🎫</div>
+            <div class="text-xs ${canUse ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
+              ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
             </div>
-          `;
-        });
-        content.innerHTML = html;
-      }
+          </div>
+          <div class="font-bold text-lg text-purple-900 mb-1">${coupon.name}</div>
+          <div class="text-sm text-gray-600 mb-2">${coupon.description}</div>
+          <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
+          <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
+          <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
+        </div>
+      `;
+    });
+    content.innerHTML = html;
+  }
 
-      modal.classList.remove("hidden");
+  modal.classList.remove("hidden");
+}
+
+function closeCoupons() {
+  document.getElementById("coupons-modal").classList.add("hidden");
+}
+
+function selectCouponFromList(code) {
+  document.getElementById("coupon-input").value = code;
+  closeCoupons();
+  applyCouponCode();
+}
+
+async function applyCouponCode() {
+  const code = document.getElementById("coupon-input").value.trim().toUpperCase();
+
+  if (!code) {
+    showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
+    return;
+  }
+
+  const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  try {
+    const { data: coupon, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", code)
+      .eq("is_active", true)
+      .single();
+
+    if (error || !coupon) {
+      showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
+      return;
     }
 
-    function closeCoupons() {
-      document.getElementById("coupons-modal").classList.add("hidden");
+    if (coupon.usage_count >= coupon.usage_limit) {
+      showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
+      return;
     }
 
-    function selectCouponFromList(code) {
-      document.getElementById("coupon-input").value = code;
-      closeCoupons();
-      applyCouponCode();
+    if (subtotal < coupon.min_purchase) {
+      showCouponMessage(`ยอดขั้นต่ำ ${coupon.min_purchase} บาท`, "error");
+      return;
     }
 
-    async function applyCouponCode() {
-      const code = document.getElementById("coupon-input").value.trim().toUpperCase();
-      const messageEl = document.getElementById("coupon-message");
+    selectedCoupon = coupon;
+    document.getElementById("selected-coupon").classList.remove("hidden");
+    document.getElementById("coupon-name").textContent = coupon.name;
+    document.getElementById("coupon-desc").textContent = coupon.description;
+    document.getElementById("coupon-input").value = "";
 
-      if (!code) {
-        showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
-        return;
-      }
+    updateCartTotal();
+    showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
 
-      const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  } catch (error) {
+    console.error("❌ Error applying coupon:", error);
+    showCouponMessage("เกิดข้อผิดพลาด", "error");
+  }
+}
 
-      try {
-        const { data: coupon, error } = await supabase
-          .from("coupons")
-          .select("*")
-          .eq("code", code)
-          .eq("is_active", true)
-          .single();
+function removeCoupon() {
+  selectedCoupon = null;
+  document.getElementById("selected-coupon").classList.add("hidden");
+  updateCartTotal();
+  showMessage("ลบคูปองแล้ว");
+}
 
-        if (error || !coupon) {
-          showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
-          return;
-        }
-
-        if (coupon.usage_count >= coupon.usage_limit) {
-          showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
-          return;
-        }
-
-        if (subtotal < coupon.min_purchase) {
-          showCouponMessage(`ยอดขั้นต่ำ ${coupon.min_purchase} บาท`, "error");
-          return;
-        }
-
-        selectedCoupon = coupon;
-        document.getElementById("selected-coupon").classList.remove("hidden");
-        document.getElementById("coupon-name").textContent = coupon.name;
-        document.getElementById("coupon-desc").textContent = coupon.description;
-        document.getElementById("coupon-input").value = "";
-
-        updateCartTotal();
-        showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
-
-      } catch (error) {
-        console.error("❌ Error applying coupon:", error);
-        showCouponMessage("เกิดข้อผิดพลาด", "error");
-      }
-    }
-
-    function removeCoupon() {
-      selectedCoupon = null;
-      document.getElementById("selected-coupon").classList.add("hidden");
-      updateCartTotal();
-      showMessage("ลบคูปองแล้ว");
-    }
-
-    function showCouponMessage(message, type) {
-      const messageEl = document.getElementById("coupon-message");
-      messageEl.textContent = message;
-      messageEl.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
-      messageEl.classList.remove("hidden");
-      setTimeout(() => messageEl.classList.add("hidden"), 3000);
-    }
+function showCouponMessage(message, type) {
+  const messageEl = document.getElementById("coupon-message");
+  messageEl.textContent = message;
+  messageEl.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+  messageEl.classList.remove("hidden");
+  setTimeout(() => messageEl.classList.add("hidden"), 3000);
+}
 
     // ===============================================================
     // 8. CHECKOUT
@@ -1181,143 +1181,175 @@
     }
 
     async function loadAdminCoupons() {
-      try {
-        const { data: coupons, error } = await supabase
-          .from("coupons")
-          .select("*")
-          .order("created_at", { ascending: false });
+  try {
+    const { data: coupons, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        const content = document.getElementById("admin-coupons-content");
-        
-        if (coupons.length === 0) {
-          content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีคูปอง</p>';
-          return;
-        }
+    const content = document.getElementById("admin-coupons-content");
+    
+    if (coupons.length === 0) {
+      content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีคูปอง</p>';
+      return;
+    }
 
-        let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-        coupons.forEach(coupon => {
-          html += `
-            <div class="card border-2 border-purple-200 p-4">
-              <div class="flex items-start justify-between mb-3">
-                <div>
-                  <div class="font-bold text-lg text-purple-900">${coupon.name}</div>
-                  <div class="text-sm text-gray-600">${coupon.description}</div>
-                </div>
-                <label class="flex items-center">
-                  <input type="checkbox" ${coupon.is_active ? 'checked' : ''} onchange="toggleCoupon(${coupon.id}, this.checked)" class="mr-2" />
-                  <span class="text-sm">เปิดใช้</span>
-                </label>
-              </div>
-              
-              <div class="space-y-1 text-sm text-gray-600">
-                <div>รหัส: <span class="font-mono font-bold">${coupon.code}</span></div>
-                <div>ส่วนลด: ${coupon.type === 'percent' ? coupon.value + '%' : coupon.value + ' บาท'}</div>
-                <div>ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-                <div>ใช้ไป: ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง</div>
-              </div>
-              
-              <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-sm font-medium">
-                🗑️ ลบคูปอง
-              </button>
+    let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+    coupons.forEach(coupon => {
+      html += `
+        <div class="card border-2 border-purple-200 p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="font-bold text-lg text-purple-900">${coupon.name}</div>
+              <div class="text-sm text-gray-600">${coupon.description}</div>
             </div>
-          `;
-        });
-        html += '</div>';
-        content.innerHTML = html;
+            <div class="space-y-1 text-right">
+              <label class="flex items-center justify-end">
+                <input type="checkbox" ${coupon.is_active ? 'checked' : ''} 
+                       onchange="toggleCoupon(${coupon.id}, this.checked)" class="mr-2" />
+                <span class="text-sm">เปิดใช้</span>
+              </label>
+              <label class="flex items-center justify-end">
+                <input type="checkbox" ${coupon.show_in_list ? 'checked' : ''} 
+                       onchange="toggleCouponVisibility(${coupon.id}, this.checked)" class="mr-2" />
+                <span class="text-sm">แสดงในคูปองของฉัน</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="space-y-1 text-sm text-gray-600">
+            <div>รหัส: <span class="font-mono font-bold">${coupon.code}</span></div>
+            <div>ส่วนลด: ${coupon.type === 'percent' ? coupon.value + '%' : coupon.value + ' บาท'}</div>
+            <div>ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
+            <div>ใช้ไป: ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง</div>
+          </div>
+          
+          <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-sm font-medium">
+            🗑️ ลบคูปอง
+          </button>
+        </div>
+      `;
+    });
+    html += '</div>';
+    content.innerHTML = html;
 
-      } catch (error) {
-        console.error("❌ Error loading coupons:", error);
-      }
-    }
+  } catch (error) {
+    console.error("❌ Error loading coupons:", error);
+  }
+}
 
-    function showCreateCouponForm() {
-      document.getElementById("create-coupon-modal").classList.remove("hidden");
-    }
+function showCreateCouponForm() {
+  document.getElementById("create-coupon-modal").classList.remove("hidden");
+}
 
-    function closeCreateCoupon() {
-      document.getElementById("create-coupon-modal").classList.add("hidden");
-    }
+function closeCreateCoupon() {
+  document.getElementById("create-coupon-modal").classList.add("hidden");
+}
 
-    async function createCoupon(event) {
-      event.preventDefault();
+async function createCoupon(event) {
+  event.preventDefault();
 
-      try {
-        const code = document.getElementById("coupon-code").value.toUpperCase();
-        const name = document.getElementById("coupon-title").value;
-        const description = document.getElementById("coupon-description").value;
-        const type = document.getElementById("coupon-type").value;
-        const value = parseInt(document.getElementById("coupon-value").value);
-        const minPurchase = parseInt(document.getElementById("coupon-min").value);
-        const usageLimit = parseInt(document.getElementById("coupon-usage").value);
+  try {
+    const code = document.getElementById("coupon-code").value.toUpperCase();
+    const name = document.getElementById("coupon-title").value;
+    const description = document.getElementById("coupon-description").value;
+    const type = document.getElementById("coupon-type").value;
+    const value = parseInt(document.getElementById("coupon-value").value);
+    const minPurchase = parseInt(document.getElementById("coupon-min").value);
+    const usageLimit = parseInt(document.getElementById("coupon-usage").value);
 
-        const { error } = await supabase
-          .from("coupons")
-          .insert([{
-            code,
-            name,
-            description,
-            type,
-            value,
-            min_purchase: minPurchase,
-            usage_limit: usageLimit,
-            usage_count: 0,
-            is_active: true
-          }]);
+    const { error } = await supabase
+      .from("coupons")
+      .insert([{
+        code,
+        name,
+        description,
+        type,
+        value,
+        min_purchase: minPurchase,
+        usage_limit: usageLimit,
+        usage_count: 0,
+        is_active: true,
+        show_in_list: true // ✅ ค่าเริ่มต้นให้แสดง
+      }]);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        showMessage("สร้างคูปองสำเร็จ! 🎉");
-        closeCreateCoupon();
-        loadAdminCoupons();
-        loadCoupons();
-        event.target.reset();
+    showMessage("สร้างคูปองสำเร็จ! 🎉");
+    closeCreateCoupon();
+    loadAdminCoupons();
+    loadCoupons();
+    event.target.reset();
 
-      } catch (error) {
-        console.error("❌ Error creating coupon:", error);
-        showMessage("เกิดข้อผิดพลาด: " + error.message);
-      }
-    }
+  } catch (error) {
+    console.error("❌ Error creating coupon:", error);
+    showMessage("เกิดข้อผิดพลาด: " + error.message);
+  }
+}
 
-    async function toggleCoupon(couponId, isActive) {
-      try {
-        const { error } = await supabase
-          .from("coupons")
-          .update({ is_active: isActive })
-          .eq("id", couponId);
+async function toggleCoupon(couponId, isActive) {
+  try {
+    const { error } = await supabase
+      .from("coupons")
+      .update({ is_active: isActive })
+      .eq("id", couponId);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        showMessage(isActive ? "เปิดใช้คูปองแล้ว" : "ปิดใช้คูปองแล้ว");
-        loadCoupons();
+    showMessage(isActive ? "เปิดใช้คูปองแล้ว" : "ปิดใช้คูปองแล้ว");
+    loadCoupons();
 
-      } catch (error) {
-        console.error("❌ Error toggling coupon:", error);
-        showMessage("เกิดข้อผิดพลาด");
-      }
-    }
+  } catch (error) {
+    console.error("❌ Error toggling coupon:", error);
+    showMessage("เกิดข้อผิดพลาด");
+  }
+}
 
-    async function deleteCoupon(couponId) {
-      if (!confirm("ต้องการลบคูปองนี้หรือไม่?")) return;
+// ✅ ฟังก์ชันใหม่: เปลี่ยนสถานะแสดง/ซ่อนคูปองในหน้า user
+async function toggleCouponVisibility(couponId, showInList) {
+  try {
+    const { error } = await supabase
+      .from("coupons")
+      .update({ show_in_list: showInList })
+      .eq("id", couponId);
 
-      try {
-        const { error } = await supabase
-          .from("coupons")
-          .delete()
-          .eq("id", couponId);
+    if (error) throw error;
 
-        if (error) throw error;
+    showMessage(showInList
+      ? "คูปองนี้จะแสดงในหน้า 'คูปองของฉัน' ✅"
+      : "คูปองนี้ถูกซ่อนไว้ ต้องกรอกรหัสก่อนเท่านั้น 🔒"
+    );
 
-        showMessage("ลบคูปองสำเร็จ");
-        loadAdminCoupons();
-        loadCoupons();
+    loadAdminCoupons();
+    loadCoupons();
+  } catch (error) {
+    console.error("❌ Error toggling coupon visibility:", error);
+    showMessage("เกิดข้อผิดพลาดในการเปลี่ยนการแสดงคูปอง");
+  }
+}
 
-      } catch (error) {
-        console.error("❌ Error deleting coupon:", error);
-        showMessage("เกิดข้อผิดพลาด");
-      }
-    }
+async function deleteCoupon(couponId) {
+  if (!confirm("ต้องการลบคูปองนี้หรือไม่?")) return;
+
+  try {
+    const { error } = await supabase
+      .from("coupons")
+      .delete()
+      .eq("id", couponId);
+
+    if (error) throw error;
+
+    showMessage("ลบคูปองสำเร็จ");
+    loadAdminCoupons();
+    loadCoupons();
+
+  } catch (error) {
+    console.error("❌ Error deleting coupon:", error);
+    showMessage("เกิดข้อผิดพลาด");
+  }
+}
 
     async function loadAdminStats() {
       try {
