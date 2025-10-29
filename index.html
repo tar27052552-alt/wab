@@ -988,6 +988,7 @@ function showCouponMessage(message, type) {
   orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
 
   try {
+    console.log("📦 โหลดประวัติของ line_id:", userProfile.line_id);
     const { data: orders, error } = await supabase
   .from("orders")
   .select("*")
@@ -1075,9 +1076,19 @@ async function cancelOrder(orderId) {
 
 // เปิดหน้า “ประวัติคำสั่งซื้อ”
 function openOrderHistory() {
+  // ✅ 1. ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
+  if (!userProfile || !userProfile.line_id) {
+    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
+    return;
+  }
+
+  // ✅ 2. แสดงหน้า
   document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
   document.getElementById('order-history').classList.remove('hidden');
+
+  // ✅ 3. โหลดข้อมูลเฉพาะของผู้ใช้คนนั้น
   loadOrderHistory();
+}
 
     // ===============================================================
     // 10. ADMIN DASHBOARD
