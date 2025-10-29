@@ -1013,7 +1013,7 @@ function showCouponMessage(message, type) {
     orders.forEach(order => {
       const statusBadge = getStatusBadge(order.status);
       const items = order.items.map(i => `<li>${i.name} (${i.quantity})</li>`).join("");
-      const canCancel = ["pending", "preparing"].includes(order.status);
+      const canCancel = order.status === "pending";
 
       html += `
         <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200">
