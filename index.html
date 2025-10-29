@@ -140,7 +140,8 @@
             <span class="hidden sm:inline">🎫 คูปอง</span>
             <span class="sm:hidden">🎫</span>
           </button>
-          <button onclick="openOrderHistory()" class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift">
+          <button onclick="openOrderHistory()" 
+            class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift">
             <span class="hidden sm:inline">📋 ประวัติ</span>
             <span class="sm:hidden">📋</span>
           </button>
@@ -170,8 +171,7 @@
     <h2 class="text-xl font-semibold text-purple-800 flex items-center gap-2">
       <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
     </h2>
-    <button 
-      onclick="backToMain()" 
+    <button onclick="backToMain()" 
       class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-xl transition">
       ⬅️ กลับหน้าหลัก
     </button>
@@ -996,6 +996,7 @@ function showCouponMessage(message, type) {
     // 9. ORDER HISTORY
     // ===============================================================
     async function loadOrderHistory() {
+  console.log("📦 เริ่มโหลดประวัติของ userProfile:", userProfile);
   const orderList = document.getElementById("order-list");
   orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
 
