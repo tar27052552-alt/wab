@@ -1126,6 +1126,33 @@ function openOrderHistory() {
       if (tab === 'stats') loadAdminStats();
     }
 
+    // ===============================================================
+// 🏷️ ฟังก์ชันแสดงข้อความสถานะ (สำหรับทั้งผู้ใช้และแอดมิน)
+// ===============================================================
+function getStatusText(status) {
+  switch (status) {
+    case "pending": return "รอดำเนินการ";
+    case "preparing": return "กำลังเตรียม";
+    case "ready": return "พร้อมรับ";
+    case "completed": return "สำเร็จ";
+    case "cancelled": return "ถูกยกเลิก";
+    default: return "ไม่ทราบสถานะ";
+  }
+}
+
+// ===============================================================
+// 🎨 ฟังก์ชันแสดงสี Badge สถานะ (เฉพาะแอดมิน)
+// ===============================================================
+function getStatusBadgeClass(status) {
+  switch (status) {
+    case "pending": return "bg-yellow-100 text-yellow-700";
+    case "preparing": return "bg-blue-100 text-blue-700";
+    case "ready": return "bg-green-100 text-green-700";
+    case "completed": return "bg-purple-100 text-purple-700";
+    case "cancelled": return "bg-red-100 text-red-700";
+    default: return "bg-gray-100 text-gray-700";
+  }
+}
     async function loadAdminOrders() {
       try {
         const { data: orders, error } = await supabase
@@ -1149,7 +1176,7 @@ function openOrderHistory() {
         let html = '<div class="space-y-4">';
         orders.forEach(order => {
           const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
-          const statusClass = `badge-${order.status}`;
+          const statusClass = getStatusBadgeClass(order.status);
           
           html += `
             <div class="card border border-gray-200 p-4">
@@ -1161,7 +1188,7 @@ function openOrderHistory() {
                     <div class="text-sm text-gray-500">ออเดอร์ #${order.id}</div>
                   </div>
                 </div>
-                <div class="badge ${statusClass}">${getStatusText(order.status)}</div>
+                <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">   ${getStatusText(order.status)} </span>
               </div>
               
               <div class="space-y-1 mb-3">
