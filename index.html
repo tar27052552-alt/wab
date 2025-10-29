@@ -997,17 +997,18 @@ function showCouponMessage(message, type) {
     // ===============================================================
     async function loadOrderHistory() {
   console.log("📦 เริ่มโหลดประวัติของ userProfile:", userProfile);
+
   const orderList = document.getElementById("order-list");
   orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
 
   try {
-    console.log("📦 โหลดประวัติของ userId:", userProfile.userId);
-
     const { data: orders, error } = await supabase
       .from("orders")
       .select("*")
-      .eq("line_id", userProfile.userId) // ✅ ใช้ userId แทน line_id ของ LIFF
+      .eq("line_id", userProfile.userId)
       .order("created_at", { ascending: false });
+
+    console.log("📦 โหลดประวัติของ userId:", userProfile.userId);
     console.log("📦 ผลลัพธ์จาก Supabase:", orders);
 
     if (error) throw error;
@@ -1021,14 +1022,18 @@ function showCouponMessage(message, type) {
       return;
     }
 
+    // ✅ สร้าง HTML แสดงผลแต่ละออเดอร์
     let html = "";
     orders.forEach(order => {
       const statusBadge = getStatusBadge(order.status);
-      const items = order.items.map(i => `<li>${i.name} (${i.quantity})</li>`).join("");
-      const canCancel = order.status === "pending";
+      const items = Array.isArray(order.items)
+        ? order.items.map(i => `<li>${i.name} (${i.quantity})</li>`).join("")
+        : "<li>ไม่พบข้อมูลสินค้า</li>";
+
+      const canCancel = order.status === "pending"; // ✅ ยกเลิกได้เฉพาะรอดำเนินการ
 
       html += `
-        <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200">
+        <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
           <div class="flex justify-between items-start">
             <div>
               <p class="font-semibold text-purple-900">Order #${order.id}</p>
@@ -1041,73 +1046,41 @@ function showCouponMessage(message, type) {
 
           <div class="flex justify-between items-center mt-4">
             <p class="font-medium text-purple-700">ยอดรวม: ${order.total_price} บาท</p>
-            ${canCancel
-              ? `<button onclick="cancelOrder(${order.id})"
-                  class="text-red-600 hover:text-red-800 font-medium text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
-                  ยกเลิกคำสั่งซื้อ
-                </button>`
-              : ""}
+            ${
+              canCancel
+                ? `<button onclick="cancelOrder(${order.id})"
+                    class="text-red-600 hover:text-red-800 font-medium text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
+                    ยกเลิกคำสั่งซื้อ
+                  </button>`
+                : ""
+            }
           </div>
         </div>`;
     });
+
+    function getStatusBadge(status) {
+  switch (status) {
+    case "pending":
+      return { label: "รอดำเนินการ", class: "bg-yellow-100 text-yellow-700" };
+    case "preparing":
+      return { label: "กำลังเตรียม", class: "bg-blue-100 text-blue-700" };
+    case "ready":
+      return { label: "พร้อมส่ง", class: "bg-green-100 text-green-700" };
+    case "completed":
+      return { label: "สำเร็จ", class: "bg-purple-100 text-purple-700" };
+    case "cancelled":
+      return { label: "ถูกยกเลิก", class: "bg-red-100 text-red-700" };
+    default:
+      return { label: status, class: "bg-gray-100 text-gray-700" };
+  }
+}
+
 
     orderList.innerHTML = html;
   } catch (error) {
     console.error("❌ Error loading orders:", error);
     orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
   }
-}
-
-// แสดง badge สีตามสถานะ
-function getStatusBadge(status) {
-  switch (status) {
-    case "pending": return { label: "รอดำเนินการ", class: "bg-yellow-100 text-yellow-700" };
-    case "preparing": return { label: "กำลังเตรียม", class: "bg-blue-100 text-blue-700" };
-    case "ready": return { label: "พร้อมส่ง", class: "bg-green-100 text-green-700" };
-    case "completed": return { label: "สำเร็จ", class: "bg-purple-100 text-purple-700" };
-    case "cancelled": return { label: "ถูกยกเลิก", class: "bg-red-100 text-red-700" };
-    default: return { label: status, class: "bg-gray-100 text-gray-700" };
-  }
-}
-
-// ฟังก์ชันยกเลิกออเดอร์
-async function cancelOrder(orderId) {
-  if (!confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?")) return;
-
-  try {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "cancelled" })
-      .eq("id", orderId);
-
-    if (error) throw error;
-
-    showMessage("ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว 🛑");
-    loadOrderHistory();
-  } catch (error) {
-    console.error("❌ Error cancelling order:", error);
-    showMessage("เกิดข้อผิดพลาดในการยกเลิกออเดอร์");
-  }
-}
-
-// เปิดหน้า “ประวัติคำสั่งซื้อ”
-function openOrderHistory() {
-  // ✅ ตรวจสอบว่าเข้าสู่ระบบแล้ว
-  if (!userProfile || !userProfile.userId) {
-    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
-    return;
-  }
-
-  // ✅ ซ่อนหน้าอื่น ๆ แต่ไม่แตะ header
-  document.getElementById("main-app").classList.add("hidden");
-  document.getElementById("order-history").classList.remove("hidden");
-
-  // ✅ โหลดเฉพาะของผู้ใช้คนนั้น
-  loadOrderHistory();
-}
-function backToMain() {
-  document.getElementById("order-history").classList.add("hidden");
-  document.getElementById("main-app").classList.remove("hidden");
 }
     // ===============================================================
     // 10. ADMIN DASHBOARD
