@@ -990,12 +990,14 @@ function showCouponMessage(message, type) {
   orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
 
   try {
-    console.log("📦 โหลดประวัติของ line_id:", userProfile.line_id);
+    console.log("📦 โหลดประวัติของ userId:", userProfile.userId);
+
     const { data: orders, error } = await supabase
-  .from("orders")
-  .select("*")
-  .eq("line_id", userProfile.line_id) // ✅ โหลดเฉพาะของผู้ใช้คนนี้
-  .order("created_at", { ascending: false });
+      .from("orders")
+      .select("*")
+      .eq("line_id", userProfile.userId) // ✅ ใช้ userId แทน line_id ของ LIFF
+      .order("created_at", { ascending: false });
+
     if (error) throw error;
 
     if (!orders || orders.length === 0) {
@@ -1078,20 +1080,17 @@ async function cancelOrder(orderId) {
 
 // เปิดหน้า “ประวัติคำสั่งซื้อ”
 function openOrderHistory() {
-  // ✅ 1. ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
-  if (!userProfile || !userProfile.line_id) {
+  // ✅ ตรวจสอบว่าเข้าสู่ระบบแล้ว
+  if (!userProfile || !userProfile.userId) {
     showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
     return;
   }
 
-  // ✅ 2. แสดงหน้า
   document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
   document.getElementById('order-history').classList.remove('hidden');
 
-  // ✅ 3. โหลดข้อมูลเฉพาะของผู้ใช้คนนั้น
   loadOrderHistory();
 }
-
     // ===============================================================
     // 10. ADMIN DASHBOARD
     // ===============================================================
