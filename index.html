@@ -1008,6 +1008,7 @@ function showCouponMessage(message, type) {
       .select("*")
       .eq("line_id", userProfile.userId) // ✅ ใช้ userId แทน line_id ของ LIFF
       .order("created_at", { ascending: false });
+    console.log("📦 ผลลัพธ์จาก Supabase:", orders);
 
     if (error) throw error;
 
