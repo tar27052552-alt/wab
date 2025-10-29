@@ -1103,11 +1103,9 @@ function openOrderHistory() {
   // ✅ โหลดเฉพาะของผู้ใช้คนนั้น
   loadOrderHistory();
 }
-
-  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-  document.getElementById('order-history').classList.remove('hidden');
-
-  loadOrderHistory();
+function backToMain() {
+  document.getElementById("order-history").classList.add("hidden");
+  document.getElementById("main-app").classList.remove("hidden");
 }
     // ===============================================================
     // 10. ADMIN DASHBOARD
@@ -1579,12 +1577,6 @@ async function deleteCoupon(couponId) {
     // ===============================================================
     window.addEventListener("load", init);
 
-    function backToMain() {
-  // ✅ ซ่อนหน้า order-history แล้วกลับไป main-app
-  document.getElementById("order-history").classList.add("hidden");
-  document.getElementById("main-app").classList.remove("hidden");
-}
-
-  </script>
+</script>
 </body>
 </html>
