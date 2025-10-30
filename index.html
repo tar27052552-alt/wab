@@ -1171,6 +1171,99 @@ function backToMain() {
       document.getElementById("admin-modal").classList.add("hidden");
     }
 
+
+    // ✅ โหลดสรุปออเดอร์รายวัน
+async function loadDailySummary() {
+  const selectedDate = document.getElementById("summary-date").value;
+  const content = document.getElementById("summary-content");
+  if (!selectedDate) {
+    content.innerHTML = "<p class='text-gray-500 text-center'>📆 กรุณาเลือกวันที่</p>";
+    return;
+  }
+
+  const start = new Date(selectedDate);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
+
+  try {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("*")
+      .gte("created_at", start.toISOString())
+      .lt("created_at", end.toISOString());
+
+    if (error) throw error;
+    if (!orders || orders.length === 0) {
+      content.innerHTML = "<p class='text-gray-500 text-center'>ไม่มีออเดอร์ในวันนี้</p>";
+      return;
+    }
+
+    const totalOrders = orders.length;
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.total_price || 0), 0);
+    const baseSummary = {};
+    const toppingSummary = {};
+
+    orders.forEach(o => {
+      const items = typeof o.items === "string" ? JSON.parse(o.items) : o.items || [];
+      items.forEach(i => {
+        baseSummary[i.baseName] = (baseSummary[i.baseName] || 0) + (i.quantity || 1);
+        toppingSummary[i.toppingName] = (toppingSummary[i.toppingName] || 0) + (i.quantity || 1);
+      });
+    });
+
+    const listHTML = (obj) =>
+      Object.entries(obj).map(([name, qty]) => `<li>${name} × ${qty}</li>`).join("");
+
+    content.innerHTML = `
+      <div class="p-4 bg-white rounded-2xl shadow">
+        <h3 class="text-xl font-semibold mb-2">📅 สรุปวันที่ ${selectedDate}</h3>
+        <p>ออเดอร์ทั้งหมด: <span class="font-bold text-purple-700">${totalOrders}</span> รายการ</p>
+        <p>ยอดขายรวม: <span class="font-bold text-green-700">${totalRevenue} บาท</span></p>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <h4 class="font-semibold mb-1">🍰 ประเภทเนื้อบราวนี่</h4>
+            <ul class="list-disc list-inside text-gray-700">${listHTML(baseSummary)}</ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-1">🍫 หน้าบราวนี่</h4>
+            <ul class="list-disc list-inside text-gray-700">${listHTML(toppingSummary)}</ul>
+          </div>
+        </div>
+      </div>`;
+  } catch (err) {
+    console.error("❌ Error loading summary:", err);
+    content.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+  }
+}
+
+// ✅ เปลี่ยนสถานะทั้งหมดของวัน
+async function updateAllOrdersOfDay() {
+  const selectedDate = document.getElementById("summary-date").value;
+  if (!selectedDate) return alert("กรุณาเลือกวันที่ก่อน");
+
+  const newStatus = prompt("ใส่สถานะใหม่ (pending, preparing, ready, completed, cancelled):");
+  if (!newStatus) return;
+
+  const start = new Date(selectedDate);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
+
+  try {
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: newStatus })
+      .gte("created_at", start.toISOString())
+      .lt("created_at", end.toISOString());
+
+    if (error) throw error;
+    showMessage(`✅ อัปเดตสถานะทั้งหมดของวันที่ ${selectedDate} สำเร็จ`);
+    loadDailySummary();
+  } catch (err) {
+    console.error("❌ Error updating orders:", err);
+    showMessage("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
+  }
+}
+
     function showAdminTab(tab) {
       document.querySelectorAll(".admin-tab").forEach(el => {
         el.classList.remove("border-blue-600", "text-blue-600");
@@ -1600,65 +1693,6 @@ async function deleteCoupon(couponId) {
             </div>
           </div>
         `;
-
-        // ✅ โหลดสรุปออเดอร์รายวัน
-async function loadDailySummary() {
-  const selectedDate = document.getElementById("summary-date").value;
-  const content = document.getElementById("summary-content");
-  if (!selectedDate) {
-    content.innerHTML = "<p class='text-gray-500 text-center'>📆 กรุณาเลือกวันที่</p>";
-    return;
-  }
-
-  const start = new Date(selectedDate);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 1);
-
-  try {
-    const { data: orders, error } = await supabase
-      .from("orders")
-      .select("*")
-      .gte("created_at", start.toISOString())
-      .lt("created_at", end.toISOString());
-
-    if (error) throw error;
-    if (!orders || orders.length === 0) {
-      content.innerHTML = "<p class='text-gray-500 text-center'>ไม่มีออเดอร์ในวันนี้</p>";
-      return;
-    }
-
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => sum + (o.total_price || 0), 0);
-    const baseSummary = {};
-    const toppingSummary = {};
-
-    orders.forEach(o => {
-      const items = typeof o.items === "string" ? JSON.parse(o.items) : o.items || [];
-      items.forEach(i => {
-        baseSummary[i.baseName] = (baseSummary[i.baseName] || 0) + (i.quantity || 1);
-        toppingSummary[i.toppingName] = (toppingSummary[i.toppingName] || 0) + (i.quantity || 1);
-      });
-    });
-
-    const listHTML = (obj) =>
-      Object.entries(obj).map(([name, qty]) => `<li>${name} × ${qty}</li>`).join("");
-
-    content.innerHTML = `
-      <div class="p-4 bg-white rounded-2xl shadow">
-        <h3 class="text-xl font-semibold mb-2">📅 สรุปวันที่ ${selectedDate}</h3>
-        <p>ออเดอร์ทั้งหมด: <span class="font-bold text-purple-700">${totalOrders}</span> รายการ</p>
-        <p>ยอดขายรวม: <span class="font-bold text-green-700">${totalRevenue} บาท</span></p>
-        <div class="grid grid-cols-2 gap-4 mt-4">
-          <div>
-            <h4 class="font-semibold mb-1">🍰 ประเภทเนื้อบราวนี่</h4>
-            <ul class="list-disc list-inside text-gray-700">${listHTML(baseSummary)}</ul>
-          </div>
-          <div>
-            <h4 class="font-semibold mb-1">🍫 หน้าบราวนี่</h4>
-            <ul class="list-disc list-inside text-gray-700">${listHTML(toppingSummary)}</ul>
-          </div>
-        </div>
-      </div>`;
   } catch (err) {
     console.error("❌ Error loading summary:", err);
     content.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
