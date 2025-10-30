@@ -601,10 +601,6 @@ window.addEventListener("DOMContentLoaded", loadMenus);
     // ===============================================================
     // 5. ORDER MANAGEMENT WITH QUANTITY
     // ===============================================================
-   let selectedBase = null;
-let selectedTopping = null;
-let currentQuantity = 1;
-
 // ✅ โหลดเมนูจาก Supabase (ราคาแบบจริง)
 async function loadMenus() {
   const { data: bases } = await supabase.from('brownie_bases').select('*').eq('is_active', true);
