@@ -2136,9 +2136,9 @@ function selectBrownieItem(id, type, name, price) {
 // ===============================================================
 // 🚀 เริ่มโหลดเมื่อ DOM พร้อม
 // ===============================================================
-window.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 DOM Loaded");
-  loadBrownieChoices(); // ✅ โหลดเมนูบราวนี่จาก brownie_items
+window.addEventListener("load", async () => {
+  console.log("🚀 Window Loaded");
+  await loadMenus();   // ✅ ใช้ await ได้ เพราะ callback เป็น async แล้ว
   initQuantityControls();
 });
 
