@@ -1701,7 +1701,7 @@ async function loadDailySummary() {
 
 
 // ===============================================================
-// 🔄 อัปเดตสถานะทั้งหมดของวัน
+// 🔄 อัปเดตสถานะทั้งหมดของวัน + ส่งแจ้งเตือน LINE
 // ===============================================================
 async function updateAllOrdersOfDay() {
   const selectedDate = document.getElementById("summary-date").value;
@@ -1715,18 +1715,55 @@ async function updateAllOrdersOfDay() {
     const end = new Date(selectedDate);
     end.setDate(end.getDate() + 1);
 
-    const { error } = await supabase
+    // ✅ ดึงออเดอร์ทั้งหมดของวันนั้น
+    const { data: orders, error: fetchError } = await supabase
       .from("orders")
-      .update({ status: newStatus })
+      .select("*, users(line_id, display_name)")
       .gte("created_at", start.toISOString())
       .lt("created_at", end.toISOString());
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
+    if (!orders || orders.length === 0) {
+      showMessage("❌ ไม่มีออเดอร์ในวันนั้น");
+      return;
+    }
 
-    showMessage(`✅ อัปเดตสถานะของออเดอร์ทั้งหมดในวัน ${selectedDate} เป็น "${getStatusText(newStatus)}" สำเร็จ!`);
+    // ✅ วนแต่ละออเดอร์แล้วอัปเดตสถานะ + ส่ง LINE แจ้งเตือน
+    for (const order of orders) {
+      const { error: updateError } = await supabase
+        .from("orders")
+        .update({ status: newStatus })
+        .eq("id", order.id);
+
+      if (updateError) console.error(`❌ อัปเดตออเดอร์ ${order.id} ล้มเหลว:`, updateError);
+
+      // 🔔 ส่งแจ้งเตือนผ่าน Edge Function
+      try {
+        await supabase.functions.invoke("send-line-notification", {
+          body: {
+            lineId: order.users.line_id,
+            orderId: order.id,
+            status: newStatus,
+            orderData: {
+              items: order.items,
+              total_price: order.total_price,
+              subtotal: order.subtotal,
+              discount: order.discount,
+            },
+          },
+        });
+      } catch (notifyError) {
+        console.error(`⚠️ แจ้งเตือน LINE ของออเดอร์ ${order.id} ไม่สำเร็จ`, notifyError);
+      }
+    }
+
+    // ✅ แจ้งผลรวม
+    showMessage(
+      `✅ อัปเดตสถานะทั้งหมด ${orders.length} ออเดอร์ในวันที่ ${selectedDate} เป็น "${getStatusText(newStatus)}" สำเร็จ`
+    );
     loadDailySummary();
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in updateAllOrdersOfDay:", err);
     showMessage("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
   }
 }
