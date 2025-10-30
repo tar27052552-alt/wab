@@ -683,7 +683,7 @@ function selectTopping(id, name, price, el) {
 // ✅ ปรับจำนวน
 function changeQuantity(v) {
   currentQuantity = Math.max(1, currentQuantity + v);
-  document.getElementById("quantity").textContent = currentQuantity;
+  document.getElementById("quantity").textContent = currentQuantity; // ✅ ต้องตรงกับ HTML
   updateTotal();
 }
 
