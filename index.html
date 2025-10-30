@@ -165,28 +165,6 @@
       <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SUAN KHANOM</h1>
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
-    <!-- ประวัติคำสั่งซื้อของฉัน -->
-    <section id="order-history" class="hidden px-4 py-6">
-  <h2 class="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
-    <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
-  </h2>
-
-  <!-- ✅ ตรงนี้คือส่วนแสดงผลออเดอร์ -->
-  <div id="order-list" class="space-y-4"></div>
-
-  <!-- ปุ่มกลับไปหน้าหลัก -->
-  <div class="text-center mt-6">
-    <button onclick="backToMain()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-      ⬅️ กลับหน้าหลัก
-    </button>
-  </div>
-</section>
-    <!-- รายการออเดอร์ -->
-    <div id="order-list" class="space-y-4">
-      <!-- JavaScript จะเติมข้อมูลตรงนี้ -->
-    </div>
-  </section>
-
 
     <!-- Base Selection -->
     <section class="card mb-8 hover-lift">
@@ -295,6 +273,23 @@
       </button>
     </section>
   </main>
+
+   <!-- ประวัติคำสั่งซื้อของฉัน -->
+    <section id="order-history" class="hidden px-4 py-6">
+  <h2 class="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
+    <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
+  </h2>
+
+  <!-- ✅ ตรงนี้คือส่วนแสดงผลออเดอร์ -->
+  <div id="order-list" class="space-y-4"></div>
+
+  <!-- ปุ่มกลับไปหน้าหลัก -->
+  <div class="text-center mt-6">
+    <button onclick="backToMain()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+      ⬅️ กลับหน้าหลัก
+    </button>
+  </div>
+</section>
 
   <!-- Cart Modal -->
   <div id="cart-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeModalOnBackdrop(event, 'cart-modal')">
