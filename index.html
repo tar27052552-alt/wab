@@ -530,6 +530,9 @@
     setTimeout(() => liff.login(), 2000);
   }
 }
+    // 📌 โหลดเมนูทันทีหลังจากเปิดหน้าเว็บ
+window.addEventListener("DOMContentLoaded", loadMenus);
+
     // ===============================================================
     // 4. USER MANAGEMENT
     // ===============================================================
@@ -598,99 +601,89 @@
     // ===============================================================
     // 5. ORDER MANAGEMENT WITH QUANTITY
     // ===============================================================
-    function selectBase(base, element) {
-      document.querySelectorAll(".brownie-base").forEach(el => {
-        el.classList.remove("selected");
-      });
+   let selectedBase = null;
+let selectedTopping = null;
+let currentQuantity = 1;
 
-      element.classList.add("selected");
-      selectedBase = base;
+// ✅ โหลดเมนูจาก Supabase (ราคาแบบจริง)
+async function loadMenus() {
+  const { data: bases } = await supabase.from('brownie_bases').select('*').eq('is_active', true);
+  const { data: toppings } = await supabase.from('brownie_toppings').select('*').eq('is_active', true);
 
-      document.getElementById("toppings-section").classList.remove("hidden");
-      updateTotal();
-    }
+  const baseList = document.getElementById("base-list");
+  const toppingList = document.getElementById("topping-list");
 
-    function selectTopping(topping, element) {
-      document.querySelectorAll(".topping-item").forEach(el => {
-        el.classList.remove("selected");
-      });
+  baseList.innerHTML = bases.map(b => `
+    <div class="brownie-base card cursor-pointer text-center hover-lift" onclick="selectBase(${b.id}, '${b.name}', ${b.price}, this)">
+      <div class="text-3xl mb-1">${b.name}</div>
+      <p class="text-gray-600 text-sm">${b.description || ''}</p>
+      <p class="text-blue-600 font-semibold mt-2">💰 ${b.price} บาท</p>
+    </div>
+  `).join('');
 
-      element.classList.add("selected");
-      selectedTopping = topping;
+  toppingList.innerHTML = toppings.map(t => `
+    <div class="topping-item card cursor-pointer text-center hover-lift" onclick="selectTopping(${t.id}, '${t.name}', ${t.price}, this)">
+      <div class="text-3xl mb-1">${t.name}</div>
+      <p class="text-gray-600 text-sm">${t.description || ''}</p>
+      <p class="text-purple-600 font-semibold mt-2">🍫 ${t.price} บาท</p>
+    </div>
+  `).join('');
+}
 
-      document.getElementById("quantity-section").classList.remove("hidden");
-      updateTotal();
-    }
+// ✅ เมื่อเลือกเนื้อ
+function selectBase(id, name, price, el) {
+  document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedBase = { id, name, price };
+  updateTotal();
+}
 
-    function changeQuantity(change) {
-      currentQuantity = Math.max(1, currentQuantity + change);
-      document.getElementById("quantity-display").textContent = currentQuantity;
-      updateTotal();
-    }
+// ✅ เมื่อเลือกหน้า
+function selectTopping(id, name, price, el) {
+  document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTopping = { id, name, price };
+  updateTotal();
+}
 
-    function updateTotal() {
-      const basePrice = selectedBase ? 25 : 0;
-      const toppingPrice = selectedTopping ? 15 : 0;
-      const unitPrice = basePrice + toppingPrice;
-      const total = unitPrice * currentQuantity;
+// ✅ ปรับจำนวน
+function changeQuantity(v) {
+  currentQuantity = Math.max(1, currentQuantity + v);
+  document.getElementById("quantity").textContent = currentQuantity;
+  updateTotal();
+}
 
-      document.getElementById("total-price").textContent = total;
-      
-      if (selectedBase && selectedTopping) {
-        document.getElementById("price-breakdown").textContent = 
-          `${baseNames[selectedBase]} + ${toppingNames[selectedTopping]} × ${currentQuantity} ชิ้น`;
-      }
+// ✅ คำนวณราคารวม
+function updateTotal() {
+  const basePrice = selectedBase?.price || 0;
+  const toppingPrice = selectedTopping?.price || 0;
+  const total = (basePrice + toppingPrice) * currentQuantity;
 
-      const addButton = document.getElementById("add-to-cart-btn");
-      addButton.disabled = !selectedBase || !selectedTopping;
-    }
+  document.getElementById("total-price").textContent = total.toLocaleString();
 
-    function addToCart() {
-      if (!selectedBase || !selectedTopping) {
-        showMessage("กรุณาเลือกเนื้อและหน้าบราวนี่");
-        return;
-      }
+  document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
+}
 
-      const item = {
-        id: Date.now(),
-        base: selectedBase,
-        topping: selectedTopping,
-        quantity: currentQuantity,
-        unitPrice: 40,
-        totalPrice: 40 * currentQuantity,
-        baseName: baseNames[selectedBase],
-        toppingName: toppingNames[selectedTopping]
-      };
+// ✅ เพิ่มลงตะกร้า
+function addToCart() {
+  if (!selectedBase || !selectedTopping) return showMessage("กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
 
-      cart.push(item);
-      updateCartBadge();
-      
-      // Reset selections
-      document.querySelectorAll(".brownie-base, .topping-item").forEach(el => {
-        el.classList.remove("selected");
-      });
-      selectedBase = null;
-      selectedTopping = null;
-      currentQuantity = 1;
-      document.getElementById("quantity-display").textContent = "1";
-      document.getElementById("toppings-section").classList.add("hidden");
-      document.getElementById("quantity-section").classList.add("hidden");
-      updateTotal();
+  const total = (selectedBase.price + selectedTopping.price) * currentQuantity;
+  cart.push({
+    id: Date.now(),
+    baseName: selectedBase.name,
+    toppingName: selectedTopping.name,
+    quantity: currentQuantity,
+    unitPrice: selectedBase.price + selectedTopping.price,
+    totalPrice: total
+  });
 
-      showMessage("เพิ่มลงตะกร้าแล้ว! 🛒");
-    }
-
-    function updateCartBadge() {
-      const badge = document.getElementById("cart-badge");
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      if (totalItems > 0) {
-        badge.textContent = totalItems;
-        badge.classList.remove("hidden");
-      } else {
-        badge.classList.add("hidden");
-      }
-    }
-
+  updateCartBadge();
+  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
+  currentQuantity = 1;
+  document.getElementById("quantity").textContent = "1";
+  updateTotal();
+}
     // ===============================================================
     // 6. CART & COUPON MANAGEMENT
     // ===============================================================
