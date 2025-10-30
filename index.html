@@ -362,36 +362,29 @@
       </div>
 
       <!-- Admin Tabs -->
-      <div class="flex space-x-4 mb-6 border-b">
-        <button onclick="showAdminTab('orders')" class="admin-tab px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600" data-tab="orders">
-          📦 จัดการออเดอร์
-        </button>
-        <button onclick="showAdminTab('coupons')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="coupons">
-          🎫 จัดการคูปอง
-        </button>
-        <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
-          📊 สถิติ
-        </button>
-        <button class="admin-tab" data-tab="summary" onclick="showAdminTab('summary')">
-          📅 สรุปออเดอร์รายวัน
-        </button>
-        <!-- ✅ แท็บใหม่: เมนูบราวนี่ -->
-<div id="admin-brownie-tab" class="admin-tab-content hidden p-4">
-  <div id="admin-brownie-content" class="bg-white rounded-lg p-4 shadow"></div>
-
-  <div class="flex gap-2 mt-4">
-    <button class="px-4 py-2 bg-green-600 text-white rounded" onclick="addBrownieItem('base')">
-      ➕ เพิ่มเนื้อบราวนี่
-    </button>
-    <button class="px-4 py-2 bg-blue-600 text-white rounded" onclick="addBrownieItem('topping')">
-      ➕ เพิ่มหน้าบราวนี่
-    </button>
-  </div>
+     <div class="flex space-x-4 mb-6 border-b">
+  <button onclick="showAdminTab('orders')" class="admin-tab px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600" data-tab="orders">
+    📦 จัดการออเดอร์
+  </button>
+  <button onclick="showAdminTab('coupons')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="coupons">
+    🎫 จัดการคูปอง
+  </button>
+  <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
+    📊 สถิติ
+  </button>
+  <!-- ✅ เพิ่มปุ่มใหม่ -->
+  <button onclick="showAdminTab('brownie')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
+    🍰 เมนูบราวนี่
+  </button>
+  <button class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="summary" onclick="showAdminTab('summary')">
+    📅 สรุปออเดอร์รายวัน
+  </button>
 </div>
 
-
-
-      </div>
+<!-- ✅ ส่วนเนื้อหาของแท็บเมนูบราวนี่ -->
+<section id="admin-brownie-tab" class="admin-tab-content hidden">
+  <div id="admin-brownie-content" class="p-4"></div>
+</section>
 
       <!-- Orders Tab -->
       <div id="admin-orders-tab" class="admin-tab-content">
@@ -1216,8 +1209,8 @@ function backToMain() {
       if (tab === 'orders') loadAdminOrders();
       if (tab === 'coupons') loadAdminCoupons();
       if (tab === 'stats') loadAdminStats();
-      if (tab === 'summary') loadDailySummary();
       if (tab === 'brownie') loadBrownieMenus();
+      if (tab === 'summary') loadDailySummary();
     }
 
     // ===============================================================
