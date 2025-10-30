@@ -2141,17 +2141,17 @@ function updateTotalPrice() {
 // 🔢 ปรับจำนวน
 // ===============================================================
 document.getElementById("increaseQty").addEventListener("click", () => {
-  quantity++;
-  document.getElementById("quantity").innerText = quantity;
-  updateTotalPrice();
+  quantity++;
+  document.getElementById("quantity").innerText = quantity;
+  updateTotalPrice();
 });
 
 document.getElementById("decreaseQty").addEventListener("click", () => {
-  if (quantity > 1) {
-    quantity--;
-    document.getElementById("quantity").innerText = quantity;
-    updateTotalPrice();
-  }
+  if (quantity > 1) {
+    quantity--;
+    document.getElementById("quantity").innerText = quantity;
+    updateTotalPrice();
+  }
 });
 
 // ===============================================================
