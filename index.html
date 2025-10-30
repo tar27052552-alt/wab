@@ -2141,19 +2141,15 @@ document.getElementById("add-to-cart").addEventListener("click", () => {
 
   const totalPrice =
     (selectedBase.price + selectedTopping.price) * quantity;
-
-  alert(`🛒 เพิ่มลงตะกร้าเรียบร้อย!\n\n${selectedBase.name} + ${selectedTopping.name}\nจำนวน: ${quantity}\nรวม: ${totalPrice} บาท`);
-
-  // 💾 TODO: ถ้าอยากเก็บลง Supabase ให้ใช้คำสั่งนี้ได้เลย
-  /*
-  await supabase.from("cart").insert([{
-    base_id: selectedBase.id,
-    topping_id: selectedTopping.id,
-    quantity,
-    total_price: totalPrice,
-    user_id: currentUser.line_id
-  }]);
-  */
+  cart.push({
+  baseName: selectedBase.name,
+  toppingName: selectedTopping.name,
+  quantity: quantity,
+  unitPrice: (selectedBase.price + selectedTopping.price),
+  totalPrice: (selectedBase.price + selectedTopping.price) * quantity
+});
+updateCartBadge();
+showMessage("🛒 เพิ่มลงตะกร้าเรียบร้อย!");
 });
 
 // ===============================================================
