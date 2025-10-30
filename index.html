@@ -1006,7 +1006,7 @@ function showCouponMessage(message, type) {
     const { data: orders, error } = await supabase
       .from("orders")
       .select("*")
-      .eq("line_id", userProfile.userId)
+      .eq("line_id", userProfile.userId) // ✅ ใช้ line_id ของ LINE user
       .order("created_at", { ascending: false });
 
     console.log("📦 โหลดประวัติของ userId:", userProfile.userId);
@@ -1026,12 +1026,24 @@ function showCouponMessage(message, type) {
     // ✅ สร้าง HTML แสดงผลแต่ละออเดอร์
     let html = "";
     orders.forEach(order => {
-      const statusBadge = getStatusBadge(order.status);
-      const items = Array.isArray(order.items)
-        ? order.items.map(i => `<li>${i.name} (${i.quantity})</li>`).join("")
+      console.log("🧾 ออเดอร์:", order.id, "สินค้า:", order.items);
+
+      // ✅ ตรวจสอบและแปลง JSON ถ้าจำเป็น
+      let itemsArray = [];
+      try {
+        itemsArray = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      } catch {
+        itemsArray = [];
+      }
+
+      const items = Array.isArray(itemsArray)
+        ? itemsArray.map(i => `<li>${i.name} (${i.quantity})</li>`).join("")
         : "<li>ไม่พบข้อมูลสินค้า</li>";
 
-      const canCancel = order.status === "pending"; // ✅ ยกเลิกได้เฉพาะรอดำเนินการ
+      // ✅ ยกเลิกได้เฉพาะ "รอดำเนินการ"
+      const canCancel = order.status === "pending";
+
+      const statusBadge = getStatusBadge(order.status);
 
       html += `
         <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
@@ -1059,7 +1071,17 @@ function showCouponMessage(message, type) {
         </div>`;
     });
 
-    function getStatusBadge(status) {
+    orderList.innerHTML = html;
+  } catch (error) {
+    console.error("❌ Error loading orders:", error);
+    orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+  }
+}
+
+// ===============================================================
+// แสดง Badge ตามสถานะ
+// ===============================================================
+function getStatusBadge(status) {
   switch (status) {
     case "pending":
       return { label: "รอดำเนินการ", class: "bg-yellow-100 text-yellow-700" };
@@ -1076,12 +1098,50 @@ function showCouponMessage(message, type) {
   }
 }
 
+// ===============================================================
+// ฟังก์ชันยกเลิกออเดอร์
+// ===============================================================
+async function cancelOrder(orderId) {
+  if (!confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?")) return;
 
-    orderList.innerHTML = html;
+  try {
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("id", orderId);
+
+    if (error) throw error;
+
+    showMessage("ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว 🛑");
+    loadOrderHistory(); // โหลดใหม่หลังจากยกเลิกสำเร็จ
   } catch (error) {
-    console.error("❌ Error loading orders:", error);
-    orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+    console.error("❌ Error cancelling order:", error);
+    showMessage("เกิดข้อผิดพลาดในการยกเลิกออเดอร์");
   }
+}
+
+// ===============================================================
+// เปิดหน้า “ประวัติคำสั่งซื้อ”
+// ===============================================================
+function openOrderHistory() {
+  if (!userProfile || !userProfile.userId) {
+    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
+    return;
+  }
+
+  // ✅ ซ่อนหน้าอื่น แล้วโชว์หน้าประวัติ
+  document.getElementById("main-app").classList.add("hidden");
+  document.getElementById("order-history").classList.remove("hidden");
+
+  loadOrderHistory();
+}
+
+// ===============================================================
+// กลับไปหน้าหลัก
+// ===============================================================
+function backToMain() {
+  document.getElementById("order-history").classList.add("hidden");
+  document.getElementById("main-app").classList.remove("hidden");
 }
     // ===============================================================
     // 10. ADMIN DASHBOARD
