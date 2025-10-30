@@ -1032,8 +1032,12 @@ function showCouponMessage(message, type) {
       }
 
       const items = Array.isArray(itemsArray)
-        ? itemsArray.map(i => `<li>${i.name} (${i.quantity})</li>`).join("")
-        : "<li>ไม่พบข้อมูลสินค้า</li>";
+      ? itemsArray.map(i => `
+      <li>🍫 <span class="font-medium text-purple-700">${i.baseName}</span> 
+      <span class="text-gray-600">+ ${i.toppingName}</span> (${i.quantity || 1})</li>
+      `).join("")
+      : "<li>ไม่พบข้อมูลสินค้า</li>";
+
 
       // ✅ ยกเลิกได้เฉพาะ "รอดำเนินการ"
       const canCancel = order.status === "pending";
