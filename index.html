@@ -601,29 +601,46 @@ window.addEventListener("DOMContentLoaded", loadMenus);
     // ===============================================================
     // 5. ORDER MANAGEMENT WITH QUANTITY
     // ===============================================================
-// ✅ โหลดเมนูจาก Supabase (ราคาแบบจริง)
+// ✅ โหลดเมนูจาก Supabase
 async function loadMenus() {
-  const { data: bases } = await supabase.from('brownie_bases').select('*').eq('is_active', true);
-  const { data: toppings } = await supabase.from('brownie_toppings').select('*').eq('is_active', true);
+  try {
+    const { data: items, error } = await supabase
+      .from("brownie_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("id", { ascending: true });
 
-  const baseList = document.getElementById("base-list");
-  const toppingList = document.getElementById("topping-list");
+    if (error) throw error;
 
-  baseList.innerHTML = bases.map(b => `
-    <div class="brownie-base card cursor-pointer text-center hover-lift" onclick="selectBase(${b.id}, '${b.name}', ${b.price}, this)">
-      <div class="text-3xl mb-1">${b.name}</div>
-      <p class="text-gray-600 text-sm">${b.description || ''}</p>
-      <p class="text-blue-600 font-semibold mt-2">💰 ${b.price} บาท</p>
-    </div>
-  `).join('');
+    const bases = items.filter(i => i.type === "base");
+    const toppings = items.filter(i => i.type === "topping");
 
-  toppingList.innerHTML = toppings.map(t => `
-    <div class="topping-item card cursor-pointer text-center hover-lift" onclick="selectTopping(${t.id}, '${t.name}', ${t.price}, this)">
-      <div class="text-3xl mb-1">${t.name}</div>
-      <p class="text-gray-600 text-sm">${t.description || ''}</p>
-      <p class="text-purple-600 font-semibold mt-2">🍫 ${t.price} บาท</p>
-    </div>
-  `).join('');
+    const baseList = document.getElementById("base-list");
+    const toppingList = document.getElementById("topping-list");
+
+    baseList.innerHTML = bases.map(b => `
+      <div class="brownie-base card cursor-pointer text-center hover-lift" 
+           onclick="selectBase(${b.id}, '${b.name}', ${b.price}, this)">
+        <div class="text-5xl mb-1">${b.emoji || '🍫'}</div>
+        <div class="font-semibold text-lg">${b.name}</div>
+        <p class="text-gray-600 text-sm">${b.description || ''}</p>
+        <p class="text-blue-600 font-semibold mt-2">💰 ${b.price} บาท</p>
+      </div>
+    `).join('');
+
+    toppingList.innerHTML = toppings.map(t => `
+      <div class="topping-item card cursor-pointer text-center hover-lift" 
+           onclick="selectTopping(${t.id}, '${t.name}', ${t.price}, this)">
+        <div class="text-5xl mb-1">${t.emoji || '🍪'}</div>
+        <div class="font-semibold text-lg">${t.name}</div>
+        <p class="text-gray-600 text-sm">${t.description || ''}</p>
+        <p class="text-purple-600 font-semibold mt-2">🍫 ${t.price} บาท</p>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error("❌ Error loading menus:", err);
+  }
 }
 
 // ✅ เมื่อเลือกเนื้อ
@@ -656,15 +673,16 @@ function updateTotal() {
   const total = (basePrice + toppingPrice) * currentQuantity;
 
   document.getElementById("total-price").textContent = total.toLocaleString();
-
   document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
 }
 
 // ✅ เพิ่มลงตะกร้า
 function addToCart() {
-  if (!selectedBase || !selectedTopping) return showMessage("กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
+  if (!selectedBase || !selectedTopping)
+    return showMessage("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
 
   const total = (selectedBase.price + selectedTopping.price) * currentQuantity;
+
   cart.push({
     id: Date.now(),
     baseName: selectedBase.name,
