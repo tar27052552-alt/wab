@@ -177,40 +177,24 @@
   <h3 class="text-xl font-semibold mb-4">🍫 เลือกหน้าบราวนี่</h3>
   <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
 </section>
-    <!-- Quantity Section -->
-    <section id="quantity-section" class="card mb-8 hidden hover-lift">
-      <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-        <span class="mr-3">🔢</span>
-        เลือกจำนวน
-      </h2>
-      <div class="flex items-center justify-center space-x-6">
-        <button onclick="changeQuantity(-1)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white">
-          −
-        </button>
-        <div class="text-center">
-          <div class="text-5xl font-bold text-gray-900" id="quantity-display">1</div>
-          <div class="text-sm text-gray-500 mt-2">ชิ้น</div>
-        </div>
-        <button onclick="changeQuantity(1)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white">
-          +
-        </button>
-      </div>
-    </section>
 
-    <!-- Add to Cart -->
-    <section class="card text-center hover-lift">
-      <div class="mb-6">
-        <div class="text-3xl font-bold" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-          ราคารวม: <span id="total-price">0</span> บาท
-        </div>
-        <div class="text-sm text-gray-500 mt-2">
-          <span id="price-breakdown"></span>
-        </div>
-      </div>
-      <button id="add-to-cart-btn" onclick="addToCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-        🛒 เพิ่มลงตะกร้า
-      </button>
-    </section>
+<!-- 🔢 จำนวน และ สรุปราคา -->
+<section class="bg-white p-6 rounded-xl shadow-md text-center mb-6">
+  <h3 class="text-lg font-semibold mb-3">📦 จำนวนและราคารวม</h3>
+  <div class="flex justify-center items-center gap-4 mb-4">
+    <button id="decreaseQty" class="bg-gray-200 px-4 py-2 rounded text-lg font-bold">−</button>
+    <span id="quantity" class="text-2xl font-semibold">1</span>
+    <button id="increaseQty" class="bg-gray-200 px-4 py-2 rounded text-lg font-bold">＋</button>
+  </div>
+  <p class="text-lg">💰 ราคารวม: <span id="total-price" class="font-bold text-blue-600">0</span> บาท</p>
+</section>
+
+<!-- 🛒 ปุ่มเพิ่มลงตะกร้า -->
+<div class="text-center">
+  <button id="add-to-cart" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+    🛒 เพิ่มลงตะกร้า
+  </button>
+</div>
   </main>
 
 <section id="order-history" class="hidden px-4 py-6">
@@ -2051,8 +2035,12 @@ async function deleteBrownieItem(id) {
   loadBrownieMenus();
 }
 
-    // ===============================================================
-// 🍰 โหลดเมนูบราวนี่ฝั่งลูกค้า
+let selectedBase = null;
+let selectedTopping = null;
+let quantity = 1;
+
+// ===============================================================
+// 🍰 โหลดข้อมูลบราวนี่
 // ===============================================================
 async function loadBrownieChoices() {
   try {
@@ -2067,25 +2055,23 @@ async function loadBrownieChoices() {
     const bases = items.filter(i => i.type === "base");
     const toppings = items.filter(i => i.type === "topping");
 
-    renderBrownieCards(bases, "base-list");
-    renderBrownieCards(toppings, "topping-list");
+    renderBrownieCards(bases, "base-list", "base");
+    renderBrownieCards(toppings, "topping-list", "topping");
   } catch (err) {
     console.error("❌ Error loading brownie items:", err);
   }
 }
 
-function renderBrownieCards(items, containerId) {
+// ===============================================================
+// 🎨 แสดงการ์ดบราวนี่
+// ===============================================================
+function renderBrownieCards(items, containerId, type) {
   const container = document.getElementById(containerId);
-  if (!items || items.length === 0) {
-    container.innerHTML = `<p class="text-gray-500 text-center">ไม่มีเมนูในตอนนี้</p>`;
-    return;
-  }
-
   container.innerHTML = items
     .map(
       (i) => `
-      <div onclick="selectBrownieItem('${i.id}', '${i.type}', '${i.name}', ${i.price})"
-        class="cursor-pointer text-center border rounded-2xl p-4 hover:shadow-lg transition bg-white">
+      <div onclick="selectBrownieItem('${i.id}', '${type}', '${i.name}', ${i.price})"
+        class="cursor-pointer text-center border rounded-2xl p-4 hover:shadow-lg transition bg-white" id="${type}-${i.id}">
         <div class="text-5xl mb-2">${extractEmoji(i.name)}</div>
         <div class="font-semibold text-lg">${removeEmoji(i.name)}</div>
         <div class="text-gray-500 text-sm mb-2">${i.description || ''}</div>
@@ -2096,6 +2082,83 @@ function renderBrownieCards(items, containerId) {
     .join("");
 }
 
+// ===============================================================
+// 🎯 เลือกเนื้อหรือหน้า
+// ===============================================================
+function selectBrownieItem(id, type, name, price) {
+  const allCards = document.querySelectorAll(`#${type}-list > div`);
+  allCards.forEach(card => card.classList.remove("ring-4", "ring-purple-400", "bg-purple-50"));
+
+  const selectedCard = document.getElementById(`${type}-${id}`);
+  selectedCard.classList.add("ring-4", "ring-purple-400", "bg-purple-50");
+
+  if (type === "base") {
+    selectedBase = { id, name, price };
+  } else {
+    selectedTopping = { id, name, price };
+  }
+
+  updateTotalPrice();
+}
+
+// ===============================================================
+// 💰 คำนวณราคารวม
+// ===============================================================
+function updateTotalPrice() {
+  const total =
+    (selectedBase?.price || 0) +
+    (selectedTopping?.price || 0);
+
+  const totalWithQty = total * quantity;
+  document.getElementById("total-price").innerText = totalWithQty.toLocaleString();
+}
+
+// ===============================================================
+// 🔢 ปรับจำนวน
+// ===============================================================
+document.getElementById("increaseQty").addEventListener("click", () => {
+  quantity++;
+  document.getElementById("quantity").innerText = quantity;
+  updateTotalPrice();
+});
+
+document.getElementById("decreaseQty").addEventListener("click", () => {
+  if (quantity > 1) {
+    quantity--;
+    document.getElementById("quantity").innerText = quantity;
+    updateTotalPrice();
+  }
+});
+
+// ===============================================================
+// 🛒 เพิ่มลงตะกร้า
+// ===============================================================
+document.getElementById("add-to-cart").addEventListener("click", () => {
+  if (!selectedBase || !selectedTopping) {
+    alert("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อนค่ะ");
+    return;
+  }
+
+  const totalPrice =
+    (selectedBase.price + selectedTopping.price) * quantity;
+
+  alert(`🛒 เพิ่มลงตะกร้าเรียบร้อย!\n\n${selectedBase.name} + ${selectedTopping.name}\nจำนวน: ${quantity}\nรวม: ${totalPrice} บาท`);
+
+  // 💾 TODO: ถ้าอยากเก็บลง Supabase ให้ใช้คำสั่งนี้ได้เลย
+  /*
+  await supabase.from("cart").insert([{
+    base_id: selectedBase.id,
+    topping_id: selectedTopping.id,
+    quantity,
+    total_price: totalPrice,
+    user_id: currentUser.line_id
+  }]);
+  */
+});
+
+// ===============================================================
+// 🧩 Helper Functions
+// ===============================================================
 function extractEmoji(text) {
   const match = text.match(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\u200D]+/u);
   return match ? match[0] : "🍫";
@@ -2105,12 +2168,11 @@ function removeEmoji(text) {
   return text.replace(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\u200D]+/u, "").trim();
 }
 
-function selectBrownieItem(id, type, name, price) {
-  alert(`✅ คุณเลือก ${name} (${price} บาท)`);
-}
-
-// โหลดตอนเปิดหน้า
+// ===============================================================
+// 🚀 เริ่มโหลด
+// ===============================================================
 loadBrownieChoices();
+
     // ===============================================================
     // 13. START APPLICATION
     // ===============================================================
