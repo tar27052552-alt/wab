@@ -177,24 +177,45 @@
   <h3 class="text-xl font-semibold mb-4">🍫 เลือกหน้าบราวนี่</h3>
   <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
 </section>
+<!-- จำนวนและราคารวม -->
+<section id="quantity-section" class="card mb-8 hover-lift">
+  <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+    <span class="mr-3">📦</span> จำนวนและราคารวม
+  </h2>
+  
+  <div class="flex items-center justify-center space-x-6">
+    <button onclick="changeQuantity(-1)" 
+            class="quantity-btn bg-red-500 hover:bg-red-600 text-white">
+      −
+    </button>
 
-<!-- 🔢 จำนวน และ สรุปราคา -->
-<section class="bg-white p-6 rounded-xl shadow-md text-center mb-6">
-  <h3 class="text-lg font-semibold mb-3">📦 จำนวนและราคารวม</h3>
-  <div class="flex justify-center items-center gap-4 mb-4">
-    <button id="decreaseQty" class="bg-gray-200 px-4 py-2 rounded text-lg font-bold">−</button>
-    <span id="quantity" class="text-2xl font-semibold">1</span>
-    <button id="increaseQty" class="bg-gray-200 px-4 py-2 rounded text-lg font-bold">＋</button>
+    <div class="text-center">
+      <div class="text-5xl font-bold text-gray-900" id="quantity">1</div> <!-- 👈 ชื่อ id ต้องเป็น quantity -->
+      <div class="text-sm text-gray-500 mt-2">ชิ้น</div>
+    </div>
+
+    <button onclick="changeQuantity(1)" 
+            class="quantity-btn bg-green-500 hover:bg-green-600 text-white">
+      +
+    </button>
   </div>
-  <p class="text-lg">💰 ราคารวม: <span id="total-price" class="font-bold text-blue-600">0</span> บาท</p>
 </section>
 
-<!-- 🛒 ปุ่มเพิ่มลงตะกร้า -->
-<div class="text-center">
-  <button id="add-to-cart" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+<!-- ปุ่มเพิ่มลงตะกร้า -->
+<section class="card text-center hover-lift">
+  <div class="mb-6">
+    <div class="text-3xl font-bold text-gray-900">
+      💰 ราคารวม: <span id="total-price">0</span> บาท
+    </div>
+  </div>
+
+  <button id="add-to-cart" 
+          onclick="addToCart()" 
+          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled>
     🛒 เพิ่มลงตะกร้า
   </button>
-</div>
+</section>
   </main>
 
 <section id="order-history" class="hidden px-4 py-6">
