@@ -1533,7 +1533,7 @@ async function deleteCoupon(couponId) {
   }
 }
 
-    async function loadAdminStats() {
+        async function loadAdminStats() {
       try {
         // Get total orders
         const { data: orders, error: ordersError } = await supabase
@@ -1612,8 +1612,11 @@ async function deleteCoupon(couponId) {
       } catch (error) {
         console.error("❌ Error loading stats:", error);
       }
-      // ===============================================================
-//  📅 ฟังก์ชันสรุปออเดอร์รายวัน (ADMIN)
+    } // ✅ ปิดฟังก์ชัน loadAdminStats() ตรงนี้ให้เรียบร้อย
+
+
+// ===============================================================
+// 📅 ฟังก์ชันสรุปออเดอร์รายวัน (ADMIN)
 // ===============================================================
 async function loadDailySummary() {
   const selectedDate = document.getElementById("summary-date").value;
@@ -1645,7 +1648,6 @@ async function loadDailySummary() {
     const totalRevenue = orders.reduce((sum, o) => sum + o.total_price, 0);
     const totalOrders = orders.length;
 
-    // แยกเนื้อและหน้า
     const baseCounts = {};
     const toppingCounts = {};
 
@@ -1708,8 +1710,6 @@ async function updateAllOrdersOfDay() {
     showMessage("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
   }
 }
-
-    }
 
     // ===============================================================
     // 11. UTILITY FUNCTIONS
