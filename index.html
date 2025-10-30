@@ -274,21 +274,21 @@
     </section>
   </main>
 
-   <!-- ประวัติคำสั่งซื้อของฉัน -->
-    <section id="order-history" class="hidden px-4 py-6">
-  <h2 class="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
-    <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
-  </h2>
-
-  <!-- ✅ ตรงนี้คือส่วนแสดงผลออเดอร์ -->
-  <div id="order-list" class="space-y-4"></div>
-
-  <!-- ปุ่มกลับไปหน้าหลัก -->
-  <div class="text-center mt-6">
-    <button onclick="backToMain()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+<section id="order-history" class="hidden px-4 py-6">
+  <!-- แถวหัวข้อ + ปุ่ม -->
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold text-purple-800 flex items-center gap-2">
+      <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
+    </h2>
+    <button 
+      onclick="backToMain()" 
+      class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition">
       ⬅️ กลับหน้าหลัก
     </button>
   </div>
+
+  <!-- ส่วนแสดงรายการคำสั่งซื้อ -->
+  <div id="order-list" class="space-y-4"></div>
 </section>
 
   <!-- Cart Modal -->
