@@ -375,6 +375,21 @@
         <button class="admin-tab" data-tab="summary" onclick="showAdminTab('summary')">
           📅 สรุปออเดอร์รายวัน
         </button>
+        <!-- ✅ แท็บใหม่: เมนูบราวนี่ -->
+<div id="admin-brownie-tab" class="admin-tab-content hidden p-4">
+  <div id="admin-brownie-content" class="bg-white rounded-lg p-4 shadow"></div>
+
+  <div class="flex gap-2 mt-4">
+    <button class="px-4 py-2 bg-green-600 text-white rounded" onclick="addBrownieItem('base')">
+      ➕ เพิ่มเนื้อบราวนี่
+    </button>
+    <button class="px-4 py-2 bg-blue-600 text-white rounded" onclick="addBrownieItem('topping')">
+      ➕ เพิ่มหน้าบราวนี่
+    </button>
+  </div>
+</div>
+
+
 
       </div>
 
@@ -1202,6 +1217,7 @@ function backToMain() {
       if (tab === 'coupons') loadAdminCoupons();
       if (tab === 'stats') loadAdminStats();
       if (tab === 'summary') loadDailySummary();
+      if (tab === 'brownie') loadBrownieMenus();
     }
 
     // ===============================================================
@@ -1815,8 +1831,82 @@ function backToMain() {
 window.openOrderHistory = openOrderHistory;
 window.backToMain = backToMain;
 
+
+  // ===============================================================
+// 12. ADMIN: จัดการเมนูบราวนี่ (เนื้อ + หน้า)
+// ===============================================================
+
+// โหลดข้อมูลทั้งหมด
+async function loadBrownieMenus() {
+  const baseRes = await supabase.from("brownie_bases").select("*").order("id", { ascending: true });
+  const toppingRes = await supabase.from("brownie_toppings").select("*").order("id", { ascending: true });
+  
+  const content = document.getElementById("admin-brownie-content");
+  let html = `
+    <h3 class="text-lg font-semibold mb-3">🍰 เนื้อบราวนี่</h3>
+    ${renderBrownieList(baseRes.data, 'base')}
+    <h3 class="text-lg font-semibold mt-6 mb-3">🍫 หน้าบราวนี่</h3>
+    ${renderBrownieList(toppingRes.data, 'topping')}
+  `;
+  content.innerHTML = html;
+}
+
+// แสดงแต่ละรายการ
+function renderBrownieList(items, type) {
+  if (!items || items.length === 0) return `<p class="text-gray-500">ไม่มีข้อมูล</p>`;
+  return items.map(i => `
+    <div class="flex justify-between items-center border p-2 rounded mb-2">
+      <div>
+        <b>${i.name}</b><br>
+        💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | ${i.is_active ? "✅ เปิด" : "❌ ปิด"}
+      </div>
+      <div class="flex gap-2">
+        <button class="px-2 py-1 bg-yellow-500 text-white rounded" onclick="editBrownieItem('${type}', ${i.id}, '${i.name}', ${i.price}, ${i.points}, ${i.is_active})">แก้ไข</button>
+        <button class="px-2 py-1 bg-red-500 text-white rounded" onclick="deleteBrownieItem('${type}', ${i.id})">ลบ</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// เพิ่มเมนูใหม่
+async function addBrownieItem(type) {
+  const name = prompt("ชื่อเมนู:");
+  const price = parseFloat(prompt("ราคา:"));
+  const points = parseInt(prompt("แต้ม:"));
+  if (!name || isNaN(price) || isNaN(points)) return alert("กรอกข้อมูลไม่ครบ");
+
+  const table = type === 'base' ? 'brownie_bases' : 'brownie_toppings';
+  await supabase.from(table).insert([{ name, price, points, is_active: true }]);
+  loadBrownieMenus();
+}
+
+// แก้ไขเมนู
+async function editBrownieItem(type, id, name, price, points, isActive) {
+  const newName = prompt("ชื่อใหม่:", name) || name;
+  const newPrice = parseFloat(prompt("ราคาใหม่:", price)) || price;
+  const newPoints = parseInt(prompt("แต้มใหม่:", points)) || points;
+  const active = confirm("เปิดใช้งานเมนูนี้หรือไม่? (กด OK = เปิด / Cancel = ปิด)");
+
+  const table = type === 'base' ? 'brownie_bases' : 'brownie_toppings';
+  await supabase.from(table).update({
+    name: newName,
+    price: newPrice,
+    points: newPoints,
+    is_active: active
+  }).eq("id", id);
+
+  loadBrownieMenus();
+}
+
+// ลบเมนู
+async function deleteBrownieItem(type, id) {
+  if (!confirm("ต้องการลบเมนูนี้หรือไม่?")) return;
+  const table = type === 'base' ? 'brownie_bases' : 'brownie_toppings';
+  await supabase.from(table).delete().eq("id", id);
+  loadBrownieMenus();
+}
     // ===============================================================
-    // 12. START APPLICATION
+    // 13. START APPLICATION
     // ===============================================================
     window.addEventListener("load", init);
 
