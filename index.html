@@ -2136,7 +2136,6 @@ function updateTotalPrice() {
   const totalWithQty = total * quantity;
   document.getElementById("total-price").innerText = totalWithQty.toLocaleString();
 }
-
 // ===============================================================
 // 🔢 ปรับจำนวน
 // ===============================================================
@@ -2153,7 +2152,6 @@ document.getElementById("decreaseQty").addEventListener("click", () => {
     updateTotalPrice();
   }
 });
-
 // ===============================================================
 // 🛒 เพิ่มลงตะกร้า
 // ===============================================================
@@ -2191,12 +2189,12 @@ function removeEmoji(text) {
 // ===============================================================
 // 🚀 เริ่มโหลด
 // ===============================================================
-loadBrownieChoices();
+function init() {
+  console.log("🚀 App Initialized!");
+  loadBrownieChoices();
+}
 
-    // ===============================================================
-    // 13. START APPLICATION
-    // ===============================================================
-    window.addEventListener("load", init);
+window.addEventListener("load", init);
 
 </script>
 </body>
