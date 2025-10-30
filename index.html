@@ -515,16 +515,29 @@
     // ===============================================================
     // 3. INITIALIZATION
     // ===============================================================
-    async function init() {
+   async function init() {
   try {
     await liff.init({ liffId: LIFF_ID });
-    console.log("✅ LIFF Initialized");
-
     if (!liff.isLoggedIn()) {
-      console.log("❌ Not logged in, redirecting to LINE Login...");
       liff.login();
       return;
     }
+
+    userProfile = await liff.getProfile();
+    await saveUserToSupabase(userProfile);
+    await loadUserData(userProfile.userId);
+    await loadCoupons();
+
+    // ✅ โหลดเมนูหลังจาก Supabase พร้อมแล้ว
+    await loadMenus();
+
+    document.getElementById("loading-screen").classList.add("hidden");
+    document.getElementById("main-header").classList.remove("hidden");
+    document.getElementById("main-app").classList.remove("hidden");
+  } catch (error) {
+    console.error("❌ Init error:", error);
+  }
+}
 
     // ✅ ดึงข้อมูลผู้ใช้จาก LINE แล้วเก็บไว้ในตัวแปร global
     userProfile = await liff.getProfile();
@@ -551,8 +564,6 @@
     setTimeout(() => liff.login(), 2000);
   }
 }
-    // 📌 โหลดเมนูทันทีหลังจากเปิดหน้าเว็บ
-window.addEventListener("DOMContentLoaded", loadMenus);
 
     // ===============================================================
     // 4. USER MANAGEMENT
@@ -682,36 +693,33 @@ function selectTopping(id, name, price, el) {
 
 // ✅ ปรับจำนวน
 function changeQuantity(v) {
-  currentQuantity = Math.max(1, currentQuantity + v);
-  document.getElementById("quantity").textContent = currentQuantity; // ✅ ต้องตรงกับ HTML
+  quantity = Math.max(1, quantity + v);
+  document.getElementById("quantity").textContent = quantity;
   updateTotal();
 }
-
 // ✅ คำนวณราคารวม
 function updateTotal() {
   const basePrice = selectedBase?.price || 0;
   const toppingPrice = selectedTopping?.price || 0;
-  const total = (basePrice + toppingPrice) * currentQuantity;
-
+  const total = (basePrice + toppingPrice) * quantity;
   document.getElementById("total-price").textContent = total.toLocaleString();
   document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
 }
 
 // ✅ เพิ่มลงตะกร้า
 function addToCart() {
-  if (!selectedBase || !selectedTopping)
-    return showMessage("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
-
-  const total = (selectedBase.price + selectedTopping.price) * currentQuantity;
-
+  const total = (selectedBase.price + selectedTopping.price) * quantity;
   cart.push({
-    id: Date.now(),
     baseName: selectedBase.name,
     toppingName: selectedTopping.name,
-    quantity: currentQuantity,
+    quantity,
     unitPrice: selectedBase.price + selectedTopping.price,
     totalPrice: total
   });
+  quantity = 1;
+  document.getElementById("quantity").textContent = "1";
+  updateTotal();
+}
 
   updateCartBadge();
   showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
