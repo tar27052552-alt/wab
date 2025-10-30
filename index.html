@@ -2126,74 +2126,77 @@ function selectBrownieItem(id, type, name, price) {
 }
 
 // ===============================================================
+// 🚀 เริ่มโหลดเมื่อ DOM พร้อม
+// ===============================================================
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 DOM Loaded");
+  loadMenus(); // โหลดเมนูบราวนี่จาก brownie_items
+  initQuantityControls();
+});
+
+// ===============================================================
+// 🔢 ฟังก์ชันควบคุมจำนวนสินค้า
+// ===============================================================
+let currentQuantity = 1;
+
+function initQuantityControls() {
+  const inc = document.querySelector("#quantity-section button.bg-green-500");
+  const dec = document.querySelector("#quantity-section button.bg-red-500");
+  const add = document.getElementById("add-to-cart");
+
+  if (inc && dec && add) {
+    inc.addEventListener("click", () => changeQuantity(1));
+    dec.addEventListener("click", () => changeQuantity(-1));
+    add.addEventListener("click", addToCart);
+  } else {
+    console.warn("⚠️ ไม่พบปุ่มเพิ่ม/ลด หรือ add-to-cart ใน DOM");
+  }
+}
+
+// ✅ เปลี่ยนจำนวนสินค้า
+function changeQuantity(v) {
+  currentQuantity = Math.max(1, currentQuantity + v);
+  document.getElementById("quantity").textContent = currentQuantity;
+  updateTotal();
+}
+
+// ===============================================================
 // 💰 คำนวณราคารวม
 // ===============================================================
-function updateTotalPrice() {
-  const total =
-    (selectedBase?.price || 0) +
-    (selectedTopping?.price || 0);
+function updateTotal() {
+  const basePrice = selectedBase?.price || 0;
+  const toppingPrice = selectedTopping?.price || 0;
+  const total = (basePrice + toppingPrice) * currentQuantity;
 
-  const totalWithQty = total * quantity;
-  document.getElementById("total-price").innerText = totalWithQty.toLocaleString();
+  document.getElementById("total-price").textContent = total.toLocaleString();
+  document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
 }
-// ===============================================================
-// 🔢 ปรับจำนวน
-// ===============================================================
-document.getElementById("increaseQty").addEventListener("click", () => {
-  quantity++;
-  document.getElementById("quantity").innerText = quantity;
-  updateTotalPrice();
-});
 
-document.getElementById("decreaseQty").addEventListener("click", () => {
-  if (quantity > 1) {
-    quantity--;
-    document.getElementById("quantity").innerText = quantity;
-    updateTotalPrice();
-  }
-});
 // ===============================================================
 // 🛒 เพิ่มลงตะกร้า
 // ===============================================================
-document.getElementById("add-to-cart").addEventListener("click", () => {
+function addToCart() {
   if (!selectedBase || !selectedTopping) {
-    alert("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อนค่ะ");
+    showMessage("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
     return;
   }
 
-  const totalPrice =
-    (selectedBase.price + selectedTopping.price) * quantity;
+  const total = (selectedBase.price + selectedTopping.price) * currentQuantity;
   cart.push({
-  baseName: selectedBase.name,
-  toppingName: selectedTopping.name,
-  quantity: quantity,
-  unitPrice: (selectedBase.price + selectedTopping.price),
-  totalPrice: (selectedBase.price + selectedTopping.price) * quantity
-});
-updateCartBadge();
-showMessage("🛒 เพิ่มลงตะกร้าเรียบร้อย!");
-});
+    id: Date.now(),
+    baseName: selectedBase.name,
+    toppingName: selectedTopping.name,
+    quantity: currentQuantity,
+    unitPrice: selectedBase.price + selectedTopping.price,
+    totalPrice: total
+  });
 
-// ===============================================================
-// 🧩 Helper Functions
-// ===============================================================
-function extractEmoji(text) {
-  const match = text.match(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\u200D]+/u);
-  return match ? match[0] : "🍫";
+  updateCartBadge();
+  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
+  currentQuantity = 1;
+  document.getElementById("quantity").textContent = "1";
+  updateTotal();
 }
-
-function removeEmoji(text) {
-  return text.replace(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\u200D]+/u, "").trim();
-}
-
-// ===============================================================
-// 🚀 เริ่มโหลด
-// ===============================================================
-function init() {
-  console.log("🚀 App Initialized!");
-  loadBrownieChoices();
-}
-
 window.addEventListener("load", init);
 
 </script>
