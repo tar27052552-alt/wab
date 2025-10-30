@@ -1548,6 +1548,33 @@ async function deleteCoupon(couponId) {
     }
 
     // ===============================================================
+// 🔹 ฟังก์ชันเปิด/ปิดหน้าประวัติคำสั่งซื้อ
+// ===============================================================
+function openOrderHistory() {
+  if (!userProfile || !userProfile.userId) {
+    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
+    return;
+  }
+
+  // ซ่อนหน้าหลัก
+  document.getElementById("main-app").classList.add("hidden");
+  // แสดงหน้าประวัติ
+  document.getElementById("order-history").classList.remove("hidden");
+
+  // โหลดข้อมูลคำสั่งซื้อ
+  loadOrderHistory();
+}
+
+function backToMain() {
+  document.getElementById("order-history").classList.add("hidden");
+  document.getElementById("main-app").classList.remove("hidden");
+}
+
+// ✅ เผื่อไว้ถ้าใช้ <script type="module">
+window.openOrderHistory = openOrderHistory;
+window.backToMain = backToMain;
+
+    // ===============================================================
     // 12. START APPLICATION
     // ===============================================================
     window.addEventListener("load", init);
