@@ -165,21 +165,22 @@
       <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SUAN KHANOM</h1>
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
-    <!-- ✅ หน้าประวัติคำสั่งซื้อ -->
-<section id="order-history" class="hidden px-4 py-6">
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-semibold text-purple-800 flex items-center gap-2">
-      <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
-    </h2>
-    <button onclick="backToMain()" 
-      class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-xl transition">
+    <!-- ประวัติคำสั่งซื้อของฉัน -->
+    <section id="order-history" class="hidden px-4 py-6">
+  <h2 class="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
+    <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
+  </h2>
+
+  <!-- ✅ ตรงนี้คือส่วนแสดงผลออเดอร์ -->
+  <div id="order-list" class="space-y-4"></div>
+
+  <!-- ปุ่มกลับไปหน้าหลัก -->
+  <div class="text-center mt-6">
+    <button onclick="backToMain()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
       ⬅️ กลับหน้าหลัก
     </button>
   </div>
-
-  <div id="order-list" class="space-y-4"></div>
 </section>
-
     <!-- รายการออเดอร์ -->
     <div id="order-list" class="space-y-4">
       <!-- JavaScript จะเติมข้อมูลตรงนี้ -->
