@@ -513,57 +513,44 @@
     };
 
     // ===============================================================
-    // 3. INITIALIZATION
+    // 3. INITIALIZATION (Fix 1: Consolidate all init logic)
     // ===============================================================
    async function init() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        // ✅ ดึงข้อมูลผู้ใช้จาก LINE
+        userProfile = await liff.getProfile();
+        console.log("👤 Profile loaded:", userProfile);
+        
+        // ✅ ส่งข้อมูล userProfile ไปเก็บใน Supabase และโหลดข้อมูลเพิ่มเติม
+        await saveUserToSupabase(userProfile);
+        await loadUserData(userProfile.userId);
+        await loadCoupons();
+
+        // ✅ โหลดเมนูหลังจาก Supabase พร้อมแล้ว
+        await loadMenus();
+        
+        // ✅ ตรวจสอบสิทธิ์แอดมิน
+        if (ADMIN_IDS.includes(userProfile.userId)) {
+          document.getElementById("admin-btn").classList.remove("hidden");
+        }
+
+        // ✅ แสดงหน้าเว็บหลังโหลดเสร็จ
+        document.getElementById("loading-screen").classList.add("hidden");
+        document.getElementById("main-header").classList.remove("hidden");
+        document.getElementById("main-app").classList.remove("hidden");
+
+      } catch (error) {
+        console.error("❌ Init error:", error);
+        showMessage("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
+        // อาจจะต้องให้ผู้ใช้ลองเข้าใหม่ หรือตรวจสอบการตั้งค่า LIFF
+      }
     }
-
-    userProfile = await liff.getProfile();
-    await saveUserToSupabase(userProfile);
-    await loadUserData(userProfile.userId);
-    await loadCoupons();
-
-    // ✅ โหลดเมนูหลังจาก Supabase พร้อมแล้ว
-    await loadMenus();
-
-    document.getElementById("loading-screen").classList.add("hidden");
-    document.getElementById("main-header").classList.remove("hidden");
-    document.getElementById("main-app").classList.remove("hidden");
-  } catch (error) {
-    console.error("❌ Init error:", error);
-  }
-}
-
-    // ✅ ดึงข้อมูลผู้ใช้จาก LINE แล้วเก็บไว้ในตัวแปร global
-    userProfile = await liff.getProfile();
-    console.log("👤 Profile loaded:", userProfile);
-
-    // ✅ ส่งข้อมูล userProfile ไปเก็บใน Supabase และโหลดข้อมูลเพิ่มเติม
-    await saveUserToSupabase(userProfile);
-    await loadUserData(userProfile.userId);
-    await loadCoupons();
-
-    // ✅ ตรวจสอบสิทธิ์แอดมิน
-    if (ADMIN_IDS.includes(userProfile.userId)) {
-      document.getElementById("admin-btn").classList.remove("hidden");
-    }
-
-    // ✅ แสดงหน้าเว็บหลังโหลดเสร็จ
-    document.getElementById("loading-screen").classList.add("hidden");
-    document.getElementById("main-header").classList.remove("hidden");
-    document.getElementById("main-app").classList.remove("hidden");
-
-  } catch (error) {
-    console.error("❌ Init error:", error);
-    showMessage("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
-    setTimeout(() => liff.login(), 2000);
-  }
-}
 
     // ===============================================================
     // 4. USER MANAGEMENT
@@ -706,8 +693,13 @@ function updateTotal() {
   document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
 }
 
-// ✅ เพิ่มลงตะกร้า
+// ✅ เพิ่มลงตะกร้า (Fix 2: Remove stray code outside the function and add validation)
 function addToCart() {
+  if (!selectedBase || !selectedTopping) {
+    showMessage("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
+    return;
+  }
+    
   const total = (selectedBase.price + selectedTopping.price) * quantity;
   cart.push({
     baseName: selectedBase.name,
@@ -716,14 +708,12 @@ function addToCart() {
     unitPrice: selectedBase.price + selectedTopping.price,
     totalPrice: total
   });
-  quantity = 1;
-  document.getElementById("quantity").textContent = "1";
-  updateTotal();
-}
 
   updateCartBadge();
   showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
-  currentQuantity = 1;
+  
+  // Reset form state:
+  quantity = 1;
   document.getElementById("quantity").textContent = "1";
   updateTotal();
 }
@@ -785,7 +775,6 @@ function addToCart() {
     function updateCartTotal() {
       const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
       let discount = 0;
-
       if (selectedCoupon) {
         if (selectedCoupon.type === 'percent') {
           discount = Math.floor(subtotal * selectedCoupon.value / 100);
@@ -793,15 +782,14 @@ function addToCart() {
           discount = Math.min(selectedCoupon.value, subtotal);
         }
       }
-
       const total = Math.max(0, subtotal - discount);
 
-      document.getElementById("cart-subtotal").textContent = subtotal + " บาท";
-      document.getElementById("cart-total").textContent = total + " บาท";
+      document.getElementById("cart-subtotal").textContent = subtotal.toLocaleString() + " บาท";
+      document.getElementById("cart-total").textContent = total.toLocaleString() + " บาท";
 
       if (discount > 0) {
         document.getElementById("discount-row").classList.remove("hidden");
-        document.getElementById("discount-amount").textContent = "-" + discount + " บาท";
+        document.getElementById("discount-amount").textContent = "-" + discount.toLocaleString() + " บาท";
       } else {
         document.getElementById("discount-row").classList.add("hidden");
       }
@@ -817,1087 +805,155 @@ function addToCart() {
       showCart();
       showMessage("ลบสินค้าออกจากตะกร้าแล้ว");
     }
+    
+    function updateCartBadge() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const badge = document.getElementById("cart-badge");
+        if (totalItems > 0) {
+            badge.textContent = totalItems;
+            badge.classList.remove("hidden");
+        } else {
+            badge.classList.add("hidden");
+        }
+    }
 
     // ===============================================================
     // 7. COUPON SYSTEM
     // ===============================================================
     async function loadCoupons() {
-  try {
-    const { data, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("is_active", true)
-      .eq("show_in_list", true) // ✅ แสดงเฉพาะคูปองที่เลือกให้โชว์
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    availableCoupons = data || [];
-    console.log("✅ Coupons loaded:", availableCoupons.length);
-  } catch (error) {
-    console.error("❌ Error loading coupons:", error);
-  }
-}
-
-function showCoupons() {
-  const modal = document.getElementById("coupons-modal");
-  const content = document.getElementById("coupons-content");
-
-  if (availableCoupons.length === 0) {
-    content.innerHTML = `
-      <div class="col-span-2 text-center py-12">
-        <div class="text-6xl mb-4">🎫</div>
-        <p class="text-gray-600 text-lg">ยังไม่มีคูปองที่ใช้ได้</p>
-      </div>
-    `;
-  } else {
-    let html = '';
-    availableCoupons.forEach(coupon => {
-      const canUse = coupon.usage_limit > coupon.usage_count;
-      html += `
-        <div class="card border-2 ${canUse ? 'border-purple-200 hover:border-purple-400 cursor-pointer' : 'border-gray-200 opacity-50'} p-4" ${canUse ? `onclick="selectCouponFromList('${coupon.code}')"` : ''}>
-          <div class="flex items-start justify-between mb-3">
-            <div class="text-3xl">🎫</div>
-            <div class="text-xs ${canUse ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
-              ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
-            </div>
-          </div>
-          <div class="font-bold text-lg text-purple-900 mb-1">${coupon.name}</div>
-          <div class="text-sm text-gray-600 mb-2">${coupon.description}</div>
-          <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
-          <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-          <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
-        </div>
-      `;
-    });
-    content.innerHTML = html;
-  }
-
-  modal.classList.remove("hidden");
-}
-
-function closeCoupons() {
-  document.getElementById("coupons-modal").classList.add("hidden");
-}
-
-function selectCouponFromList(code) {
-  document.getElementById("coupon-input").value = code;
-  closeCoupons();
-  applyCouponCode();
-}
-
-async function applyCouponCode() {
-  const code = document.getElementById("coupon-input").value.trim().toUpperCase();
-
-  if (!code) {
-    showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
-    return;
-  }
-
-  const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-
-  try {
-    const { data: coupon, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", code)
-      .eq("is_active", true)
-      .single();
-
-    if (error || !coupon) {
-      showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
-      return;
-    }
-
-    if (coupon.usage_count >= coupon.usage_limit) {
-      showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
-      return;
-    }
-
-    if (subtotal < coupon.min_purchase) {
-      showCouponMessage(`ยอดขั้นต่ำ ${coupon.min_purchase} บาท`, "error");
-      return;
-    }
-
-    selectedCoupon = coupon;
-    document.getElementById("selected-coupon").classList.remove("hidden");
-    document.getElementById("coupon-name").textContent = coupon.name;
-    document.getElementById("coupon-desc").textContent = coupon.description;
-    document.getElementById("coupon-input").value = "";
-
-    updateCartTotal();
-    showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
-
-  } catch (error) {
-    console.error("❌ Error applying coupon:", error);
-    showCouponMessage("เกิดข้อผิดพลาด", "error");
-  }
-}
-
-function removeCoupon() {
-  selectedCoupon = null;
-  document.getElementById("selected-coupon").classList.add("hidden");
-  updateCartTotal();
-  showMessage("ลบคูปองแล้ว");
-}
-
-function showCouponMessage(message, type) {
-  const messageEl = document.getElementById("coupon-message");
-  messageEl.textContent = message;
-  messageEl.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
-  messageEl.classList.remove("hidden");
-  setTimeout(() => messageEl.classList.add("hidden"), 3000);
-}
-
-    // ===============================================================
-    // 8. CHECKOUT
-    // ===============================================================
-    async function checkout() {
-      if (cart.length === 0) {
-        showMessage("ตะกร้าว่างเปล่า");
-        return;
-      }
-
       try {
-        const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-        let discount = 0;
-
-        if (selectedCoupon) {
-          if (selectedCoupon.type === 'percent') {
-            discount = Math.floor(subtotal * selectedCoupon.value / 100);
-          } else {
-            discount = Math.min(selectedCoupon.value, subtotal);
-          }
-        }
-
-        const total = Math.max(0, subtotal - discount);
-        const earnedPoints = total;
-
-        // Create order
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert([{
-            user_id: currentUser.id,
-            line_id: currentUser.line_id,
-            items: cart,
-            subtotal: subtotal,
-            discount: discount,
-            total_price: total,
-            earned_points: earnedPoints,
-            coupon_code: selectedCoupon ? selectedCoupon.code : null,
-            status: "pending"
-          }])
-          .select()
-          .single();
-
-        if (orderError) throw orderError;
-
-        // Update coupon usage
-        if (selectedCoupon) {
-          await supabase
-            .from("coupons")
-            .update({ usage_count: selectedCoupon.usage_count + 1 })
-            .eq("id", selectedCoupon.id);
-        }
-
-        // Update user points
-        await supabase
-          .from("users")
-          .update({ points: userPoints + earnedPoints })
-          .eq("id", currentUser.id);
-
-        userPoints += earnedPoints;
-        document.getElementById("userPoints").textContent = userPoints;
-        cart = [];
-        selectedCoupon = null;
-        updateCartBadge();
-        closeCart();
-        await loadCoupons();
-
-        showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
-
-      } catch (error) {
-        console.error("❌ Checkout error:", error);
-        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
-      }
-    }
-
-    // ===============================================================
-    // 9. ORDER HISTORY
-    // ===============================================================
-    async function loadOrderHistory() {
-  console.log("📦 เริ่มโหลดประวัติของ userProfile:", userProfile);
-
-  const orderList = document.getElementById("order-list");
-  orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
-
-  try {
-    const { data: orders, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("line_id", userProfile.userId) // ✅ ใช้ line_id ของ LINE user
-      .order("created_at", { ascending: false });
-
-    console.log("📦 โหลดประวัติของ userId:", userProfile.userId);
-    console.log("📦 ผลลัพธ์จาก Supabase:", orders);
-
-    if (error) throw error;
-
-    if (!orders || orders.length === 0) {
-      orderList.innerHTML = `
-        <div class="text-center py-12">
-          <div class="text-6xl mb-2">📭</div>
-          <p class="text-gray-600">ยังไม่มีคำสั่งซื้อ</p>
-        </div>`;
-      return;
-    }
-
-    // ✅ สร้าง HTML แสดงผลแต่ละออเดอร์
-    let html = "";
-    orders.forEach(order => {
-      console.log("🧾 ออเดอร์:", order.id, "สินค้า:", order.items);
-
-      // ✅ ตรวจสอบและแปลง JSON ถ้าจำเป็น
-      let itemsArray = [];
-      try {
-        itemsArray = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
-      } catch {
-        itemsArray = [];
-      }
-
-      const items = Array.isArray(itemsArray)
-      ? itemsArray.map(i => `
-      <li>🍫 <span class="font-medium text-purple-700">${i.baseName}</span> 
-      <span class="text-gray-600">+ ${i.toppingName}</span> (${i.quantity || 1})</li>
-      `).join("")
-      : "<li>ไม่พบข้อมูลสินค้า</li>";
-
-
-      // ✅ ยกเลิกได้เฉพาะ "รอดำเนินการ"
-      const canCancel = order.status === "pending";
-
-      const statusBadge = getStatusBadge(order.status);
-
-      html += `
-        <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-semibold text-purple-900">Order #${order.id}</p>
-              <p class="text-sm text-gray-500">${new Date(order.created_at).toLocaleString("th-TH")}</p>
-            </div>
-            <span class="text-sm font-medium ${statusBadge.class} px-3 py-1 rounded-full">${statusBadge.label}</span>
-          </div>
-
-          <ul class="mt-3 text-sm text-gray-700 list-disc list-inside">${items}</ul>
-
-          <div class="flex justify-between items-center mt-4">
-            <p class="font-medium text-purple-700">ยอดรวม: ${order.total_price} บาท</p>
-            ${
-              canCancel
-                ? `<button onclick="cancelOrder(${order.id})"
-                    class="text-red-600 hover:text-red-800 font-medium text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
-                    ยกเลิกคำสั่งซื้อ
-                  </button>`
-                : ""
-            }
-          </div>
-        </div>`;
-    });
-
-    orderList.innerHTML = html;
-  } catch (error) {
-    console.error("❌ Error loading orders:", error);
-    orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
-  }
-}
-
-// ===============================================================
-// แสดง Badge ตามสถานะ
-// ===============================================================
-function getStatusBadge(status) {
-  switch (status) {
-    case "pending":
-      return { label: "รอดำเนินการ", class: "bg-yellow-100 text-yellow-700" };
-    case "preparing":
-      return { label: "กำลังเตรียม", class: "bg-blue-100 text-blue-700" };
-    case "ready":
-      return { label: "พร้อมส่ง", class: "bg-green-100 text-green-700" };
-    case "completed":
-      return { label: "สำเร็จ", class: "bg-purple-100 text-purple-700" };
-    case "cancelled":
-      return { label: "ถูกยกเลิก", class: "bg-red-100 text-red-700" };
-    default:
-      return { label: status, class: "bg-gray-100 text-gray-700" };
-  }
-}
-
-// ===============================================================
-// ฟังก์ชันยกเลิกออเดอร์
-// ===============================================================
-async function cancelOrder(orderId) {
-  if (!confirm("ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?")) return;
-
-  try {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "cancelled" })
-      .eq("id", orderId);
-
-    if (error) throw error;
-
-    showMessage("ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว 🛑");
-    loadOrderHistory(); // โหลดใหม่หลังจากยกเลิกสำเร็จ
-  } catch (error) {
-    console.error("❌ Error cancelling order:", error);
-    showMessage("เกิดข้อผิดพลาดในการยกเลิกออเดอร์");
-  }
-}
-
-// ===============================================================
-// เปิดหน้า “ประวัติคำสั่งซื้อ”
-// ===============================================================
-function openOrderHistory() {
-  if (!userProfile || !userProfile.userId) {
-    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
-    return;
-  }
-
-  // ✅ ซ่อนหน้าอื่น แล้วโชว์หน้าประวัติ
-  document.getElementById("main-app").classList.add("hidden");
-  document.getElementById("order-history").classList.remove("hidden");
-
-  loadOrderHistory();
-}
-
-// ===============================================================
-// กลับไปหน้าหลัก
-// ===============================================================
-function backToMain() {
-  document.getElementById("order-history").classList.add("hidden");
-  document.getElementById("main-app").classList.remove("hidden");
-}
-    // ===============================================================
-    // 10. ADMIN DASHBOARD
-    // ===============================================================
-    function showAdmin() {
-      document.getElementById("admin-modal").classList.remove("hidden");
-      showAdminTab('orders');
-    }
-
-    function closeAdmin() {
-      document.getElementById("admin-modal").classList.add("hidden");
-    }
-
-    function showAdminTab(tab) { 
-      document.querySelectorAll(".admin-tab").forEach(el => {
-        el.classList.remove("border-blue-600", "text-blue-600");
-        el.classList.add("border-transparent", "text-gray-600");
-      });
-
-      document.querySelectorAll(".admin-tab-content").forEach(el => {
-        el.classList.add("hidden");
-      });
-
-      const activeTab = document.querySelector(`[data-tab="${tab}"]`);
-      if (activeTab) {
-        activeTab.classList.remove("border-transparent", "text-gray-600");
-        activeTab.classList.add("border-blue-600", "text-blue-600");
-      }
-
-      document.getElementById(`admin-${tab}-tab`).classList.remove("hidden");
-
-      if (tab === 'orders') loadAdminOrders();
-      if (tab === 'coupons') loadAdminCoupons();
-      if (tab === 'stats') loadAdminStats();
-      if (tab === 'brownie') loadBrownieMenus();
-      if (tab === 'summary') loadDailySummary();
-    }
-
-    // ===============================================================
-// 🏷️ ฟังก์ชันแสดงข้อความสถานะ (สำหรับทั้งผู้ใช้และแอดมิน)
-// ===============================================================
-function getStatusText(status) {
-  switch (status) {
-    case "pending": return "รอดำเนินการ";
-    case "preparing": return "กำลังเตรียม";
-    case "ready": return "พร้อมรับ";
-    case "completed": return "สำเร็จ";
-    case "cancelled": return "ถูกยกเลิก";
-    default: return "ไม่ทราบสถานะ";
-  }
-}
-
-// ===============================================================
-// 🎨 ฟังก์ชันแสดงสี Badge สถานะ (เฉพาะแอดมิน)
-// ===============================================================
-function getStatusBadgeClass(status) {
-  switch (status) {
-    case "pending": return "bg-yellow-100 text-yellow-700";
-    case "preparing": return "bg-blue-100 text-blue-700";
-    case "ready": return "bg-green-100 text-green-700";
-    case "completed": return "bg-purple-100 text-purple-700";
-    case "cancelled": return "bg-red-100 text-red-700";
-    default: return "bg-gray-100 text-gray-700";
-  }
-}
-    async function loadAdminOrders() {
-      try {
-        const { data: orders, error } = await supabase
-          .from("orders")
-          .select(`
-            *,
-            users (display_name, picture_url)
-          `)
-          .order("created_at", { ascending: false })
-          .limit(50);
-
+        const { data, error } = await supabase
+          .from("coupons")
+          .select("*")
+          .eq("is_active", true)
+          .eq("show_in_list", true) // ✅ แสดงเฉพาะคูปองที่เลือกให้โชว์
+          .order("created_at", { ascending: false });
         if (error) throw error;
-
-        const content = document.getElementById("admin-orders-content");
-        
-        if (orders.length === 0) {
-          content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีออเดอร์</p>';
-          return;
-        }
-
-        let html = '<div class="space-y-4">';
-        orders.forEach(order => {
-          const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
-          const statusClass = getStatusBadgeClass(order.status);
-          
+        availableCoupons = data || [];
+        console.log("✅ Coupons loaded:", availableCoupons.length);
+      } catch (error) {
+        console.error("❌ Error loading coupons:", error);
+      }
+    }
+    
+    function showCoupons() {
+      const modal = document.getElementById("coupons-modal");
+      const content = document.getElementById("coupons-content");
+      if (availableCoupons.length === 0) {
+        content.innerHTML = `
+          <div class="col-span-2 text-center py-12">
+            <div class="text-6xl mb-4">🎫</div>
+            <p class="text-gray-600 text-lg">ยังไม่มีคูปองที่ใช้ได้</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        availableCoupons.forEach(coupon => {
+          const canUse = coupon.usage_limit > coupon.usage_count;
           html += `
-            <div class="card border border-gray-200 p-4">
+            <div class="card border-2 ${canUse ? 'border-purple-200 hover:border-purple-400 cursor-pointer' : 'border-gray-200 opacity-50'} p-4" 
+                 ${canUse ? `onclick="selectCouponFromList('${coupon.code}')"` : ''}>
               <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center space-x-3">
-                  <img src="${order.users?.picture_url || ''}" class="w-10 h-10 rounded-full" />
-                  <div>
-                    <div class="font-semibold">${order.users?.display_name || 'ไม่ระบุ'}</div>
-                    <div class="text-sm text-gray-500">ออเดอร์ #${order.id}</div>
-                  </div>
-                </div>
-                <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">   ${getStatusText(order.status)} </span>
-              </div>
-              
-              <div class="space-y-1 mb-3">
-                ${order.items.map(item => `
-                  <div class="text-sm text-gray-600">• ${item.baseName} + ${item.toppingName} × ${item.quantity}</div>
-                `).join('')}
-              </div>
-              
-              <div class="flex items-center justify-between pt-3 border-t">
-                <div>
-                  <div class="text-sm text-gray-500">ราคารวม: <span class="font-bold text-gray-900">${order.total_price} บาท</span></div>
-                  <div class="text-xs text-gray-400">${new Date(order.created_at).toLocaleString('th-TH')}</div>
-                </div>
-                <div class="flex gap-2">
-                  <select onchange="updateOrderStatus(${order.id}, this.value)" class="text-sm border border-gray-300 rounded px-2 py-1">
-                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>รอดำเนินการ</option>
-                    <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>กำลังเตรียม</option>
-                    <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>พร้อมรับ</option>
-                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>สำเร็จ</option>
-                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ยกเลิก</option>
-                  </select>
+                <div class="text-3xl">🎫</div>
+                <div class="text-xs ${canUse ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
+                  ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
                 </div>
               </div>
+              <div class="font-bold text-lg text-purple-900 mb-1">${coupon.name}</div>
+              <div class="text-sm text-gray-600 mb-2">${coupon.description}</div>
+              <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
+              <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
+              <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
             </div>
           `;
         });
-        html += '</div>';
         content.innerHTML = html;
-
-      } catch (error) {
-        console.error("❌ Error loading admin orders:", error);
       }
+      modal.classList.remove("hidden");
     }
 
-    async function updateOrderStatus(orderId, newStatus) {
+    function closeCoupons() {
+      document.getElementById("coupons-modal").classList.add("hidden");
+    }
+
+    function selectCouponFromList(code) {
+      document.getElementById("coupon-input").value = code;
+      closeCoupons();
+      applyCouponCode();
+    }
+
+    async function applyCouponCode() {
+      const code = document.getElementById("coupon-input").value.trim().toUpperCase();
+      if (!code) {
+        showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
+        return;
+      }
+      const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
       try {
-        // Get order details first
-        const { data: order, error: fetchError } = await supabase
-          .from("orders")
-          .select("*, users(line_id, display_name)")
-          .eq("id", orderId)
+        const { data: coupon, error } = await supabase
+          .from("coupons")
+          .select("*")
+          .eq("code", code)
+          .eq("is_active", true)
           .single();
 
-        if (fetchError) throw fetchError;
-
-        // Update status
-        const { error: updateError } = await supabase
-          .from("orders")
-          .update({ status: newStatus })
-          .eq("id", orderId);
-
-        if (updateError) throw updateError;
-
-        // Send LINE notification
-        await sendOrderStatusNotification(order, newStatus);
-
-        showMessage("อัพเดทสถานะและส่งแจ้งเตือนสำเร็จ");
-        loadAdminOrders();
-
-      } catch (error) {
-        console.error("❌ Error updating status:", error);
-        showMessage("เกิดข้อผิดพลาด: " + error.message);
-      }
-    }
-
-    async function sendOrderStatusNotification(order, newStatus) {
-      try {
-        // Call Supabase Edge Function to send LINE notification
-        const { data, error } = await supabase.functions.invoke('send-line-notification', {
-          body: {
-            lineId: order.users.line_id,
-            orderId: order.id,
-            status: newStatus,
-            orderData: {
-              items: order.items,
-              total_price: order.total_price,
-              subtotal: order.subtotal,
-              discount: order.discount
-            }
-          }
-        });
-
-        if (error) {
-          console.error("❌ Error calling edge function:", error);
-          // Don't throw, just log
-        } else {
-          console.log("✅ Notification sent successfully");
+        if (error || !coupon) {
+          showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
+          return;
         }
 
+        if (coupon.usage_count >= coupon.usage_limit) {
+          showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
+          return;
+        }
+
+        if (subtotal < coupon.min_purchase) {
+          showCouponMessage(`ยอดขั้นต่ำ ${coupon.min_purchase} บาท`, "error");
+          return;
+        }
+
+        selectedCoupon = coupon;
+        document.getElementById("selected-coupon").classList.remove("hidden");
+        document.getElementById("coupon-name").textContent = coupon.name;
+        document.getElementById("coupon-desc").textContent = coupon.description;
+        document.getElementById("coupon-input").value = "";
+        updateCartTotal();
+        showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
       } catch (error) {
-        console.error("❌ Error sending notification:", error);
-        // Don't throw error, just log it
+        console.error("❌ Error applying coupon:", error);
+        showCouponMessage("เกิดข้อผิดพลาด", "error");
       }
     }
 
-    async function loadAdminCoupons() {
-  try {
-    const { data: coupons, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    const content = document.getElementById("admin-coupons-content");
-    
-    if (coupons.length === 0) {
-      content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีคูปอง</p>';
-      return;
+    function removeCoupon() {
+      selectedCoupon = null;
+      document.getElementById("selected-coupon").classList.add("hidden");
+      updateCartTotal();
+      showMessage("ลบคูปองแล้ว");
     }
 
-    let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-    coupons.forEach(coupon => {
-      html += `
-        <div class="card border-2 border-purple-200 p-4">
-          <div class="flex items-start justify-between mb-3">
-            <div>
-              <div class="font-bold text-lg text-purple-900">${coupon.name}</div>
-              <div class="text-sm text-gray-600">${coupon.description}</div>
-            </div>
-            <div class="space-y-1 text-right">
-              <label class="flex items-center justify-end">
-                <input type="checkbox" ${coupon.is_active ? 'checked' : ''} 
-                       onchange="toggleCoupon(${coupon.id}, this.checked)" class="mr-2" />
-                <span class="text-sm">เปิดใช้</span>
-              </label>
-              <label class="flex items-center justify-end">
-                <input type="checkbox" ${coupon.show_in_list ? 'checked' : ''} 
-                       onchange="toggleCouponVisibility(${coupon.id}, this.checked)" class="mr-2" />
-                <span class="text-sm">แสดงในคูปองของฉัน</span>
-              </label>
-            </div>
-          </div>
-          
-          <div class="space-y-1 text-sm text-gray-600">
-            <div>รหัส: <span class="font-mono font-bold">${coupon.code}</span></div>
-            <div>ส่วนลด: ${coupon.type === 'percent' ? coupon.value + '%' : coupon.value + ' บาท'}</div>
-            <div>ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-            <div>ใช้ไป: ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง</div>
-          </div>
-          
-          <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-sm font-medium">
-            🗑️ ลบคูปอง
-          </button>
-        </div>
-      `;
-    });
-    html += '</div>';
-    content.innerHTML = html;
-
-  } catch (error) {
-    console.error("❌ Error loading coupons:", error);
-  }
-}
-
-function showCreateCouponForm() {
-  document.getElementById("create-coupon-modal").classList.remove("hidden");
-}
-
-function closeCreateCoupon() {
-  document.getElementById("create-coupon-modal").classList.add("hidden");
-}
-
-async function createCoupon(event) {
-  event.preventDefault();
-
-  try {
-    const code = document.getElementById("coupon-code").value.toUpperCase();
-    const name = document.getElementById("coupon-title").value;
-    const description = document.getElementById("coupon-description").value;
-    const type = document.getElementById("coupon-type").value;
-    const value = parseInt(document.getElementById("coupon-value").value);
-    const minPurchase = parseInt(document.getElementById("coupon-min").value);
-    const usageLimit = parseInt(document.getElementById("coupon-usage").value);
-
-    const { error } = await supabase
-      .from("coupons")
-      .insert([{
-        code,
-        name,
-        description,
-        type,
-        value,
-        min_purchase: minPurchase,
-        usage_limit: usageLimit,
-        usage_count: 0,
-        is_active: true,
-        show_in_list: true // ✅ ค่าเริ่มต้นให้แสดง
-      }]);
-
-    if (error) throw error;
-
-    showMessage("สร้างคูปองสำเร็จ! 🎉");
-    closeCreateCoupon();
-    loadAdminCoupons();
-    loadCoupons();
-    event.target.reset();
-
-  } catch (error) {
-    console.error("❌ Error creating coupon:", error);
-    showMessage("เกิดข้อผิดพลาด: " + error.message);
-  }
-}
-
-async function toggleCoupon(couponId, isActive) {
-  try {
-    const { error } = await supabase
-      .from("coupons")
-      .update({ is_active: isActive })
-      .eq("id", couponId);
-
-    if (error) throw error;
-
-    showMessage(isActive ? "เปิดใช้คูปองแล้ว" : "ปิดใช้คูปองแล้ว");
-    loadCoupons();
-
-  } catch (error) {
-    console.error("❌ Error toggling coupon:", error);
-    showMessage("เกิดข้อผิดพลาด");
-  }
-}
-
-// ✅ ฟังก์ชันใหม่: เปลี่ยนสถานะแสดง/ซ่อนคูปองในหน้า user
-async function toggleCouponVisibility(couponId, showInList) {
-  try {
-    const { error } = await supabase
-      .from("coupons")
-      .update({ show_in_list: showInList })
-      .eq("id", couponId);
-
-    if (error) throw error;
-
-    showMessage(showInList
-      ? "คูปองนี้จะแสดงในหน้า 'คูปองของฉัน' ✅"
-      : "คูปองนี้ถูกซ่อนไว้ ต้องกรอกรหัสก่อนเท่านั้น 🔒"
-    );
-
-    loadAdminCoupons();
-    loadCoupons();
-  } catch (error) {
-    console.error("❌ Error toggling coupon visibility:", error);
-    showMessage("เกิดข้อผิดพลาดในการเปลี่ยนการแสดงคูปอง");
-  }
-}
-
-async function deleteCoupon(couponId) {
-  if (!confirm("ต้องการลบคูปองนี้หรือไม่?")) return;
-
-  try {
-    const { error } = await supabase
-      .from("coupons")
-      .delete()
-      .eq("id", couponId);
-
-    if (error) throw error;
-
-    showMessage("ลบคูปองสำเร็จ");
-    loadAdminCoupons();
-    loadCoupons();
-
-  } catch (error) {
-    console.error("❌ Error deleting coupon:", error);
-    showMessage("เกิดข้อผิดพลาด");
-  }
-}
-
-        async function loadAdminStats() {
-      try {
-        // Get total orders
-        const { data: orders, error: ordersError } = await supabase
-          .from("orders")
-          .select("total_price, status");
-
-        if (ordersError) throw ordersError;
-
-        // Get total users
-        const { count: usersCount, error: usersError } = await supabase
-          .from("users")
-          .select("*", { count: 'exact', head: true });
-
-        if (usersError) throw usersError;
-
-        // Calculate stats
-        const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, order) => sum + order.total_price, 0);
-        const pendingOrders = orders.filter(o => o.status === 'pending').length;
-        const completedOrders = orders.filter(o => o.status === 'completed').length;
-
-        const content = document.getElementById("admin-stats-content");
-        content.innerHTML = `
-          <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6">
-            <div class="text-3xl mb-2">📊</div>
-            <div class="text-sm opacity-90 mb-1">ยอดขายรวม</div>
-            <div class="text-3xl font-bold">${totalRevenue.toLocaleString()} บาท</div>
-          </div>
-
-          <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white p-6">
-            <div class="text-3xl mb-2">📦</div>
-            <div class="text-sm opacity-90 mb-1">ออเดอร์ทั้งหมด</div>
-            <div class="text-3xl font-bold">${totalOrders}</div>
-            <div class="text-xs opacity-75 mt-2">สำเร็จ: ${completedOrders} | รอดำเนินการ: ${pendingOrders}</div>
-          </div>
-
-          <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6">
-            <div class="text-3xl mb-2">👥</div>
-            <div class="text-sm opacity-90 mb-1">ผู้ใช้ทั้งหมด</div>
-            <div class="text-3xl font-bold">${usersCount}</div>
-          </div>
-
-          <div class="card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6">
-            <div class="text-3xl mb-2">💰</div>
-            <div class="text-sm opacity-90 mb-1">ยอดเฉลี่ยต่อออเดอร์</div>
-            <div class="text-3xl font-bold">${totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0} บาท</div>
-          </div>
-
-          <div class="card col-span-full p-6">
-            <h4 class="font-semibold text-lg mb-4">📈 สถานะออเดอร์</h4>
-            <div class="grid grid-cols-5 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-yellow-600">${orders.filter(o => o.status === 'pending').length}</div>
-                <div class="text-sm text-gray-600">รอดำเนินการ</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">${orders.filter(o => o.status === 'preparing').length}</div>
-                <div class="text-sm text-gray-600">กำลังเตรียม</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">${orders.filter(o => o.status === 'ready').length}</div>
-                <div class="text-sm text-gray-600">พร้อมรับ</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-indigo-600">${orders.filter(o => o.status === 'completed').length}</div>
-                <div class="text-sm text-gray-600">สำเร็จ</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-red-600">${orders.filter(o => o.status === 'cancelled').length}</div>
-                <div class="text-sm text-gray-600">ยกเลิก</div>
-              </div>
-            </div>
-          </div>
-        `;
-
-      } catch (error) {
-        console.error("❌ Error loading stats:", error);
-      }
-    } // ✅ ปิดฟังก์ชัน loadAdminStats() ตรงนี้ให้เรียบร้อย
-
-
-// ===============================================================
-// 📅 ฟังก์ชันสรุปออเดอร์รายวัน (ADMIN)
-// ===============================================================
-async function loadDailySummary() {
-  const selectedDate = document.getElementById("summary-date").value;
-  const content = document.getElementById("summary-content");
-
-  if (!selectedDate) {
-    content.innerHTML = `<p class="text-gray-500 text-center">⚠️ กรุณาเลือกวันที่ก่อน</p>`;
-    return;
-  }
-
-  try {
-    const start = new Date(selectedDate);
-    const end = new Date(selectedDate);
-    end.setDate(end.getDate() + 1);
-
-    const { data: orders, error } = await supabase
-      .from("orders")
-      .select("*")
-      .gte("created_at", start.toISOString())
-      .lt("created_at", end.toISOString());
-
-    if (error) throw error;
-
-    if (orders.length === 0) {
-      content.innerHTML = `<p class="text-gray-500 text-center">ไม่มีออเดอร์ในวันที่ ${selectedDate}</p>`;
-      return;
-    }
-
-    const totalRevenue = orders.reduce((sum, o) => sum + o.total_price, 0);
-    const totalOrders = orders.length;
-
-    // ✅ รวม "เนื้อ + หน้า" เป็นคู่
-    const comboCounts = {};
-    orders.forEach(o => {
-      o.items.forEach(i => {
-        const combo = `${i.baseName} + ${i.toppingName}`;
-        comboCounts[combo] = (comboCounts[combo] || 0) + i.quantity;
-      });
-    });
-
-    let html = `
-      <h3 class="text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate}</h3>
-      <div class="mb-4">
-        <p>ออเดอร์ทั้งหมด: <b>${totalOrders}</b> รายการ</p>
-        <p>ยอดขายรวม: <b>${totalRevenue}</b> บาท</p>
-      </div>
-
-      <div class="border-t pt-4">
-        <h4 class="font-semibold text-purple-700 mb-2">🍰 รายการรวม (เนื้อ + หน้า)</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-          ${Object.entries(comboCounts)
-            .map(([combo, qty]) => `<p>• ${combo} — <b>${qty}</b> ชิ้น</p>`)
-            .join('')}
-        </div>
-      </div>
-    `;
-
-    // ✅ เพิ่มปุ่มอัปเดตสถานะทั้งหมดของวัน
-    html += `
-      <div class="mt-6 flex flex-col items-center gap-3">
-        <select id="update-status-select" class="border rounded px-3 py-2 text-sm">
-          <option value="">-- เลือกสถานะที่จะอัปเดตทั้งหมด --</option>
-          <option value="pending">🕓 รอดำเนินการ</option>
-          <option value="preparing">🍳 กำลังเตรียม</option>
-          <option value="ready">📦 พร้อมรับ</option>
-          <option value="completed">✅ สำเร็จ</option>
-          <option value="cancelled">❌ ยกเลิก</option>
-        </select>
-        <button onclick="updateAllOrdersOfDay()" 
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm shadow">
-          🔄 อัปเดตสถานะทั้งหมดของวัน
-        </button>
-      </div>
-    `;
-
-    content.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    content.innerHTML = `<p class="text-red-500 text-center">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
-  }
-}
-
-
-// ===============================================================
-// 🔄 อัปเดตสถานะทั้งหมดของวัน + ส่งแจ้งเตือน LINE
-// ===============================================================
-async function updateAllOrdersOfDay() {
-  const selectedDate = document.getElementById("summary-date").value;
-  const newStatus = document.getElementById("update-status-select").value;
-
-  if (!selectedDate) return alert("⚠️ กรุณาเลือกวันที่ก่อน");
-  if (!newStatus) return alert("⚠️ กรุณาเลือกสถานะที่จะอัปเดต");
-
-  try {
-    const start = new Date(selectedDate);
-    const end = new Date(selectedDate);
-    end.setDate(end.getDate() + 1);
-
-    // ✅ ดึงออเดอร์ทั้งหมดของวันนั้น
-    const { data: orders, error: fetchError } = await supabase
-      .from("orders")
-      .select("*, users(line_id, display_name)")
-      .gte("created_at", start.toISOString())
-      .lt("created_at", end.toISOString());
-
-    if (fetchError) throw fetchError;
-    if (!orders || orders.length === 0) {
-      showMessage("❌ ไม่มีออเดอร์ในวันนั้น");
-      return;
-    }
-
-    // ✅ วนแต่ละออเดอร์แล้วอัปเดตสถานะ + ส่ง LINE แจ้งเตือน
-    for (const order of orders) {
-      const { error: updateError } = await supabase
-        .from("orders")
-        .update({ status: newStatus })
-        .eq("id", order.id);
-
-      if (updateError) console.error(`❌ อัปเดตออเดอร์ ${order.id} ล้มเหลว:`, updateError);
-
-      // 🔔 ส่งแจ้งเตือนผ่าน Edge Function
-      try {
-        await supabase.functions.invoke("send-line-notification", {
-          body: {
-            lineId: order.users.line_id,
-            orderId: order.id,
-            status: newStatus,
-            orderData: {
-              items: order.items,
-              total_price: order.total_price,
-              subtotal: order.subtotal,
-              discount: order.discount,
-            },
-          },
-        });
-      } catch (notifyError) {
-        console.error(`⚠️ แจ้งเตือน LINE ของออเดอร์ ${order.id} ไม่สำเร็จ`, notifyError);
-      }
-    }
-
-    // ✅ แจ้งผลรวม
-    showMessage(
-      `✅ อัปเดตสถานะทั้งหมด ${orders.length} ออเดอร์ในวันที่ ${selectedDate} เป็น "${getStatusText(newStatus)}" สำเร็จ`
-    );
-    loadDailySummary();
-  } catch (err) {
-    console.error("❌ Error in updateAllOrdersOfDay:", err);
-    showMessage("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
-  }
-}
-
-    // ===============================================================
-// 🍫 เมนูบราวนี่ (เพิ่ม / แก้ไข / ลบ / ปิดการขาย + รองรับอิโมจิ)
-// ===============================================================
-async function loadBrownieMenus() {
-  const content = document.getElementById("admin-brownie-content");
-  const { data, error } = await supabase.from("brownie_items").select("*").order("type, id");
-
-  if (error) {
-    console.error(error);
-    content.innerHTML = `<p class="text-red-600 text-center">❌ โหลดข้อมูลไม่สำเร็จ</p>`;
-    return;
-  }
-
-  let html = `
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-bold">🍰 จัดการเมนูบราวนี่</h3>
-      <div class="space-x-2">
-        <button onclick="addBrownieItem('base')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-lg text-sm">
-          ➕ เพิ่มเนื้อบราวนี่
-        </button>
-        <button onclick="addBrownieItem('topping')" class="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-lg text-sm">
-          🍫 เพิ่มหน้าบราวนี่
-        </button>
-      </div>
-    </div>
-    <table class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
-      <thead class="bg-gray-100 text-gray-700">
-        <tr>
-          <th class="p-2 text-left">ประเภท</th>
-          <th class="p-2 text-left">ชื่อเมนู</th>
-          <th class="p-2 text-right">ราคา (฿)</th>
-          <th class="p-2 text-right">แต้ม</th>
-          <th class="p-2 text-center">สถานะ</th>
-          <th class="p-2 text-center">จัดการ</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(i => `
-          <tr class="border-t hover:bg-gray-50 transition">
-            <td class="p-2">${i.type === 'base' ? '🍞 เนื้อ' : '🍫 หน้า'}</td>
-            <td class="p-2 font-medium">${i.name}</td>
-            <td class="p-2 text-right">${i.price}</td>
-            <td class="p-2 text-right">${i.points}</td>
-            <td class="p-2 text-center">${i.is_active ? '✅ เปิดขาย' : '❌ ปิดขาย'}</td>
-            <td class="p-2 text-center space-x-2">
-              <button onclick="editBrownieItem(${i.id})" class="text-blue-600 hover:underline">✏️ แก้ไข</button>
-              <button onclick="deleteBrownieItem(${i.id})" class="text-red-600 hover:underline">🗑️ ลบ</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-
-  content.innerHTML = html;
-}
-
-// ➕ เพิ่มเมนูใหม่ (รองรับอิโมจิ)
-async function addBrownieItem(type) {
-  const name = prompt(`ใส่ชื่อ${type === 'base' ? 'เนื้อ' : 'หน้า'}บราวนี่ (ใส่อิโมจิได้ด้วย เช่น 🍫 เนื้อโกโก้):`);
-  if (!name) return;
-  const price = parseInt(prompt("ใส่ราคา (บาท):"), 10) || 0;
-  const points = parseInt(prompt("ใส่แต้มสะสม:"), 10) || 0;
-
-  const { error } = await supabase.from("brownie_items").insert([{ name, type, price, points, is_active: true }]);
-  if (error) {
-    alert("❌ เพิ่มเมนูไม่สำเร็จ");
-    console.error(error);
-  } else {
-    alert("✅ เพิ่มเมนูสำเร็จ!");
-    loadBrownieMenus();
-  }
-}
-
-// ✏️ แก้ไขเมนู
-async function editBrownieItem(id) {
-  const { data } = await supabase.from("brownie_items").select("*").eq("id", id).single();
-  const name = prompt("ชื่อใหม่ (ใส่อิโมจิได้):", data.name);
-  const price = parseInt(prompt("ราคาใหม่ (บาท):", data.price), 10);
-  const points = parseInt(prompt("แต้มใหม่:", data.points), 10);
-  const is_active = confirm("เปิดใช้งานอยู่ไหม? (OK = เปิด / Cancel = ปิด)");
-
-  const { error } = await supabase
-    .from("brownie_items")
-    .update({ name, price, points, is_active })
-    .eq("id", id);
-
-  if (error) {
-    alert("❌ แก้ไขไม่สำเร็จ");
-    console.error(error);
-  } else {
-    alert("✅ แก้ไขสำเร็จ");
-    loadBrownieMenus();
-  }
-}
-
-// 🗑️ ลบเมนู
-async function deleteBrownieItem(id) {
-  if (!confirm("ต้องการลบเมนูนี้หรือไม่?")) return;
-  const { error } = await supabase.from("brownie_items").delete().eq("id", id);
-  if (error) {
-    alert("❌ ลบไม่สำเร็จ");
-    console.error(error);
-  } else {
-    alert("✅ ลบสำเร็จ");
-    loadBrownieMenus();
-  }
-}
-
-
-    // ===============================================================
-    // 11. UTILITY FUNCTIONS
-    // ===============================================================
-    function showMessage(message) {
-      const successMessage = document.getElementById("success-message");
-      const successText = document.getElementById("success-text");
-      successText.textContent = message;
-      successMessage.classList.remove("hidden");
-
+    function showCouponMessage(message, type) {
+      const messageEl = document.getElementById("coupon-message");
+      messageEl.textContent = message;
+      messageEl.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+      messageEl.classList.remove("hidden");
+      
+      // ซ่อนข้อความอัตโนมัติ
       setTimeout(() => {
-        successMessage.classList.add("hidden");
+        messageEl.classList.add("hidden");
+      }, 3000);
+    }
+    
+    // ===============================================================
+    // 8. UTILITIES
+    // ===============================================================
+    function showMessage(text) {
+      const messageEl = document.getElementById("success-message");
+      document.getElementById("success-text").textContent = text;
+      messageEl.classList.remove("hidden");
+      setTimeout(() => {
+        messageEl.classList.add("hidden");
       }, 3000);
     }
 
@@ -1908,316 +964,692 @@ async function deleteBrownieItem(id) {
     }
 
     // ===============================================================
-// 🔹 ฟังก์ชันเปิด/ปิดหน้าประวัติคำสั่งซื้อ
-// ===============================================================
-function openOrderHistory() {
-  if (!userProfile || !userProfile.userId) {
-    showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ 🪪");
-    return;
-  }
-
-  // ซ่อนหน้าหลัก
-  document.getElementById("main-app").classList.add("hidden");
-  // แสดงหน้าประวัติ
-  document.getElementById("order-history").classList.remove("hidden");
-
-  // โหลดข้อมูลคำสั่งซื้อ
-  loadOrderHistory();
-}
-
-function backToMain() {
-  document.getElementById("order-history").classList.add("hidden");
-  document.getElementById("main-app").classList.remove("hidden");
-}
-
-// ✅ เผื่อไว้ถ้าใช้ <script type="module">
-window.openOrderHistory = openOrderHistory;
-window.backToMain = backToMain;
-
-
-// ===============================================================
-// 12. ADMIN: จัดการเมนูบราวนี่ (เนื้อ + หน้า)
-// ===============================================================
-async function loadBrownieMenus() {
-  try {
-    const { data: items, error } = await supabase
-      .from("brownie_items")
-      .select("*")
-      .order("id", { ascending: true });
-
-    if (error) throw error;
-
-    const bases = items.filter(i => i.type === "base");
-    const toppings = items.filter(i => i.type === "topping");
-
-    const content = document.getElementById("admin-brownie-content");
-    content.innerHTML = `
-      <h3 class="text-lg font-semibold mb-3">🍰 เนื้อบราวนี่</h3>
-      <button onclick="openBrownieModal('base')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มเนื้อบราวนี่</button>
-      ${renderBrownieList(bases)}
-
-      <h3 class="text-lg font-semibold mt-6 mb-3">🍫 หน้าบราวนี่</h3>
-      <button onclick="openBrownieModal('topping')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มหน้าบราวนี่</button>
-      ${renderBrownieList(toppings)}
-    `;
-  } catch (err) {
-    console.error("❌ Error loading brownie menus:", err);
-  }
-}
-
-function renderBrownieList(items) {
-  if (!items || items.length === 0)
-    return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
-
-  return items.map(i => `
-    <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
-      <div>
-        <div class="font-semibold text-lg">${i.name}</div>
-        <div class="text-sm text-gray-600">${i.description || ''}</div>
-        <div class="text-sm mt-1">
-          💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
-          ${i.is_active ? "✅ <span class='text-green-600'>เปิดขาย</span>" : "❌ <span class='text-red-500'>ปิดขาย</span>"}
-        </div>
-      </div>
-      <div class="flex gap-2 mt-1">
-        <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="openBrownieModal('${i.type}', ${i.id})">✏️ แก้ไข</button>
-        <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="deleteBrownieItem(${i.id})">🗑️ ลบ</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-// เปิด Modal เพิ่ม/แก้ไข
-function openBrownieModal(type, id = null) {
-  const modal = document.getElementById("brownie-modal");
-  const title = document.getElementById("brownie-modal-title");
-  const form = document.getElementById("brownie-form");
-
-  modal.classList.remove("hidden");
-
-  document.getElementById("brownie-id").value = id || "";
-  document.getElementById("brownie-type").value = type;
-  document.getElementById("brownie-name").value = "";
-  document.getElementById("brownie-desc").value = "";
-  document.getElementById("brownie-price").value = "";
-  document.getElementById("brownie-points").value = "";
-  document.getElementById("brownie-active").checked = true;
-
-  title.textContent = id ? "✏️ แก้ไขเมนูบราวนี่" : "🍰 เพิ่มเมนูบราวนี่";
-
-  if (id) loadBrownieForEdit(id);
-}
-
-function closeBrownieModal() {
-  document.getElementById("brownie-modal").classList.add("hidden");
-}
-
-// โหลดข้อมูลเดิมเวลาแก้ไข
-async function loadBrownieForEdit(id) {
-  const { data, error } = await supabase.from("brownie_items").select("*").eq("id", id).single();
-  if (error) return console.error(error);
-
-  document.getElementById("brownie-id").value = data.id;
-  document.getElementById("brownie-type").value = data.type;
-  document.getElementById("brownie-name").value = data.name;
-  document.getElementById("brownie-desc").value = data.description || "";
-  document.getElementById("brownie-price").value = data.price;
-  document.getElementById("brownie-points").value = data.points;
-  document.getElementById("brownie-active").checked = data.is_active;
-}
-
-// บันทึกข้อมูล (เพิ่ม/แก้ไข)
-document.getElementById("brownie-form").onsubmit = async (e) => {
-  e.preventDefault();
-
-  const id = document.getElementById("brownie-id").value;
-  const type = document.getElementById("brownie-type").value;
-  const name = document.getElementById("brownie-name").value;
-  const description = document.getElementById("brownie-desc").value;
-  const price = parseFloat(document.getElementById("brownie-price").value);
-  const points = parseInt(document.getElementById("brownie-points").value);
-  const isActive = document.getElementById("brownie-active").checked;
-
-  const data = { type, name, description, price, points, is_active: isActive };
-
-  try {
-    if (id) {
-      await supabase.from("brownie_items").update(data).eq("id", id);
-      showMessage("✅ อัปเดตเมนูสำเร็จ");
-    } else {
-      await supabase.from("brownie_items").insert([data]);
-      showMessage("🎉 เพิ่มเมนูใหม่สำเร็จ");
+    // 9. ADMIN FUNCTIONS (Placeholder - functions need to be implemented)
+    // ===============================================================
+    function showAdmin() {
+      document.getElementById("admin-modal").classList.remove("hidden");
+      // Load initial admin data here
     }
 
-    closeBrownieModal();
-    loadBrownieMenus();
-  } catch (err) {
-    console.error(err);
-    showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-  }
-};
+    function closeAdmin() {
+      document.getElementById("admin-modal").classList.add("hidden");
+    }
 
-// ลบเมนู
-async function deleteBrownieItem(id) {
-  if (!confirm("ต้องการลบเมนูนี้หรือไม่?")) return;
+    function showAdminTab(tabName) {
+      document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.admin-tab').forEach(el => {
+        el.classList.remove('border-blue-600', 'text-blue-600');
+        el.classList.add('border-transparent', 'text-gray-600', 'hover:text-gray-900');
+      });
+      
+      document.getElementById(`admin-${tabName}-tab`).classList.remove('hidden');
+      document.querySelector(`.admin-tab[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-600', 'hover:text-gray-900');
+      document.querySelector(`.admin-tab[data-tab="${tabName}"]`).classList.add('border-blue-600', 'text-blue-600');
+      
+      // Trigger load function for the selected tab
+      if (tabName === 'orders') loadAdminOrders();
+      if (tabName === 'coupons') loadAdminCoupons();
+      if (tabName === 'stats') loadAdminStats();
+      if (tabName === 'brownie') loadAdminBrownieItems();
+      if (tabName === 'summary') {
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('summary-date').value = today;
+          loadDailySummary();
+      }
+    }
+    
+    // Placeholder functions for Admin
+    async function loadAdminOrders() {
+        document.getElementById('admin-orders-content').innerHTML = '<p class="text-center text-gray-500">กำลังโหลดรายการออเดอร์...</p>';
+        // Implement Supabase call to fetch orders
+        const { data, error } = await supabase.from('orders').select('*, users(display_name)').order('created_at', { ascending: false });
+        if (error) {
+            document.getElementById('admin-orders-content').innerHTML = '<p class="text-red-500">❌ Error loading orders</p>';
+            return;
+        }
+        
+        let html = '<div class="space-y-4">';
+        data.forEach(order => {
+            const date = new Date(order.created_at).toLocaleString('th-TH');
+            const statusClass = getStatusBadge(order.status);
+            
+            let itemHtml = order.items.map(item => `<div class="text-xs text-gray-600">${item.baseName} + ${item.toppingName} (x${item.quantity})</div>`).join('');
 
-  const { error } = await supabase.from("brownie_items").delete().eq("id", id);
-  if (error) {
-    console.error(error);
-    return showMessage("❌ ลบเมนูล้มเหลว");
-  }
+            html += `
+                <div class="card border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-semibold text-lg">#${order.id} - ${order.users.display_name}</div>
+                        <span class="${statusClass}">${order.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-500 mb-3">เมื่อ: ${date}</div>
+                    <div class="space-y-1 p-3 bg-gray-50 rounded mb-3">
+                      ${itemHtml}
+                    </div>
+                    <div class="flex justify-between items-center border-t pt-2">
+                        <div class="font-bold text-xl text-blue-600">${order.total_amount} บาท</div>
+                        <select onchange="updateOrderStatus(${order.id}, this.value)" class="p-2 border rounded-lg text-sm">
+                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                            <option value="Ready" ${order.status === 'Ready' ? 'selected' : ''}>Ready</option>
+                            <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        document.getElementById('admin-orders-content').innerHTML = html;
+    }
+    
+    function getStatusBadge(status) {
+        switch (status) {
+            case 'Pending': return 'badge badge-pending';
+            case 'Preparing': return 'badge badge-preparing';
+            case 'Ready': return 'badge badge-ready';
+            case 'Completed': return 'badge badge-completed';
+            case 'Cancelled': return 'badge badge-cancelled';
+            default: return 'badge bg-gray-200 text-gray-800';
+        }
+    }
+    
+    async function updateOrderStatus(orderId, newStatus) {
+        if (!confirm(`ยืนยันการเปลี่ยนสถานะออเดอร์ #${orderId} เป็น ${newStatus} หรือไม่?`)) return;
 
-  showMessage("🗑️ ลบเมนูสำเร็จ");
-  loadBrownieMenus();
-}
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: newStatus })
+            .eq('id', orderId);
 
-// ===============================================================
-// 🍰 โหลดข้อมูลบราวนี่
-// ===============================================================
-async function loadBrownieChoices() {
-  try {
-    const { data: items, error } = await supabase
-      .from("brownie_items")
-      .select("*")
-      .eq("is_active", true)
-      .order("id", { ascending: true });
+        if (error) {
+            console.error('Error updating status:', error);
+            showMessage('❌ อัปเดตสถานะไม่สำเร็จ');
+        } else {
+            showMessage('✅ อัปเดตสถานะสำเร็จ');
+            loadAdminOrders(); // Reload orders to update UI
+        }
+    }
+    
+    async function loadAdminCoupons() {
+        document.getElementById('admin-coupons-content').innerHTML = '<p class="text-center text-gray-500">กำลังโหลดรายการคูปอง...</p>';
+        const { data, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
+        if (error) {
+            document.getElementById('admin-coupons-content').innerHTML = '<p class="text-red-500">❌ Error loading coupons</p>';
+            return;
+        }
 
-    if (error) throw error;
+        let html = '<div class="space-y-3">';
+        data.forEach(coupon => {
+            const usageText = `ใช้แล้ว ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง`;
+            const isActive = coupon.is_active ? '✅ เปิดใช้งาน' : '⛔ ปิดใช้งาน';
+            const showInList = coupon.show_in_list ? '👁️ แสดงในรายการ' : '🚫 ซ่อนในรายการ';
 
-    const bases = items.filter(i => i.type === "base");
-    const toppings = items.filter(i => i.type === "topping");
+            html += `
+                <div class="card border border-gray-200 shadow-sm p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-xl text-purple-800">${coupon.code}</div>
+                            <div class="text-lg">${coupon.name}</div>
+                            <div class="text-sm text-gray-600">${coupon.description}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-blue-600">${coupon.type === 'percent' ? `${coupon.value}%` : `${coupon.value} บาท`}</div>
+                            <div class="text-xs text-gray-500">ขั้นต่ำ ${coupon.min_purchase} บาท</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 border-t pt-3 text-sm">
+                        <div class="space-x-2">
+                            <span class="text-gray-700">${usageText}</span>
+                            <span class="${coupon.is_active ? 'text-green-600' : 'text-red-600'}">${isActive}</span>
+                            <span class="${coupon.show_in_list ? 'text-blue-600' : 'text-yellow-600'}">${showInList}</span>
+                        </div>
+                        <button onclick="deleteCoupon(${coupon.id})" class="text-red-500 hover:text-red-700">ลบ</button>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        document.getElementById('admin-coupons-content').innerHTML = html;
+    }
 
-    renderBrownieCards(bases, "base-list", "base");
-    renderBrownieCards(toppings, "topping-list", "topping");
-  } catch (err) {
-    console.error("❌ Error loading brownie items:", err);
-  }
-}
+    function showCreateCouponForm() {
+        document.getElementById('create-coupon-modal').classList.remove('hidden');
+    }
 
-// ===============================================================
-// 🎨 แสดงการ์ดบราวนี่
-// ===============================================================
-function renderBrownieCards(items, containerId, type) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = items
-    .map(
-      (i) => `
-      <div onclick="selectBrownieItem('${i.id}', '${type}', '${i.name}', ${i.price})"
-        class="cursor-pointer text-center border rounded-2xl p-4 hover:shadow-lg transition bg-white" id="${type}-${i.id}">
-        <div class="text-5xl mb-2">${extractEmoji(i.name)}</div>
-        <div class="font-semibold text-lg">${removeEmoji(i.name)}</div>
-        <div class="text-gray-500 text-sm mb-2">${i.description || ''}</div>
-        <div class="text-blue-600 font-bold">${i.price} บาท</div>
-      </div>
-    `
-    )
-    .join("");
-}
+    function closeCreateCoupon() {
+        document.getElementById('create-coupon-modal').classList.add('hidden');
+    }
 
-// ===============================================================
-// 🎯 เลือกเนื้อหรือหน้า
-// ===============================================================
-function selectBrownieItem(id, type, name, price) {
-  const allCards = document.querySelectorAll(`#${type}-list > div`);
-  allCards.forEach(card => card.classList.remove("ring-4", "ring-purple-400", "bg-purple-50"));
+    async function createCoupon(event) {
+        event.preventDefault();
+        const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+        const title = document.getElementById('coupon-title').value;
+        const description = document.getElementById('coupon-description').value;
+        const type = document.getElementById('coupon-type').value;
+        const value = parseFloat(document.getElementById('coupon-value').value);
+        const min = parseFloat(document.getElementById('coupon-min').value);
+        const usage = parseInt(document.getElementById('coupon-usage').value);
 
-  const selectedCard = document.getElementById(`${type}-${id}`);
-  selectedCard.classList.add("ring-4", "ring-purple-400", "bg-purple-50");
+        const { error } = await supabase.from('coupons').insert([{
+            code,
+            name: title,
+            description,
+            type,
+            value,
+            min_purchase: min,
+            usage_limit: usage,
+            usage_count: 0,
+            is_active: true,
+            show_in_list: true
+        }]);
 
-  if (type === "base") {
-    selectedBase = { id, name, price };
-  } else {
-    selectedTopping = { id, name, price };
-  }
+        if (error) {
+            console.error('Error creating coupon:', error);
+            showMessage('❌ สร้างคูปองไม่สำเร็จ');
+        } else {
+            showMessage('✅ สร้างคูปองสำเร็จ');
+            closeCreateCoupon();
+            loadAdminCoupons();
+            loadCoupons(); // Reload client coupons
+        }
+    }
 
-  updateTotalPrice();
-}
+    async function deleteCoupon(couponId) {
+        if (!confirm('ยืนยันการลบคูปองนี้หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้')) return;
 
-// ===============================================================
-// 🚀 เริ่มโหลดเมื่อ DOM พร้อม
-// ===============================================================
-window.addEventListener("load", async () => {
-  try {
-    console.log("🚀 Window Loaded");
+        const { error } = await supabase.from('coupons').delete().eq('id', couponId);
 
-    // รอให้ Supabase และ LIFF พร้อมก่อน
-    await init();
+        if (error) {
+            console.error('Error deleting coupon:', error);
+            showMessage('❌ ลบคูปองไม่สำเร็จ');
+        } else {
+            showMessage('✅ ลบคูปองสำเร็จ');
+            loadAdminCoupons();
+            loadCoupons(); // Reload client coupons
+        }
+    }
 
-    // โหลดเมนูบราวนี่
-    await loadMenus();
+    async function loadAdminStats() {
+        document.getElementById('admin-stats-content').innerHTML = '<p class="col-span-3 text-center text-gray-500">กำลังโหลดสถิติ...</p>';
 
-    // เริ่มต้นควบคุมจำนวน
-    initQuantityControls();
+        try {
+            // Stat 1: Total Orders
+            const { count: totalOrders, error: err1 } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+            if (err1) throw err1;
 
-    console.log("✅ ทุกอย่างพร้อมแล้ว!");
-  } catch (err) {
-    console.error("❌ Error during load:", err);
-  }
-});
-// ===============================================================
-// 🔢 ฟังก์ชันควบคุมจำนวนสินค้า
-// ===============================================================
-let currentQuantity = 1;
+            // Stat 2: Total Revenue (Sum total_amount for Completed orders)
+            const { data: revenueData, error: err2 } = await supabase.rpc('calculate_total_revenue'); 
+            // Note: Assumes you have a Supabase RPC function named 'calculate_total_revenue' or a simple select sum
+            
+            // Fallback for revenue calculation if RPC not available
+            let totalRevenue = 'N/A';
+            if (revenueData && revenueData.length > 0) {
+                 totalRevenue = revenueData[0].total_revenue.toLocaleString() || 0;
+            } else {
+                 const { data: simpleRevenue, error: err3 } = await supabase.from('orders').select('total_amount').eq('status', 'Completed');
+                 if (!err3) {
+                     totalRevenue = simpleRevenue.reduce((sum, order) => sum + order.total_amount, 0).toLocaleString();
+                 }
+            }
 
-function initQuantityControls() {
-  const inc = document.querySelector("#quantity-section button.bg-green-500");
-  const dec = document.querySelector("#quantity-section button.bg-red-500");
-  const add = document.getElementById("add-to-cart");
 
-  if (inc && dec && add) {
-    inc.addEventListener("click", () => changeQuantity(1));
-    dec.addEventListener("click", () => changeQuantity(-1));
-    add.addEventListener("click", addToCart);
-  } else {
-    console.warn("⚠️ ไม่พบปุ่มเพิ่ม/ลด หรือ add-to-cart ใน DOM");
-  }
-}
+            // Stat 3: Total Users
+            const { count: totalUsers, error: err4 } = await supabase.from('users').select('*', { count: 'exact', head: true });
+            if (err4) throw err4;
 
-// ✅ เปลี่ยนจำนวนสินค้า
-function changeQuantity(v) {
-  currentQuantity = Math.max(1, currentQuantity + v);
-  document.getElementById("quantity").textContent = currentQuantity;
-  updateTotal();
-}
+            document.getElementById('admin-stats-content').innerHTML = `
+                <div class="card bg-blue-100 border-blue-300">
+                    <div class="text-sm font-medium text-blue-700">จำนวนออเดอร์ทั้งหมด</div>
+                    <div class="text-3xl font-bold text-blue-900 mt-1">${totalOrders.toLocaleString()}</div>
+                </div>
+                <div class="card bg-green-100 border-green-300">
+                    <div class="text-sm font-medium text-green-700">รายได้รวม (Completed)</div>
+                    <div class="text-3xl font-bold text-green-900 mt-1">${totalRevenue} บาท</div>
+                </div>
+                <div class="card bg-purple-100 border-purple-300">
+                    <div class="text-sm font-medium text-purple-700">จำนวนผู้ใช้ทั้งหมด</div>
+                    <div class="text-3xl font-bold text-purple-900 mt-1">${totalUsers.toLocaleString()} คน</div>
+                </div>
+            `;
+        } catch (error) {
+            console.error("❌ Error loading stats:", error);
+            document.getElementById('admin-stats-content').innerHTML = '<p class="col-span-3 text-red-500">❌ Error loading statistics</p>';
+        }
+    }
 
-// ===============================================================
-// 💰 คำนวณราคารวม
-// ===============================================================
-function updateTotal() {
-  const basePrice = selectedBase?.price || 0;
-  const toppingPrice = selectedTopping?.price || 0;
-  const total = (basePrice + toppingPrice) * currentQuantity;
+    async function loadAdminBrownieItems() {
+        document.getElementById('admin-brownie-content').innerHTML = '<p class="text-center text-gray-500">กำลังโหลดเมนูบราวนี่...</p>';
+        const { data, error } = await supabase.from('brownie_items').select('*').order('type').order('id');
+        if (error) {
+            document.getElementById('admin-brownie-content').innerHTML = '<p class="text-red-500">❌ Error loading brownie items</p>';
+            return;
+        }
+        
+        const bases = data.filter(i => i.type === 'base');
+        const toppings = data.filter(i => i.type === 'topping');
+        
+        let html = `
+            <div class="mb-4 flex gap-2">
+                <button onclick="openBrownieModal('base')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    ➕ เพิ่มเนื้อบราวนี่
+                </button>
+                <button onclick="openBrownieModal('topping')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                    ➕ เพิ่มหน้าบราวนี่
+                </button>
+            </div>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-blue-700">🫐 เนื้อบราวนี่ (Base)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="admin-base-list">
+                ${renderBrownieItems(bases)}
+            </div>
 
-  document.getElementById("total-price").textContent = total.toLocaleString();
-  document.getElementById("add-to-cart").disabled = !(selectedBase && selectedTopping);
-}
+            <h4 class="text-xl font-semibold mt-6 mb-3 text-indigo-700">🍫 หน้าบราวนี่ (Topping)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="admin-topping-list">
+                ${renderBrownieItems(toppings)}
+            </div>
+        `;
+        document.getElementById('admin-brownie-content').innerHTML = html;
+    }
+    
+    function renderBrownieItems(items) {
+        if (items.length === 0) return '<p class="text-gray-500">ไม่มีรายการ</p>';
+        return items.map(item => `
+            <div class="card border ${item.is_active ? 'border-green-300' : 'border-red-300 opacity-70'} shadow-sm p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-2xl font-bold">${item.emoji || ''} ${item.name}</div>
+                        <div class="text-sm text-gray-600">${item.description || ''}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-lg text-green-600">${item.price} บาท</div>
+                        <div class="text-xs text-orange-600">${item.points} แต้ม</div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 mt-3 border-t pt-3">
+                    <button onclick="openBrownieModal('${item.type}', ${item.id})" class="text-sm text-blue-600 hover:text-blue-800">
+                        แก้ไข
+                    </button>
+                    <button onclick="toggleBrownieActive(${item.id}, ${item.is_active})" class="text-sm ${item.is_active ? 'text-red-600' : 'text-green-600'} hover:opacity-70">
+                        ${item.is_active ? 'ปิดขาย' : 'เปิดขาย'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
 
-// ===============================================================
-// 🛒 เพิ่มลงตะกร้า
-// ===============================================================
-function addToCart() {
-  if (!selectedBase || !selectedTopping) {
-    showMessage("⚠️ กรุณาเลือกเนื้อและหน้าบราวนี่ก่อน");
-    return;
-  }
+    function openBrownieModal(type, id = null) {
+        const modal = document.getElementById('brownie-modal');
+        const titleEl = document.getElementById('brownie-modal-title');
+        const form = document.getElementById('brownie-form');
+        
+        form.reset();
+        document.getElementById('brownie-id').value = id || '';
+        document.getElementById('brownie-type').value = type;
 
-  const total = (selectedBase.price + selectedTopping.price) * currentQuantity;
-  cart.push({
-    id: Date.now(),
-    baseName: selectedBase.name,
-    toppingName: selectedTopping.name,
-    quantity: currentQuantity,
-    unitPrice: selectedBase.price + selectedTopping.price,
-    totalPrice: total
-  });
+        if (id) {
+            titleEl.textContent = `📝 แก้ไขเมนู ${type === 'base' ? 'เนื้อบราวนี่' : 'หน้าบราวนี่'}`;
+            // Load data for editing
+            const item = (document.getElementById('admin-base-list').innerHTML + document.getElementById('admin-topping-list').innerHTML).match(new RegExp(`data-item-id="${id}"`)); // Simple placeholder logic
+            
+            // A proper implementation would fetch the data from Supabase again or store it in a local variable
+            // For now, let's assume a function fetchItemById exists
+            fetchBrownieItemById(id).then(item => {
+                document.getElementById('brownie-name').value = item.name;
+                document.getElementById('brownie-desc').value = item.description;
+                document.getElementById('brownie-price').value = item.price;
+                document.getElementById('brownie-points').value = item.points;
+                document.getElementById('brownie-active').checked = item.is_active;
+            });
 
-  updateCartBadge();
-  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
-  currentQuantity = 1;
-  document.getElementById("quantity").textContent = "1";
-  updateTotal();
-}
-window.addEventListener("load", init);
+        } else {
+            titleEl.textContent = `🍰 เพิ่มเมนู ${type === 'base' ? 'เนื้อบราวนี่' : 'หน้าบราวนี่'}`;
+            document.getElementById('brownie-active').checked = true;
+        }
+
+        form.onsubmit = (e) => saveBrownieItem(e, id);
+        modal.classList.remove('hidden');
+    }
+    
+    async function fetchBrownieItemById(id) {
+        const { data, error } = await supabase.from('brownie_items').select('*').eq('id', id).single();
+        if (error) {
+            console.error('Error fetching item:', error);
+            return {};
+        }
+        return data;
+    }
+
+    function closeBrownieModal() {
+        document.getElementById('brownie-modal').classList.add('hidden');
+    }
+
+    async function saveBrownieItem(event, id) {
+        event.preventDefault();
+        const type = document.getElementById('brownie-type').value;
+        const name = document.getElementById('brownie-name').value;
+        const description = document.getElementById('brownie-desc').value;
+        const price = parseFloat(document.getElementById('brownie-price').value);
+        const points = parseInt(document.getElementById('brownie-points').value);
+        const isActive = document.getElementById('brownie-active').checked;
+        
+        const itemData = {
+            type,
+            name,
+            description,
+            price,
+            points,
+            is_active: isActive
+        };
+
+        let result;
+        if (id) {
+            result = await supabase.from('brownie_items').update(itemData).eq('id', id);
+        } else {
+            // Assume emoji is the first char of the name if not explicitly provided
+            itemData.emoji = name.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\s/)?.[0] || '❓'; 
+            result = await supabase.from('brownie_items').insert([itemData]);
+        }
+
+        if (result.error) {
+            console.error('Error saving item:', result.error);
+            showMessage('❌ บันทึกเมนูไม่สำเร็จ');
+        } else {
+            showMessage('✅ บันทึกเมนูสำเร็จ');
+            closeBrownieModal();
+            loadAdminBrownieItems();
+            loadMenus(); // Reload client menu
+        }
+    }
+
+    async function toggleBrownieActive(id, currentStatus) {
+        if (!confirm(`ยืนยันการ${currentStatus ? 'ปิดขาย' : 'เปิดขาย'}เมนูนี้หรือไม่?`)) return;
+        
+        const { error } = await supabase.from('brownie_items')
+            .update({ is_active: !currentStatus })
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error toggling status:', error);
+            showMessage('❌ อัปเดตสถานะไม่สำเร็จ');
+        } else {
+            showMessage('✅ อัปเดตสถานะสำเร็จ');
+            loadAdminBrownieItems();
+            loadMenus(); // Reload client menu
+        }
+    }
+    
+    async function loadDailySummary() {
+        const date = document.getElementById('summary-date').value;
+        const contentEl = document.getElementById('summary-content');
+        if (!date) {
+            contentEl.innerHTML = '<p class="text-red-500 text-center">กรุณาเลือกวันที่</p>';
+            return;
+        }
+
+        contentEl.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดสรุปออเดอร์...</p>';
+
+        const startOfDay = `${date}T00:00:00.000Z`;
+        const endOfDay = `${date}T23:59:59.999Z`;
+
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select('id, created_at, total_amount, status, items')
+            .gte('created_at', startOfDay)
+            .lte('created_at', endOfDay)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            contentEl.innerHTML = '<p class="text-red-500 text-center">❌ Error loading summary</p>';
+            console.error(error);
+            return;
+        }
+
+        if (orders.length === 0) {
+            contentEl.innerHTML = '<p class="text-gray-500 text-center">ไม่พบออเดอร์ในวันที่เลือก</p>';
+            return;
+        }
+
+        let totalRevenue = 0;
+        let completedCount = 0;
+        const itemSummary = {};
+
+        orders.forEach(order => {
+            if (order.status === 'Completed') {
+                totalRevenue += order.total_amount;
+                completedCount++;
+            }
+            order.items.forEach(item => {
+                const key = `${item.baseName} + ${item.toppingName}`;
+                itemSummary[key] = (itemSummary[key] || 0) + item.quantity;
+            });
+        });
+
+        let summaryHtml = `
+            <h5 class="text-2xl font-bold mb-4 text-purple-700">สรุปออเดอร์ประจำวันที่ ${new Date(date).toLocaleDateString('th-TH', { dateStyle: 'long' })}</h5>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="card bg-indigo-50 border-indigo-200 p-4">
+                    <div class="text-sm text-indigo-700">ออเดอร์ทั้งหมด</div>
+                    <div class="text-3xl font-bold text-indigo-900">${orders.length}</div>
+                </div>
+                <div class="card bg-green-50 border-green-200 p-4">
+                    <div class="text-sm text-green-700">ออเดอร์เสร็จสิ้น</div>
+                    <div class="text-3xl font-bold text-green-900">${completedCount}</div>
+                </div>
+                <div class="card bg-yellow-50 border-yellow-200 p-4">
+                    <div class="text-sm text-yellow-700">รายได้รวม (Completed)</div>
+                    <div class="text-3xl font-bold text-yellow-900">${totalRevenue.toLocaleString()} ฿</div>
+                </div>
+            </div>
+
+            <h6 class="text-xl font-semibold mb-3">รายการเมนูที่สั่งทั้งหมด</h6>
+            <ul class="space-y-2 mb-6">
+                ${Object.entries(itemSummary).map(([name, quantity]) => `
+                    <li class="flex justify-between items-center p-2 bg-white rounded shadow-sm">
+                        <span class="text-gray-700">${name}</span>
+                        <span class="font-bold text-lg text-red-600">${quantity} ชิ้น</span>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+        
+        let orderListHtml = `<h6 class="text-xl font-semibold mb-3 border-t pt-4">รายละเอียดออเดอร์</h6><div class="space-y-3">`;
+        orders.forEach(order => {
+            const dateStr = new Date(order.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const statusClass = getStatusBadge(order.status);
+            const itemsList = order.items.map(item => `
+                <div class="text-xs">${item.baseName} + ${item.toppingName} (x${item.quantity})</div>
+            `).join('');
+
+            orderListHtml += `
+                <div class="card border border-gray-200 p-3">
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold">#${order.id} (${dateStr})</div>
+                        <span class="${statusClass}">${order.status}</span>
+                    </div>
+                    <div class="text-sm text-blue-600 font-bold">รวม: ${order.total_amount} ฿</div>
+                    <div class="mt-2 space-y-1">${itemsList}</div>
+                </div>
+            `;
+        });
+        orderListHtml += '</div>';
+
+        contentEl.innerHTML = summaryHtml + orderListHtml;
+    }
+
+    async function updateAllOrdersOfDay() {
+        const date = document.getElementById('summary-date').value;
+        if (!date) {
+            showMessage('⚠️ กรุณาเลือกวันที่ก่อน');
+            return;
+        }
+        if (!confirm(`ยืนยันการเปลี่ยนสถานะออเดอร์ทั้งหมดของวันที่ ${date} เป็น 'Completed' หรือไม่?`)) return;
+
+        const startOfDay = `${date}T00:00:00.000Z`;
+        const endOfDay = `${date}T23:59:59.999Z`;
+
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: 'Completed' })
+            .gte('created_at', startOfDay)
+            .lte('created_at', endOfDay);
+
+        if (error) {
+            console.error('Error updating all statuses:', error);
+            showMessage('❌ อัปเดตสถานะทั้งหมดไม่สำเร็จ');
+        } else {
+            showMessage(`✅ อัปเดตสถานะออเดอร์วันที่ ${date} เป็น Completed ทั้งหมดแล้ว`);
+            loadDailySummary(); // Reload summary
+        }
+    }
+    
+    // ===============================================================
+    // 10. ORDER HISTORY (Placeholder)
+    // ===============================================================
+    function openOrderHistory() {
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('order-history').classList.remove('hidden');
+        loadOrderHistory();
+    }
+    
+    function backToMain() {
+        document.getElementById('order-history').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+    }
+
+    async function loadOrderHistory() {
+        const userId = userProfile.userId;
+        const orderListEl = document.getElementById('order-list');
+        orderListEl.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดประวัติคำสั่งซื้อ...</p>';
+        
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_line_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            orderListEl.innerHTML = '<p class="text-red-500 text-center">❌ Error loading order history</p>';
+            return;
+        }
+
+        if (orders.length === 0) {
+            orderListEl.innerHTML = '<p class="text-gray-500 text-center">คุณยังไม่มีประวัติคำสั่งซื้อ</p>';
+            return;
+        }
+
+        let html = '';
+        orders.forEach(order => {
+            const date = new Date(order.created_at).toLocaleString('th-TH');
+            const statusClass = getStatusBadge(order.status);
+            
+            let itemHtml = order.items.map(item => `
+                <li class="text-sm text-gray-600">${item.baseName} + ${item.toppingName} (x${item.quantity})</li>
+            `).join('');
+
+            html += `
+                <div class="card border border-gray-200 shadow-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-bold text-lg text-purple-700">ออเดอร์ #${order.id}</div>
+                        <span class="${statusClass}">${order.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-500 mb-3">สั่งเมื่อ: ${date}</div>
+                    
+                    <ul class="space-y-1 p-3 bg-gray-50 rounded mb-3 border-l-4 border-gray-200">
+                      ${itemHtml}
+                    </ul>
+                    <div class="flex justify-between items-center border-t pt-2">
+                        <div class="text-lg font-bold text-blue-600">รวม: ${order.total_amount.toLocaleString()} บาท</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        orderListEl.innerHTML = html;
+    }
+    
+    // ===============================================================
+    // 11. CHECKOUT (Placeholder)
+    // ===============================================================
+    async function checkout() {
+        if (cart.length === 0) {
+            showMessage("⚠️ ตะกร้าว่างเปล่า");
+            return;
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+        let discount = 0;
+        let couponCode = null;
+
+        if (selectedCoupon) {
+            if (selectedCoupon.type === 'percent') {
+                discount = Math.floor(subtotal * selectedCoupon.value / 100);
+            } else {
+                discount = Math.min(selectedCoupon.value, subtotal);
+            }
+            couponCode = selectedCoupon.code;
+        }
+
+        const totalAmount = Math.max(0, subtotal - discount);
+        const totalPointsEarned = cart.reduce((sum, item) => sum + (item.quantity * 5), 0); // Assume 5 points per item for now, better to link to brownie_items table
+
+        if (!confirm(`ยืนยันการสั่งซื้อ: ${totalAmount.toLocaleString()} บาท?`)) return;
+
+        try {
+            // 1. Create Order
+            const { data: orderData, error: orderError } = await supabase
+                .from('orders')
+                .insert([{
+                    user_line_id: userProfile.userId,
+                    items: cart,
+                    subtotal: subtotal,
+                    discount: discount,
+                    total_amount: totalAmount,
+                    coupon_code: couponCode,
+                    status: 'Pending'
+                }])
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+            
+            // 2. Update User Points
+            const { error: pointError } = await supabase
+                .from('users')
+                .update({ points: currentUser.points + totalPointsEarned })
+                .eq('line_id', userProfile.userId);
+
+            if (pointError) throw pointError;
+
+            // 3. Update Coupon Usage
+            if (selectedCoupon) {
+                const { error: couponError } = await supabase
+                    .from('coupons')
+                    .update({ usage_count: selectedCoupon.usage_count + 1 })
+                    .eq('id', selectedCoupon.id);
+
+                if (couponError) throw couponError;
+            }
+
+            // 4. Send LIFF message (Not implemented here, but good practice)
+            
+            // 5. Clear state
+            cart = [];
+            selectedCoupon = null;
+            updateCartBadge();
+            closeCart();
+            await loadUserData(userProfile.userId); // Reload points
+            await loadCoupons(); // Reload coupons
+            
+            showMessage(`✅ สั่งซื้อสำเร็จ! #${orderData.id}`);
+
+        } catch (error) {
+            console.error('❌ Checkout error:', error);
+            showMessage('❌ สั่งซื้อไม่สำเร็จ กรุณาลองใหม่');
+        }
+    }
+
+
+    window.addEventListener("load", init);
 
 </script>
 </body>
