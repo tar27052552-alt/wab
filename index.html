@@ -1940,7 +1940,7 @@ function selectProductType(typeId, typeName, emoji) {
   const modal = document.getElementById("brownie-modal");
   const title = document.getElementById("brownie-modal-title");
 
-  // ถ้าไม่ได้ส่ง item มา ให้สร้างวัตถุเปล่าไว้แทน
+  // 🛠 ป้องกัน error ถ้าไม่ได้ส่ง item เข้ามา
   if (!item) item = {};
 
   modal.classList.remove("hidden");
@@ -1956,7 +1956,7 @@ function selectProductType(typeId, typeName, emoji) {
   document.getElementById("brownie-active").checked =
     item.is_active !== undefined ? item.is_active : true;
 
-  // เก็บ productTypeId ไว้ใน dataset ของ form
+  // เก็บ productTypeId ไว้ใน dataset ของฟอร์ม
   const form = document.getElementById("brownie-form");
   form.dataset.productTypeId = productTypeId;
 
