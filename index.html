@@ -319,8 +319,8 @@
         <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
           📊 สถิติ
         </button>
-        <button onclick="showAdminTab('brownie')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
-          � เมนูบราวนี่
+        <button onclick="showAdminTab('menu')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
+          📋 จัดการเมนู
         </button>
         <button onclick="showAdminTab('summary')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="summary">
           📅 สรุปออเดอร์รายวัน
@@ -328,9 +328,15 @@
       </div>
 
       <!-- Brownie Tab -->
-      <section id="admin-brownie-tab" class="admin-tab-content hidden">
+      <section id="admin-menu-tab" class="admin-tab-content hidden">
         <div id="admin-brownie-content" class="p-4"></div>
       </section>
+
+      <!-- 🧁 หน้าจัดการเมนู (เพิ่มใหม่ตรงนี้) -->
+    <div id="admin-menu-content" class="hidden p-4">
+      <h2 class="text-2xl font-bold mb-4">📋 จัดการเมนูขนม</h2>
+      <div id="admin-brownie-content"></div>
+    </div>
 
       <!-- Orders Tab -->
       <div id="admin-orders-tab" class="admin-tab-content">
@@ -1161,7 +1167,7 @@ let allMenus = [];              // 🍪 เก็บเมนูทั้งห�
       if (tab === 'orders') loadAdminOrders();
       if (tab === 'coupons') loadAdminCoupons();
       if (tab === 'stats') loadAdminStats();
-      if (tab === 'brownie') loadBrownieMenus();
+      if (tab === 'menu') loadBrownieMenus();
       if (tab === 'summary') loadDailySummary();
     }
 
@@ -1747,31 +1753,71 @@ let allMenus = [];              // 🍪 เก็บเมนูทั้งห�
     }
 
     async function loadBrownieMenus() {
-      try {
-        const { data: items, error } = await supabase
-          .from("brownie_items")
-          .select("*")
-          .order("id", { ascending: true });
+  const content = document.getElementById("admin-brownie-content");
+  content.innerHTML = `<div class="text-center text-gray-500">กำลังโหลด...</div>`;
 
-        if (error) throw error;
+  try {
+    // โหลดประเภทขนมทั้งหมด
+    const { data: types, error: typesError } = await supabase
+      .from("product_types")
+      .select("*")
+      .order("id");
+    if (typesError) throw typesError;
 
-        const bases = items.filter(i => i.type === "base");
-        const toppings = items.filter(i => i.type === "topping");
+    // โหลดเมนูทั้งหมด (base + topping)
+    const { data: items, error: itemsError } = await supabase
+      .from("brownie_items")
+      .select("*")
+      .order("product_type_id");
+    if (itemsError) throw itemsError;
 
-        const content = document.getElementById("admin-brownie-content");
-        content.innerHTML = `
-          <h3 class="text-lg font-semibold mb-3">� เนื้อบราวนี่</h3>
-          <button onclick="openBrownieModal('base')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มเนื้อบราวนี่</button>
+    let html = `
+      <button onclick="openProductTypeModal()" 
+        class="bg-green-600 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700">
+        ➕ เพิ่มประเภทขนมใหม่
+      </button>
+    `;
+
+    // วนลูปแต่ละประเภท
+    types.forEach(type => {
+      const typeItems = items.filter(i => i.product_type_id === type.id);
+      const bases = typeItems.filter(i => i.type === 'base');
+      const toppings = typeItems.filter(i => i.type === 'topping');
+
+      html += `
+        <div class="border rounded-xl p-4 mb-6 bg-white shadow-md">
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="text-xl font-bold">${type.emoji || '🍰'} ${type.name}</h4>
+            <div>
+              <button onclick="openProductTypeModal(${JSON.stringify(type).replace(/"/g, "'")})" 
+                      class="text-sm px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">✏️ แก้ไข</button>
+              <button onclick="deleteProductType(${type.id})" 
+                      class="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">🗑️ ลบ</button>
+            </div>
+          </div>
+
+          <h5 class="font-semibold text-gray-700 mt-4">🍫 เนื้อ/ไส้</h5>
           ${renderBrownieList(bases)}
+          <button onclick="openBrownieModal('base', ${type.id})" 
+                  class="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2">
+            ➕ เพิ่มเนื้อ
+          </button>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">🍫 หน้าบราวนี่</h3>
-          <button onclick="openBrownieModal('topping')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มหน้าบราวนี่</button>
+          <h5 class="font-semibold text-gray-700 mt-4">🫀 หน้า/ท็อปปิ้ง</h5>
           ${renderBrownieList(toppings)}
-        `;
-      } catch (err) {
-        console.error("❌ Error loading brownie menus:", err);
-      }
-    }
+          <button onclick="openBrownieModal('topping', ${type.id})" 
+                  class="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2">
+            ➕ เพิ่มหน้า
+          </button>
+        </div>
+      `;
+    });
+
+    content.innerHTML = html;
+  } catch (err) {
+    console.error("❌ Error loading admin menus:", err);
+  }
+}
 
     async function loadProductTypes() {
   try {
@@ -1855,45 +1901,79 @@ function selectProductType(typeId, typeName, emoji) {
 
 
     function renderBrownieList(items) {
-      if (!items || items.length === 0)
-        return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
+  if (!items || items.length === 0)
+    return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
 
-      return items.map(i => `
-        <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
-          <div>
-            <div class="font-semibold text-lg">${i.name}</div>
-            <div class="text-sm text-gray-600">${i.description || ''}</div>
-            <div class="text-sm mt-1">
-              💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
-              ${i.is_active ? "✅ <span class='text-green-600'>เปิดขาย</span>" : "❌ <span class='text-red-500'>ปิดขาย</span>"}
-            </div>
-          </div>
-          <div class="flex gap-2 mt-1">
-            <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="openBrownieModal('${i.type}', ${i.id})">✏️ แก้ไข</button>
-            <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="deleteBrownieItem(${i.id})">🗑️ ลบ</button>
-          </div>
+  return items.map(i => `
+    <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
+      <div>
+        <div class="font-semibold text-lg">${i.name}</div>
+        <div class="text-sm text-gray-600">${i.description || ''}</div>
+        <div class="text-sm mt-1">
+          💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
+          ${i.is_active 
+            ? "✅ <span class='text-green-600'>เปิดขาย</span>" 
+            : "❌ <span class='text-red-500'>ปิดขาย</span>"}
         </div>
-      `).join("");
-    }
+      </div>
+      <div class="flex gap-2 mt-1">
+        <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" 
+          onclick="openBrownieModal('${i.type}', ${i.product_type_id}, ${JSON.stringify(i).replace(/"/g, '&quot;')})">
+          ✏️ แก้ไข
+        </button>
+        <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" 
+          onclick="deleteBrownieItem(${i.id})">
+          🗑️ ลบ
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
 
-    function openBrownieModal(type, id = null) {
-      const modal = document.getElementById("brownie-modal");
-      const title = document.getElementById("brownie-modal-title");
+    function openBrownieModal(type, productTypeId, item = null) {
+  const modal = document.getElementById("brownie-modal");
+  const title = document.getElementById("brownie-modal-title");
 
-      modal.classList.remove("hidden");
+  modal.classList.remove("hidden");
 
-      document.getElementById("brownie-id").value = id || "";
-      document.getElementById("brownie-type").value = type;
-      document.getElementById("brownie-name").value = "";
-      document.getElementById("brownie-desc").value = "";
-      document.getElementById("brownie-price").value = "";
-      document.getElementById("brownie-points").value = "";
-      document.getElementById("brownie-active").checked = true;
+  const isEdit = !!item;
+  document.getElementById("brownie-id").value = item ? item.id : "";
+  document.getElementById("brownie-type").value = type;
+  document.getElementById("brownie-name").value = item ? item.name : "";
+  document.getElementById("brownie-desc").value = item ? item.description || "" : "";
+  document.getElementById("brownie-price").value = item ? item.price : "";
+  document.getElementById("brownie-points").value = item ? item.points : "";
+  document.getElementById("brownie-active").checked = item ? item.is_active : true;
 
-      title.textContent = id ? "✏️ แก้ไขเมนูบราวนี่" : "🍰 เพิ่มเมนูบราวนี่";
+  // ✅ เก็บค่า productTypeId ไว้ใน dataset ของฟอร์ม
+  document.getElementById("brownie-form").dataset.productTypeId = productTypeId;
 
-      if (id) loadBrownieForEdit(id);
-    }
+  title.textContent = isEdit
+    ? `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`
+    : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
+}
+
+  modal.classList.remove("hidden");
+
+  // ตั้งค่าพื้นฐาน
+  const isEdit = !!item;
+  document.getElementById("brownie-id").value = item ? item.id : "";
+  document.getElementById("brownie-type").value = type;
+  document.getElementById("brownie-name").value = item ? item.name : "";
+  document.getElementById("brownie-desc").value = item ? item.description || "" : "";
+  document.getElementById("brownie-price").value = item ? item.price : "";
+  document.getElementById("brownie-points").value = item ? item.points : "";
+  document.getElementById("brownie-active").checked = item ? item.is_active : true;
+
+  // เก็บค่า product_type_id ไว้ใน form (dataset)
+  const form = document.getElementById("brownie-form");
+  form.dataset.productTypeId = productTypeId;
+
+  // เปลี่ยนชื่อหัว modal
+  title.textContent = isEdit
+    ? `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`
+    : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
+}
 
     function closeBrownieModal() {
       document.getElementById("brownie-modal").classList.add("hidden");
@@ -1925,6 +2005,54 @@ function selectProductType(typeId, typeName, emoji) {
       loadBrownieMenus();
       loadMenus();
     }
+
+    document.getElementById("brownie-form").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("brownie-id").value;
+  const type = document.getElementById("brownie-type").value;
+  const name = document.getElementById("brownie-name").value.trim();
+  const description = document.getElementById("brownie-desc").value.trim();
+  const price = parseFloat(document.getElementById("brownie-price").value);
+  const points = parseInt(document.getElementById("brownie-points").value) || 0;
+  const isActive = document.getElementById("brownie-active").checked;
+  const productTypeId = parseInt(e.target.dataset.productTypeId); // 👈 เพิ่มตรงนี้สำหรับระบบใหม่
+
+  if (!name || isNaN(price)) {
+    showMessage("⚠️ กรุณากรอกชื่อเมนูและราคาด้วย");
+    return;
+  }
+
+  const data = {
+    name,
+    description,
+    price,
+    points,
+    type,
+    is_active: isActive,
+    product_type_id: productTypeId, // 👈 บอกว่าเมนูนี้อยู่ในประเภทขนมไหน
+  };
+
+  try {
+    let error;
+    if (id) {
+      // แก้ไขเมนูเดิม
+      ({ error } = await supabase.from("brownie_items").update(data).eq("id", id));
+    } else {
+      // เพิ่มเมนูใหม่
+      ({ error } = await supabase.from("brownie_items").insert([data]));
+    }
+
+    if (error) throw error;
+
+    showMessage("✅ บันทึกเมนูเรียบร้อยแล้ว");
+    closeBrownieModal();
+    loadBrownieMenus();
+  } catch (err) {
+    console.error("❌ Error saving menu:", err);
+    showMessage("เกิดข้อผิดพลาด: " + err.message);
+  }
+};
 
     // ===============================================================
     // 10. UTILITY FUNCTIONS
