@@ -1940,9 +1940,12 @@ function selectProductType(typeId, typeName, emoji) {
   const modal = document.getElementById("brownie-modal");
   const title = document.getElementById("brownie-modal-title");
 
-  // ถ้าไม่ได้ส่ง item มา ให้เซตเป็นวัตถุว่าง
+  // ถ้าไม่ได้ส่ง item มา ให้สร้างวัตถุเปล่าไว้แทน
   if (!item) item = {};
 
+  modal.classList.remove("hidden");
+
+  // ตั้งค่าพื้นฐาน
   const isEdit = !!item.id;
   document.getElementById("brownie-id").value = item.id || "";
   document.getElementById("brownie-type").value = type;
@@ -1953,14 +1956,14 @@ function selectProductType(typeId, typeName, emoji) {
   document.getElementById("brownie-active").checked =
     item.is_active !== undefined ? item.is_active : true;
 
+  // เก็บ productTypeId ไว้ใน dataset ของ form
   const form = document.getElementById("brownie-form");
   form.dataset.productTypeId = productTypeId;
 
+  // เปลี่ยนชื่อหัว modal
   title.textContent = isEdit
     ? `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`
     : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
-
-  modal.classList.remove("hidden");
 }
 
 const modal = document.getElementById("brownie-modal");
