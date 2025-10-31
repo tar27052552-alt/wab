@@ -1844,7 +1844,7 @@ function selectProductType(element, typeId, typeName, emoji) {
       selectedBase = null;
       selectedTopping = null;
       
-      // 1a. อัปเดต UI การเลือกประเภท (ใช้ element แทน event)
+      // 1a. อัปเดต UI การเลือกประเภท
       document.querySelectorAll('.product-type-item').forEach(e => e.classList.remove('selected'));
       if (element) {
           element.classList.add('selected');
@@ -1854,7 +1854,7 @@ function selectProductType(element, typeId, typeName, emoji) {
       const bases = allMenus.filter(i => i.type === 'base' && i.product_type_id === typeId);
       const toppings = allMenus.filter(i => i.type === 'topping' && i.product_type_id === typeId);
 
-      // (ฟังก์ชัน escapeName ย้ายไปอยู่ global แล้ว)
+      // (ฟังก์ชัน escapeName ควรอยู่ global)
 
       // 3. แสดงผล Bases (หน้าเนื้อ)
       const baseList = document.getElementById("base-list");
@@ -1862,8 +1862,10 @@ function selectProductType(element, typeId, typeName, emoji) {
       baseList.innerHTML = bases.map(b => `
         <div class="brownie-base card cursor-pointer text-center hover-lift" 
              onclick="selectBase(this, ${b.id}, '${escapeName(b.name)}', ${b.price}, ${b.points})">
-          <div class="text-4xl mb-3">${b.name.split(' ')[0]}</div>
-          <div class="font-semibold">${b.name}</div>
+          
+          <div class="text-4xl mb-3">${b.name ? b.name.split(' ')[0] : '...'}</div>
+          
+          <div class="font-semibold">${b.name || '(ไม่มีชื่อ)'}</div>
           <div class="text-sm text-gray-500">${b.description}</div>
           <div class="mt-2 font-bold text-blue-600">${b.price} บาท</div>
         </div>
@@ -1875,8 +1877,10 @@ function selectProductType(element, typeId, typeName, emoji) {
       toppingList.innerHTML = toppings.map(t => `
         <div class="topping-item card cursor-pointer text-center hover-lift" 
              onclick="selectTopping(this, ${t.id}, '${escapeName(t.name)}', ${t.price}, ${t.points})">
-          <div class="text-4xl mb-3">${t.name.split(' ')[0]}</div>
-          <div class="font-semibold">${t.name}</div>
+
+          <div class="text-4xl mb-3">${t.name ? t.name.split(' ')[0] : '...'}</div>
+          
+          <div class="font-semibold">${t.name || '(ไม่มีชื่อ)'}</div>
           <div class="text-sm text-gray-500">${t.description}</div>
           <div class="mt-2 font-bold text-blue-600">+${t.price} บาท</div>
         </div>
