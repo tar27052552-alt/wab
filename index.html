@@ -1936,17 +1936,17 @@ function selectProductType(typeId, typeName, emoji) {
   `).join("");
 }
 
-   function openBrownieModal(type, productTypeId, item) {
+   function openBrownieModal(type, productTypeId, item = null) {
   const modal = document.getElementById("brownie-modal");
   const title = document.getElementById("brownie-modal-title");
+  const form = document.getElementById("brownie-form");
 
-  // 🛠 ป้องกัน error ถ้าไม่ได้ส่ง item เข้ามา
+  // ถ้าไม่มี item (เช่น ตอนกด “เพิ่มเมนู”) → ให้ใช้ค่าว่าง
   if (!item) item = {};
 
   modal.classList.remove("hidden");
 
-  // ตั้งค่าพื้นฐาน
-  const isEdit = !!item.id;
+  // ตั้งค่าข้อมูลเริ่มต้นในฟอร์ม
   document.getElementById("brownie-id").value = item.id || "";
   document.getElementById("brownie-type").value = type;
   document.getElementById("brownie-name").value = item.name || "";
@@ -1956,11 +1956,11 @@ function selectProductType(typeId, typeName, emoji) {
   document.getElementById("brownie-active").checked =
     item.is_active !== undefined ? item.is_active : true;
 
-  // เก็บ productTypeId ไว้ใน dataset ของฟอร์ม
-  const form = document.getElementById("brownie-form");
+  // เก็บประเภทขนมไว้ใน dataset ของฟอร์ม
   form.dataset.productTypeId = productTypeId;
 
-  // เปลี่ยนชื่อหัว modal
+  // ตั้งชื่อหัว modal
+  const isEdit = !!item.id;
   title.textContent = isEdit
     ? `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`
     : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
