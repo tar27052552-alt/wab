@@ -166,17 +166,21 @@
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
 
-    <!-- � เลือกเนื้อบราวนี่ -->
-    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <h3 class="text-xl font-semibold mb-4">🍫 เลือกเนื้อบราวนี่</h3>
-      <div id="base-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-    </section>
+    <section id="product-type-section" class="bg-white p-6 rounded-xl shadow-md mb-6">
+  <h3 class="text-xl font-semibold mb-4">🍰 เลือกประเภทขนม</h3>
+  <div id="product-type-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+</section>
 
-    <!-- � เลือกหน้าบราวนี่ -->
-    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <h3 class="text-xl font-semibold mb-4">🫀 เลือกหน้าบราวนี่</h3>
-      <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-    </section>
+<section id="base-section" class="bg-white p-6 rounded-xl shadow-md mb-6 hidden">
+  <h3 id="base-title" class="text-xl font-semibold mb-4">🍫 เลือกเนื้อ...</h3>
+  <div id="base-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+</section>
+
+<section id="topping-section" class="bg-white p-6 rounded-xl shadow-md mb-6 hidden">
+  <h3 id="topping-title" class="text-xl font-semibold mb-4">🫀 เลือกหน้า...</h3>
+  <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+</section>
+
 
     <!-- จำนวนและราคารวม -->
     <section id="quantity-section" class="card mb-8 hover-lift">
@@ -465,16 +469,25 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
     const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"];
 
-    let supabase;
-    let userProfile = null;
-    let currentUser = null;
-    let selectedBase = null;
-    let selectedTopping = null;
-    let quantity = 1;
-    let cart = [];
-    let userPoints = 0;
-    let selectedCoupon = null;
-    let availableCoupons = [];
+    // ===============================================================
+// 🧠 ตัวแปร Global (ใช้เก็บสถานะของระบบทั้งหมด)
+// ===============================================================
+let supabase;
+let userProfile = null;
+let currentUser = null;
+let selectedBase = null;
+let selectedTopping = null;
+let quantity = 1;
+let cart = [];
+let userPoints = 0;
+let selectedCoupon = null;
+let availableCoupons = [];
+
+// ===============================================================
+// 🍫 เพิ่มใหม่สำหรับระบบหลายประเภทขนม
+// ===============================================================
+let selectedProductType = null; // 🧁 เก็บประเภทขนมที่ผู้ใช้เลือก เช่น "บราวนี่", "คุกกี้"
+let allMenus = [];              // 🍪 เก็บเมนูทั้งหมด (base + topping) จาก Supabase
 
     // ===============================================================
     // 2. INITIALIZATION
@@ -496,7 +509,7 @@
         await saveUserToSupabase(userProfile);
         await loadUserData(userProfile.userId);
         await loadCoupons();
-        await loadMenus();
+        await loadProductTypes();
 
         // Check admin
         if (ADMIN_IDS.includes(userProfile.userId)) {
@@ -971,20 +984,20 @@
             .eq("id", selectedCoupon.id);
         }
 
-        await supabase
-          .from("users")
-          .update({ points: userPoints + earnedPoints })
-          .eq("id", currentUser.id);
+        //await supabase
+          //.from("users")
+          //.update({ points: userPoints + earnedPoints })
+          //.eq("id", currentUser.id);
 
-        userPoints += earnedPoints;
-        document.getElementById("userPoints").textContent = userPoints;
+        //userPoints += earnedPoints;
+        //document.getElementById("userPoints").textContent = userPoints;
         cart = [];
         selectedCoupon = null;
         updateCartBadge();
         closeCart();
         await loadCoupons();
 
-        showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
+        showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับ +${earnedPoints} แต้ม เมื่อออเดอร์สำเร็จ 🎉`);
 
       } catch (error) {
         console.error("❌ Checkout error:", error);
@@ -1251,32 +1264,67 @@
     }
 
     async function updateOrderStatus(orderId, newStatus) {
-      try {
-        const { data: order, error: fetchError } = await supabase
-          .from("orders")
-          .select("*, users(line_id, display_name)")
-          .eq("id", orderId)
-          .single();
+  try {
+    // 1️⃣ ดึงข้อมูลออเดอร์ พร้อมข้อมูลผู้ใช้
+    const { data: order, error: fetchError } = await supabase
+      .from("orders")
+      .select("id, user_id, earned_points, status, users(line_id, display_name)")
+      .eq("id", orderId)
+      .single();
+    if (fetchError) throw fetchError;
 
-        if (fetchError) throw fetchError;
+    let givePoints = false;
 
-        const { error: updateError } = await supabase
-          .from("orders")
-          .update({ status: newStatus })
-          .eq("id", orderId);
-
-        if (updateError) throw updateError;
-
-        await sendOrderStatusNotification(order, newStatus);
-
-        showMessage("อัพเดทสถานะและส่งแจ้งเตือนสำเร็จ");
-        loadAdminOrders();
-
-      } catch (error) {
-        console.error("❌ Error updating status:", error);
-        showMessage("เกิดข้อผิดพลาด: " + error.message);
-      }
+    // 2️⃣ ตรวจสอบว่าสถานะเปลี่ยนเป็น completed และยังไม่เคย completed มาก่อน
+    if (newStatus === "completed" && order.status !== "completed") {
+      givePoints = true;
     }
+
+    // 3️⃣ อัปเดตสถานะในฐานข้อมูล
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({ status: newStatus })
+      .eq("id", orderId);
+    if (updateError) throw updateError;
+
+    // 4️⃣ ถ้าเป็น completed → อัปเดตแต้มสะสมให้ผู้ใช้
+    if (givePoints) {
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("points")
+        .eq("id", order.user_id)
+        .single();
+      if (userError) throw userError;
+
+      const newPoints = (user.points || 0) + (order.earned_points || 0);
+
+      const { error: updatePointsError } = await supabase
+        .from("users")
+        .update({ points: newPoints })
+        .eq("id", order.user_id);
+      if (updatePointsError) throw updatePointsError;
+
+      console.log(`✅ ให้แต้มสะสม ${order.earned_points} แก่ user ${order.user_id}`);
+    }
+
+    // 5️⃣ ส่งแจ้งเตือน LINE OA
+    await sendOrderStatusNotification(order, newStatus);
+
+    // 6️⃣ แสดงข้อความสำเร็จ
+    if (givePoints) {
+      showMessage("✅ อัปเดตสถานะและให้แต้มสะสม + ส่งแจ้งเตือนเรียบร้อยแล้ว");
+    } else {
+      showMessage("✅ อัปเดตสถานะและส่งแจ้งเตือนเรียบร้อยแล้ว");
+    }
+
+    // 7️⃣ โหลดรายการใหม่
+    loadAdminOrders();
+
+  } catch (error) {
+    console.error("❌ Error updating status or points:", error);
+    showMessage("❌ เกิดข้อผิดพลาด: " + error.message);
+  }
+}
 
     async function sendOrderStatusNotification(order, newStatus) {
       try {
@@ -1724,6 +1772,87 @@
         console.error("❌ Error loading brownie menus:", err);
       }
     }
+
+    async function loadProductTypes() {
+  try {
+    // 1️⃣ โหลดประเภทขนมจาก Supabase
+    const { data: types, error: typesError } = await supabase
+      .from("product_types")
+      .select("*")
+      .eq("is_active", true)
+      .order("id");
+    if (typesError) throw typesError;
+
+    // 2️⃣ โหลดเมนูทั้งหมด (ฐาน + หน้า)
+    const { data: items, error: itemsError } = await supabase
+      .from("brownie_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("id");
+    if (itemsError) throw itemsError;
+
+    // เก็บเมนูทั้งหมดไว้ใน global variable
+    allMenus = items;
+
+    // 3️⃣ แสดงประเภทขนมเป็น card ให้ผู้ใช้เลือก
+    const typeList = document.getElementById("product-type-list");
+    typeList.innerHTML = types.map(type => `
+      <div class="product-type-item card cursor-pointer text-center hover-lift"
+           onclick="selectProductType(${type.id}, '${type.name.replace(/'/g, "\\'")}', '${type.emoji || '🍰'}')">
+        <div class="text-5xl mb-3">${type.emoji || '🍰'}</div>
+        <div class="font-semibold text-lg">${type.name}</div>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    console.error("❌ Error loading product types:", error);
+  }
+}
+function selectProductType(typeId, typeName, emoji) {
+  selectedProductType = typeId;
+
+  // รีเซ็ตการเลือกก่อนหน้า
+  selectedBase = null;
+  selectedTopping = null;
+
+  // 1️⃣ กรองข้อมูลเนื้อและหน้าเฉพาะประเภทนั้น
+  const bases = allMenus.filter(i => i.type === 'base' && i.product_type_id === typeId);
+  const toppings = allMenus.filter(i => i.type === 'topping' && i.product_type_id === typeId);
+
+  // 2️⃣ แสดงเนื้อ
+  const baseList = document.getElementById("base-list");
+  document.getElementById("base-title").innerHTML = `${emoji} เลือกเนื้อ${typeName}`;
+  baseList.innerHTML = bases.map(b => `
+    <div class="brownie-base card cursor-pointer text-center hover-lift" 
+         onclick="selectBase(${b.id}, '${b.name.replace(/'/g, "\\'")}', ${b.price}, ${b.points})">
+      <div class="text-4xl mb-3">${b.name.split(' ')[0]}</div>
+      <div class="font-semibold">${b.name}</div>
+      <div class="text-sm text-gray-500">${b.description || ''}</div>
+      <div class="mt-2 font-bold text-blue-600">${b.price} บาท</div>
+    </div>
+  `).join('');
+
+  // 3️⃣ แสดงหน้า
+  const toppingList = document.getElementById("topping-list");
+  document.getElementById("topping-title").innerHTML = `🫀 เลือกหน้า${typeName}`;
+  toppingList.innerHTML = toppings.map(t => `
+    <div class="topping-item card cursor-pointer text-center hover-lift" 
+         onclick="selectTopping(${t.id}, '${t.name.replace(/'/g, "\\'")}', ${t.price}, ${t.points})">
+      <div class="text-4xl mb-3">${t.name.split(' ')[0]}</div>
+      <div class="font-semibold">${t.name}</div>
+      <div class="text-sm text-gray-500">${t.description || ''}</div>
+      <div class="mt-2 font-bold text-blue-600">+${t.price} บาท</div>
+    </div>
+  `).join('');
+
+  // 4️⃣ แสดง section ที่ซ่อนไว้
+  document.getElementById("base-section").classList.remove("hidden");
+  document.getElementById("topping-section").classList.remove("hidden");
+
+  // 5️⃣ อัปเดตราคาทั้งหมด (เรียกฟังก์ชันเก่าของโต๋)
+  updateTotal();
+}
+
 
     function renderBrownieList(items) {
       if (!items || items.length === 0)
