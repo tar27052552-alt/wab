@@ -617,24 +617,28 @@ let allMenus = [];              // 🍪 เก็บเมนูทั้งห�
       return text.replace(emojiRegex, '').trim();
     }
 
-    function selectBase(id, name, price, points) {
+   function selectBase(event, id, name, price, points) {
       // 1. เก็บข้อมูล (รวมแต้ม)
       selectedBase = { id, name, price, points: points || 0 };
       
-      // 2. อัปเดต UI (ใช้ event.currentTarget แทนการส่ง 'this')
+      // 2. อัปเดต UI
       document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
+      if (event) { // (FIX) ตรวจสอบว่า event มีค่าก่อนใช้
+          event.currentTarget.classList.add('selected');
+      }
       
       updateTotal();
     }
 
-    function selectTopping(id, name, price, points) {
+    function selectTopping(event, id, name, price, points) {
       // 1. เก็บข้อมูล (รวมแต้ม)
       selectedTopping = { id, name, price, points: points || 0 };
       
-      // 2. อัปเดต UI (ใช้ event.currentTarget แทนการส่ง 'this')
+      // 2. อัปเดต UI
       document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
+      if (event) { // (FIX) ตรวจสอบว่า event มีค่าก่อนใช้
+          event.currentTarget.classList.add('selected');
+      }
 
       updateTotal();
     }
@@ -1818,7 +1822,7 @@ let allMenus = [];              // 🍪 เก็บเมนูทั้งห�
     const typeList = document.getElementById("product-type-list");
     typeList.innerHTML = types.map(type => `
       <div class="product-type-item card cursor-pointer text-center hover-lift"
-           onclick="selectProductType(${type.id}, '${type.name.replace(/'/g, "\\'")}', '${type.emoji || '🍰'}')">
+           onclick="selectProductType(event, ${type.id}, '${type.name.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', '${type.emoji || '🍰'}')">
         <div class="text-5xl mb-3">${type.emoji || '🍰'}</div>
         <div class="font-semibold text-lg">${type.name}</div>
       </div>
@@ -1828,51 +1832,60 @@ let allMenus = [];              // 🍪 เก็บเมนูทั้งห�
     console.error("❌ Error loading product types:", error);
   }
 }
-function selectProductType(typeId, typeName, emoji) {
-  selectedProductType = typeId;
+function selectProductType(event, typeId, typeName, emoji) {
+      selectedProductType = typeId;
 
-  // รีเซ็ตการเลือกก่อนหน้า
-  selectedBase = null;
-  selectedTopping = null;
+      // 1. Reset การเลือกเก่า
+      selectedBase = null;
+      selectedTopping = null;
+      // 1a. อัปเดต UI การเลือกประเภท
+      document.querySelectorAll('.product-type-item').forEach(e => e.classList.remove('selected'));
+      if (event) { // (FIX) ตรวจสอบว่า event มีค่าก่อนใช้
+          event.currentTarget.classList.add('selected');
+      }
 
-  // 1️⃣ กรองข้อมูลเนื้อและหน้าเฉพาะประเภทนั้น
-  const bases = allMenus.filter(i => i.type === 'base' && i.product_type_id === typeId);
-  const toppings = allMenus.filter(i => i.type === 'topping' && i.product_type_id === typeId);
+      // 2. กรอง Bases และ Toppings ที่ตรงกับ typeId
+      const bases = allMenus.filter(i => i.type === 'base' && i.product_type_id === typeId);
+      const toppings = allMenus.filter(i => i.type === 'topping' && i.product_type_id === typeId);
 
-  // 2️⃣ แสดงเนื้อ
-  const baseList = document.getElementById("base-list");
-  document.getElementById("base-title").innerHTML = `${emoji} เลือกเนื้อ${typeName}`;
-  baseList.innerHTML = bases.map(b => `
-    <div class="brownie-base card cursor-pointer text-center hover-lift" 
-         onclick="selectBase(${b.id}, '${b.name.replace(/'/g, "\\'")}', ${b.price}, ${b.points})">
-      <div class="text-4xl mb-3">${b.name.split(' ')[0]}</div>
-      <div class="font-semibold">${b.name}</div>
-      <div class="text-sm text-gray-500">${b.description || ''}</div>
-      <div class="mt-2 font-bold text-blue-600">${b.price} บาท</div>
-    </div>
-  `).join('');
+      // (FIX) ฟังก์ชันสำหรับ escape ชื่อ (กัน Error)
+      const escapeName = (name) => {
+        if (!name) return '';
+        return name.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      }
 
-  // 3️⃣ แสดงหน้า
-  const toppingList = document.getElementById("topping-list");
-  document.getElementById("topping-title").innerHTML = `🫀 เลือกหน้า${typeName}`;
-  toppingList.innerHTML = toppings.map(t => `
-    <div class="topping-item card cursor-pointer text-center hover-lift" 
-         onclick="selectTopping(${t.id}, '${t.name.replace(/'/g, "\\'")}', ${t.price}, ${t.points})">
-      <div class="text-4xl mb-3">${t.name.split(' ')[0]}</div>
-      <div class="font-semibold">${t.name}</div>
-      <div class="text-sm text-gray-500">${t.description || ''}</div>
-      <div class="mt-2 font-bold text-blue-600">+${t.price} บาท</div>
-    </div>
-  `).join('');
+      // 3. แสดงผล Bases (หน้าเนื้อ)
+      const baseList = document.getElementById("base-list");
+      document.getElementById("base-title").innerHTML = `${emoji} เลือกเนื้อ${typeName}`;
+      baseList.innerHTML = bases.map(b => `
+        <div class="brownie-base card cursor-pointer text-center hover-lift" 
+             onclick="selectBase(event, ${b.id}, '${escapeName(b.name)}', ${b.price}, ${b.points})">
+          <div class="text-4xl mb-3">${b.name.split(' ')[0]}</div>
+          <div class="font-semibold">${b.name}</div>
+          <div class="text-sm text-gray-500">${b.description}</div>
+          <div class="mt-2 font-bold text-blue-600">${b.price} บาท</div>
+        </div>
+      `).join('');
+      
+      // 4. แสดงผล Toppings (หน้าเดิม)
+      const toppingList = document.getElementById("topping-list");
+      document.getElementById("topping-title").innerHTML = `🫀 เลือกหน้า${typeName}`;
+      toppingList.innerHTML = toppings.map(t => `
+        <div class="topping-item card cursor-pointer text-center hover-lift" 
+             onclick="selectTopping(event, ${t.id}, '${escapeName(t.name)}', ${t.price}, ${t.points})">
+          <div class="text-4xl mb-3">${t.name.split(' ')[0]}</div>
+          <div class="font-semibold">${t.name}</div>
+          <div class="text-sm text-gray-500">${t.description}</div>
+          <div class="mt-2 font-bold text-blue-600">+${t.price} บาท</div>
+        </div>
+      `).join('');
 
-  // 4️⃣ แสดง section ที่ซ่อนไว้
-  document.getElementById("base-section").classList.remove("hidden");
-  document.getElementById("topping-section").classList.remove("hidden");
+      // 5. แสดง section ที่ซ่อนไว้
+      document.getElementById("base-section").classList.remove("hidden");
+      document.getElementById("topping-section").classList.remove("hidden");
 
-  // 5️⃣ อัปเดตราคาทั้งหมด (เรียกฟังก์ชันเก่าของโต๋)
-  updateTotal();
-}
-
+      updateTotal();
+    }
 
     function renderBrownieList(items) {
   if (!items || items.length === 0)
