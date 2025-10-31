@@ -1959,7 +1959,7 @@ function selectProductType(typeId, typeName, emoji) {
     : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
 }
 
-  modal.classList.remove("hidden");
+const modal = document.getElementById("brownie-modal");
 
   // ตั้งค่าพื้นฐาน
   const isEdit = !!item;
