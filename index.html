@@ -656,8 +656,8 @@
         renderMenu("topping", toppingList);
 
         // (เพิ่ม) รีเซ็ตการเลือก base/topping และอัปเดตราคา
-        selectedBaseId = null;
-        selectedToppingId = null;
+        selectedBase = null;
+        selectedTopping = null;
         updateTotal();
 
       } catch (err) {
@@ -665,6 +665,21 @@
         showMessage("❌ ไม่สามารถโหลดเมนูได้");
       }
     }
+
+    function renderMenu(type, items) {
+  const container = document.getElementById(`${type}-list`);
+  if (!container) return;
+
+  container.innerHTML = items.map(item => `
+    <div class="card hover-lift ${type === 'base' ? 'brownie-base' : 'topping-item'}"
+         onclick="select${type.charAt(0).toUpperCase() + type.slice(1)}(${item.id}, '${item.name}', ${item.price}, this)">
+      <div class="font-semibold">${item.name}</div>
+      <div class="text-sm text-gray-500">${item.description || ''}</div>
+      <div class="text-blue-600 font-bold mt-1">${item.price} บาท</div>
+    </div>
+  `).join("");
+}
+
 
     function extractEmoji(text) {
       const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
@@ -756,8 +771,8 @@
 
     function resetSelection() {
   selectedDessert = null;
-  selectedBaseId = null;
-  selectedToppingId = null;
+  selectedBase = null;
+  selectedTopping = null;
 
   document.getElementById("quantity").value = 1;
   updateTotal();
