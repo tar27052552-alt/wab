@@ -602,31 +602,6 @@
     // 4. MENU MANAGEMENT
     // ===============================================================
 
-async function loadDesserts() {
-  const { data, error } = await supabase
-    .from("desserts")
-    .select("*")
-    .eq("is_active", true)
-    .order("id", { ascending: true });
-
-  if (error) throw error;
-
-  const list = document.getElementById("dessert-list");
-  list.innerHTML = data.map(d => `
-    <div class="card cursor-pointer text-center hover-lift"
-         onclick="selectDessert(${d.id}, '${d.name.replace(/'/g, "\\'")}')">
-      <div class="text-5xl mb-1">🍰</div>
-      <div class="font-semibold text-lg">${d.name}</div>
-      <p class="text-gray-600 text-sm">${d.description || ''}</p>
-    </div>
-  `).join('');
-}
-
-function selectDessert(id, name) {
-  selectedDessert = { id, name };
-  loadMenusByDessert(id);
-}
-
     async function loadDesserts() {
   try {
     const { data, error } = await supabase
