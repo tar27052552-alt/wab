@@ -631,36 +631,40 @@
     // ===============================================================
     // 4. MENU MANAGEMENT
     // ===============================================================
-    async function loadMenus(dessertId) {
-  document.getElementById("base-list").innerHTML = "<p>กำลังโหลด...</p>";
-  document.getElementById("topping-list").innerHTML = "<p>กำลังโหลด...</p>";
+    // (แก้ไข) รับ dessertId และกรองข้อมูล
+    async function loadMenus(dessertId) { 
+      // (เพิ่ม) แสดง loading
+      document.getElementById("base-list").innerHTML = "<p>กำลังโหลด...</p>";
+      document.getElementById("topping-list").innerHTML = "<p>กำลังโหลด...</p>";
 
-  try {
-    const { data, error } = await supabase
-      .from("brownie_items")
-      .select("*")
-      .eq("is_active", true)
-      .eq("dessert_id", dessertId)
-      .order("type")
-      .order("price");
+      try {
+        const { data, error } = await supabase
+          .from("brownie_items")
+          .select("*")
+          .eq("is_active", true)
+          .eq("dessert_id", dessertId) // (สำคัญ) กรองด้วย dessertId
+          .order("type")
+          .order("price");
 
-    if (error) throw error;
+        if (error) throw error;
+        
+        allItems = data;
+        const baseList = allItems.filter((item) => item.type === "base");
+        const toppingList = allItems.filter((item) => item.type === "topping");
 
-    allItems = data;
-    const baseList = allItems.filter((i) => i.type === "base");
-    const toppingList = allItems.filter((i) => i.type === "topping");
+        renderMenu("base", baseList);
+        renderMenu("topping", toppingList);
 
-    renderMenu("base", baseList);
-    renderMenu("topping", toppingList);
+        // (เพิ่ม) รีเซ็ตการเลือก base/topping และอัปเดตราคา
+        selectedBaseId = null;
+        selectedToppingId = null;
+        updateTotal();
 
-    selectedBaseId = null;
-    selectedToppingId = null;
-    updateTotal();
-  } catch (err) {
-    console.error("Error loading menus:", err);
-    showMessage("❌ โหลดข้อมูลขนมไม่สำเร็จ");
-  }
-}
+      } catch (err) {
+        console.error("Error loading items:", err);
+        showMessage("❌ ไม่สามารถโหลดเมนูได้");
+      }
+    }
 
     function extractEmoji(text) {
       const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
@@ -1951,31 +1955,25 @@ function selectDessert(dessert) {
     }
 
     async function loadBrownieMenus(dessertId) {
+      if (!dessertId) {
+        document.getElementById("admin-brownie-list").innerHTML = 
+          "<p>เกิดข้อผิดพลาด: ไม่พบ ID ของเมนูขนม</p>";
+        return;
+      }
+
       try {
-        const { data: items, error } = await supabase
+        const { data, error } = await supabase
           .from("brownie_items")
           .select("*")
-          .eq("dessert_id", dessertId)
+          .eq("dessert_id", dessertId) // (สำคัญ) กรองข้อมูล
           .order("type")
           .order("price");
-
+          
         if (error) throw error;
-
-        const bases = items.filter(i => i.type === "base");
-        const toppings = items.filter(i => i.type === "topping");
-
-        const content = document.getElementById("admin-brownie-content");
-        content.innerHTML = `
-          <h3 class="text-lg font-semibold mb-3">� เนื้อบราวนี่</h3>
-          <button onclick="openBrownieModal('base')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มเนื้อบราวนี่</button>
-          ${renderBrownieList(bases)}
-
-          <h3 class="text-lg font-semibold mt-6 mb-3">🍫 หน้าบราวนี่</h3>
-          <button onclick="openBrownieModal('topping')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มหน้าบราวนี่</button>
-          ${renderBrownieList(toppings)}
-        `;
+        renderBrownieList(data); // ฟังก์ชัน renderBrownieList ใช้ของเดิมได้
       } catch (err) {
-        console.error("❌ Error loading brownie menus:", err);
+        console.error("Error loading brownie menus:", err);
+        showMessage("❌ ไม่สามารถโหลดรายการส่วนประกอบได้");
       }
     }
 
