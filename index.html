@@ -602,8 +602,6 @@
     // 4. MENU MANAGEMENT
     // ===============================================================
 
-    let selectedDessert = null;
-
 async function loadDesserts() {
   const { data, error } = await supabase
     .from("desserts")
