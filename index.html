@@ -1931,6 +1931,42 @@ async function deleteDessert(id) {
     console.error("❌ Error loading brownie menus:", err);
   }
 }
+    async function deleteBrownie(id) {
+  if (!confirm("ต้องการลบเมนูนี้หรือไม่?")) return;
+
+  try {
+    const { error } = await supabase
+      .from("brownie_items")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    showMessage("🗑️ ลบเมนูเรียบร้อย");
+    loadBrownieMenus(); // โหลดใหม่หลังลบเสร็จ
+  } catch (err) {
+    console.error("❌ Error deleting brownie:", err);
+    showMessage("เกิดข้อผิดพลาดในการลบเมนู");
+  }
+}
+
+    async function loadBrownieForEdit(id) {
+  try {
+    const { data, error } = await supabase
+      .from("brownie_items")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    openBrownieModal(data.type, null, data); // เปิด modal พร้อมกรอกข้อมูล
+  } catch (err) {
+    console.error("❌ Error loading brownie:", err);
+    showMessage("ไม่สามารถโหลดข้อมูลสำหรับแก้ไขได้");
+  }
+}
+
 
     function renderBrownieList(items) {
       if (!items || items.length === 0)
