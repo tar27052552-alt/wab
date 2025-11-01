@@ -1289,7 +1289,7 @@
 
       showMessage(`✅ อัปเดตสถานะและให้แต้ม ${orderData.earned_points} แต้มเรียบร้อย`);
     } else {
-      showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${newStatus}`);
+      showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${getStatusText(newStatus)}`);
     }
 
     loadAdminOrders();
