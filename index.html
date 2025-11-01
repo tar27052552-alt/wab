@@ -1252,14 +1252,16 @@
 
     async function updateOrderStatus(orderId, newStatus) {
   try {
-    const { data: order, error: fetchError } = await supabase
+    // ดึงข้อมูลออเดอร์เดิม
+    const { data: orderData, error: fetchError } = await supabase
       .from('orders')
-      .select('status, user_id, earned_points, id, total_price, subtotal, discount, items, line_id')
+      .select('status, user_id, earned_points, line_id, items, total_price, subtotal, discount, id')
       .eq('id', orderId)
       .single();
 
     if (fetchError) throw fetchError;
 
+    // อัปเดตสถานะ
     const { error: updateError } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -1267,29 +1269,30 @@
 
     if (updateError) throw updateError;
 
-    // ✅ เรียกฟังก์ชันแจ้งเตือนไลน์ หลังจากอัปเดตสถานะสำเร็จ
-    if (updateError) throw updateError;
-    await sendOrderStatusNotification(order, newStatus);
+    // ✅ แจ้งเตือน LINE
+    await sendOrderStatusNotification(orderData, newStatus);
 
-    // ส่วนเดิมสำหรับอัปเดตแต้ม (ไม่ต้องลบ)
-    const { data: order, error: fetchError } = await supabase
-    .from('orders')
-    .select('status, user_id, earned_points, line_id, items, total_price, subtotal, discount, id')
-    .eq('id', orderId)
-    .single();
+    // ✅ ให้แต้มถ้าสถานะเป็น completed
+    if (newStatus === 'completed' && orderData.status !== 'completed') {
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('points')
+        .eq('id', orderData.user_id)
+        .single();
 
       if (userError) throw userError;
 
-      const newTotalPoints = (user.points || 0) + (order.earned_points || 0);
-      await supabase.from('users').update({ points: newTotalPoints }).eq('id', order.user_id);
-      showMessage(`✅ อัปเดตสถานะ และให้แต้ม ${order.earned_points} แต้มเรียบร้อย`);
+      const newPoints = (user.points || 0) + (orderData.earned_points || 0);
+      await supabase.from('users').update({ points: newPoints }).eq('id', orderData.user_id);
+
+      showMessage(`✅ อัปเดตสถานะและให้แต้ม ${orderData.earned_points} แต้มเรียบร้อย`);
     } else {
       showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${newStatus}`);
     }
 
     loadAdminOrders();
   } catch (error) {
-    console.error('❌ Error updating order status:', error);
+    console.error("❌ Error updating order status:", error);
     showMessage(`❌ เกิดข้อผิดพลาด: ${error.message}`);
   }
 }
