@@ -925,72 +925,73 @@
     // ===============================================================
     // 7. CHECKOUT
     // ===============================================================
-    async function checkout() {
-      if (cart.length === 0) {
-        showMessage("ตะกร้าว่างเปล่า");
-        return;
-      }
+   async function checkout() {
+  if (cart.length === 0) {
+    showMessage("ตะกร้าว่างเปล่า");
+    return;
+  }
 
-      try {
-        const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-        let discount = 0;
+  try {
+    const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+    let discount = 0;
 
-        if (selectedCoupon) {
-          if (selectedCoupon.type === 'percent') {
-            discount = Math.floor(subtotal * selectedCoupon.value / 100);
-          } else {
-            discount = Math.min(selectedCoupon.value, subtotal);
-          }
-        }
-
-        const total = Math.max(0, subtotal - discount);
-        const earnedPoints = total;
-
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert([{
-            user_id: currentUser.id,
-            line_id: currentUser.line_id,
-            items: cart,
-            subtotal: subtotal,
-            discount: discount,
-            total_price: total,
-            earned_points: earnedPoints,
-            coupon_code: selectedCoupon ? selectedCoupon.code : null,
-            status: "pending"
-          }])
-          .select()
-          .single();
-
-        if (orderError) throw orderError;
-
-        if (selectedCoupon) {
-          await supabase
-            .from("coupons")
-            .update({ usage_count: selectedCoupon.usage_count + 1 })
-            .eq("id", selectedCoupon.id);
-        }
-
-        //await supabase
-        //  .from("users")
-        //  .update({ points: userPoints + earnedPoints })
-        //  .eq("id", currentUser.id);
-
-        //userPoints += earnedPoints;
-        //document.getElementById("userPoints").textContent = userPoints;
-        cart = [];
-        selectedCoupon = null;
-        updateCartBadge();
-        closeCart();
-        await loadCoupons();
-
-        showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
-
-      } catch (error) {
-        console.error("❌ Checkout error:", error);
-        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
+    if (selectedCoupon) {
+      if (selectedCoupon.type === 'percent') {
+        discount = Math.floor(subtotal * selectedCoupon.value / 100);
+      } else {
+        discount = Math.min(selectedCoupon.value, subtotal);
       }
     }
+
+    const total = Math.max(0, subtotal - discount);
+    const earnedPoints = total;
+
+    const { data: orderData, error: orderError } = await supabase
+      .from("orders")
+      .insert([{
+        user_id: currentUser.id,
+        line_id: currentUser.line_id,
+        items: cart,
+        subtotal: subtotal,
+        discount: discount,
+        total_price: total,
+        earned_points: earnedPoints,
+        coupon_code: selectedCoupon ? selectedCoupon.code : null,
+        status: "pending"
+      }])
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // ✅ แจ้งเตือนไลน์หลังสั่งซื้อสำเร็จ
+    await supabase.functions.invoke("send-line-notification", {
+      body: {
+        lineId: currentUser.line_id,
+        orderId: orderData.id,
+        status: "pending",
+        orderData: {
+          items: cart,
+          total_price: total,
+          subtotal: subtotal,
+          discount: discount
+        }
+      }
+    });
+
+    // เคลียร์ตะกร้า
+    cart = [];
+    selectedCoupon = null;
+    updateCartBadge();
+    closeCart();
+    await loadCoupons();
+
+    showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
+  } catch (error) {
+    console.error("❌ Checkout error:", error);
+    showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
+  }
+}
 
     // ===============================================================
     // 8. ORDER HISTORY
