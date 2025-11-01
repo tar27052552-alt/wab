@@ -2080,8 +2080,15 @@ function selectDessert(dessert) {
     // ===============================================================
     // 11. FORM HANDLERS
     // ===============================================================
+    // (แก้ไข) นี่คือเวอร์ชันที่ถูกต้องสำหรับ "brownie-form"
     document.getElementById("brownie-form").onsubmit = async (e) => {
       e.preventDefault();
+
+      // (เพิ่ม) ตรวจสอบว่ากำลังจัดการเมนูไหนอยู่
+      if (!currentAdminDessertId) {
+        showMessage("❌ เกิดข้อผิดพลาด ไม่ทราบว่ากำลังแก้ไขเมนูใด");
+        return;
+      }
 
       const id = document.getElementById("brownie-id").value;
       const type = document.getElementById("brownie-type").value;
@@ -2091,53 +2098,74 @@ function selectDessert(dessert) {
       const points = parseInt(document.getElementById("brownie-points").value);
       const isActive = document.getElementById("brownie-active").checked;
 
-      const data = { type, name, description, price, points, is_active: isActive };
+      // (แก้ไข) เพิ่ม dessert_id เข้าไปใน object ที่จะบันทึก
+      const data = { 
+        type, 
+        name, 
+        description, 
+        price, 
+        points, 
+        is_active: isActive,
+        dessert_id: currentAdminDessertId // (สำคัญ)
+      };
 
       try {
         if (id) {
-          await supabase.from("brownie_items").update(data).eq("id", id);
-          showMessage("✅ อัปเดตเมนูสำเร็จ");
+          // อัปเดต
+          const { error } = await supabase.from("brownie_items").update(data).eq("id", id);
+          if (error) throw error;
+          showMessage("✅ อัปเดตส่วนประกอบสำเร็จ");
         } else {
-          await supabase.from("brownie_items").insert([data]);
-          showMessage("🎉 เพิ่มเมนูใหม่สำเร็จ");
+          // เพิ่มใหม่
+          const { error } = await supabase.from("brownie_items").insert([data]);
+          if (error) throw error;
+          showMessage("🎉 เพิ่มส่วนประกอบใหม่สำเร็จ");
         }
 
         closeBrownieModal();
-        loadBrownieMenus();
-        loadMenus();
+        // (แก้ไข) โหลดซ้ำโดยใช้ ID เดิมที่เก็บไว้
+        loadBrownieMenus(currentAdminDessertId); 
+        // (เพิ่ม) รีเฟรชฝั่งลูกค้าเผื่อมีการเปลี่ยนแปลง
+        if (selectedDessert && selectedDessert.id === currentAdminDessertId) {
+          loadMenus(currentAdminDessertId);
+        }
       } catch (err) {
         console.error(err);
         showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     };
+    
+    // (ถูกต้องแล้ว) โค้ด "dessert-form" ที่คุณเพิ่มมานี้ ถูกต้องแล้วครับ
     document.getElementById("dessert-form").onsubmit = async (e) => {
-  e.preventDefault();
+      e.preventDefault();
 
-  const id = document.getElementById("dessert-id").value;
-  const name = document.getElementById("dessert-name").value;
-  const emoji = document.getElementById("dessert-emoji").value;
-  const description = document.getElementById("dessert-desc").value;
-  const isActive = document.getElementById("dessert-active").checked;
+      const id = document.getElementById("dessert-id").value;
+      const name = document.getElementById("dessert-name").value;
+      const emoji = document.getElementById("dessert-emoji").value;
+      const description = document.getElementById("dessert-desc").value;
+      const isActive = document.getElementById("dessert-active").checked;
 
-  const data = { name, emoji, description, is_active: isActive };
+      const data = { name, emoji, description, is_active: isActive };
 
-  try {
-    if (id) {
-      await supabase.from("desserts").update(data).eq("id", id);
-      showMessage("✅ อัปเดตเมนูขนมสำเร็จ");
-    } else {
-      await supabase.from("desserts").insert([data]);
-      showMessage("🎉 เพิ่มเมนูขนมใหม่สำเร็จ");
-    }
+      try {
+        if (id) {
+          const { error } = await supabase.from("desserts").update(data).eq("id", id);
+          if (error) throw error;
+          showMessage("✅ อัปเดตเมนูขนมสำเร็จ");
+        } else {
+          const { error } = await supabase.from("desserts").insert([data]);
+          if (error) throw error;
+          showMessage("🎉 เพิ่มเมนูขนมใหม่สำเร็จ");
+        }
 
-    closeDessertModal();
-    loadAdminDesserts(); // รีเฟรชแท็บ 'จัดการเมนูขนม'
-    loadDesserts();      // รีเฟรชฝั่งลูกค้า
-  } catch (err) {
-    console.error(err);
-    showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-  }
-};
+        closeDessertModal();
+        loadAdminDesserts(); // รีเฟรชแท็บ 'จัดการเมนูขนม'
+        loadDesserts();      // รีเฟรชฝั่งลูกค้า
+      } catch (err) {
+        console.error(err);
+        showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      }
+    };
 
     // ===============================================================
     // 12. INITIALIZE APP
