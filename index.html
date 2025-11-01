@@ -936,7 +936,7 @@
     let discount = 0;
 
     if (selectedCoupon) {
-      if (selectedCoupon.type === 'percent') {
+      if (selectedCoupon.type === "percent") {
         discount = Math.floor(subtotal * selectedCoupon.value / 100);
       } else {
         discount = Math.min(selectedCoupon.value, subtotal);
@@ -946,6 +946,7 @@
     const total = Math.max(0, subtotal - discount);
     const earnedPoints = total;
 
+    // ✅ บันทึกออเดอร์ลงฐานข้อมูล
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert([{
@@ -957,29 +958,29 @@
         total_price: total,
         earned_points: earnedPoints,
         coupon_code: selectedCoupon ? selectedCoupon.code : null,
-        status: "pending"
+        status: "pending",
       }])
       .select()
       .single();
 
     if (orderError) throw orderError;
 
-    // ✅ แจ้งเตือนไลน์หลังสั่งซื้อสำเร็จ
+    // ✅ แจ้งเตือนไลน์ทันทีหลังสั่งซื้อสำเร็จ
     await supabase.functions.invoke("send-line-notification", {
       body: {
         lineId: currentUser.line_id,
         orderId: orderData.id,
         status: "pending",
         orderData: {
-          items: cart,
-          total_price: total,
-          subtotal: subtotal,
-          discount: discount
-        }
-      }
+        items: cart,
+        total_price: total,
+        subtotal: subtotal,
+        discount: discount,
+        },
+      },
     });
 
-    // เคลียร์ตะกร้า
+    // ✅ ล้างตะกร้าและอัปเดต UI
     cart = [];
     selectedCoupon = null;
     updateCartBadge();
