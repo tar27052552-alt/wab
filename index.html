@@ -1952,6 +1952,7 @@ async function deleteDessert(id) {
 
     async function loadBrownieForEdit(id) {
   try {
+    // ดึงข้อมูลบราวนี่จากฐานข้อมูล
     const { data, error } = await supabase
       .from("brownie_items")
       .select("*")
@@ -1960,12 +1961,37 @@ async function deleteDessert(id) {
 
     if (error) throw error;
 
-    openBrownieModal(data.type, null, data); // เปิด modal พร้อมกรอกข้อมูล
+    // เปิด modal
+    const modal = document.getElementById("brownie-modal");
+    if (!modal) {
+      console.error("❌ brownie-modal not found");
+      showMessage("ไม่พบหน้าต่างแก้ไขเมนู");
+      return;
+    }
+
+    // แสดง modal
+    modal.classList.remove("hidden");
+    document.getElementById("brownie-modal-title").textContent = "✏️ แก้ไขเมนู";
+
+    // โหลดตัวเลือกเมนูขนม (ใน dropdown)
+    await loadDessertOptions();
+
+    // กำหนดค่าที่ดึงมาใส่ในช่องกรอก
+    document.getElementById("brownie-id").value = data.id;
+    document.getElementById("brownie-type").value = data.type;
+    document.getElementById("brownie-name").value = data.name;
+    document.getElementById("brownie-desc").value = data.description || "";
+    document.getElementById("brownie-price").value = data.price || 0;
+    document.getElementById("brownie-points").value = data.points || 0;
+    document.getElementById("brownie-active").checked = data.is_active;
+    document.getElementById("brownie-dessert").value = data.dessert_id || "";
+
   } catch (err) {
-    console.error("❌ Error loading brownie:", err);
-    showMessage("ไม่สามารถโหลดข้อมูลสำหรับแก้ไขได้");
+    console.error("❌ Error loading brownie for edit:", err);
+    showMessage("เกิดข้อผิดพลาดในการโหลดข้อมูลเมนูสำหรับแก้ไข");
   }
 }
+
 
 
     function renderBrownieList(items) {
