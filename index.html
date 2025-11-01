@@ -354,8 +354,20 @@
       </section>
       <!-- Brownie Tab -->
       <section id="admin-brownie-tab" class="admin-tab-content hidden">
-        <div id="admin-brownie-content" class="p-4"></div>
-      </section>
+  <h3 class="text-xl font-bold mb-4">รายการส่วนประกอบ (ของเมนูที่เลือก)</h3>
+
+  <div class="flex gap-4 mb-4">
+    <button class="btn-primary" onclick="openBrownieModal('base', null)">
+      + เพิ่มเนื้อ (Base)
+    </button>
+    <button class="btn-primary" onclick="openBrownieModal('topping', null)">
+      + เพิ่มหน้า (Topping)
+    </button>
+  </div>
+
+  <!-- ✅ เพิ่มส่วนนี้ -->
+  <div id="admin-brownie-list" class="space-y-2"></div>
+</section>
 
       <!-- Orders Tab -->
       <div id="admin-orders-tab" class="admin-tab-content">
