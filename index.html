@@ -166,17 +166,36 @@
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
 
-    <!-- � เลือกเนื้อบราวนี่ -->
-    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <h3 class="text-xl font-semibold mb-4">🍫 เลือกเนื้อบราวนี่</h3>
-      <div id="base-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-    </section>
+    <section id="dessert-selection" class="mb-6">
+  <h2 class="text-2xl font-bold text-slate-700 mb-4">
+    1. เลือกเมนูขนม 🍰
+  </h2>
+  <div
+    id="dessert-list"
+    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+  >
+  </div>
+</section>
 
-    <!-- � เลือกหน้าบราวนี่ -->
-    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <h3 class="text-xl font-semibold mb-4">🫀 เลือกหน้าบราวนี่</h3>
-      <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-    </section>
+<section id="menu-selection" class="mb-6 hidden">
+  <h2 class="text-2xl font-bold text-slate-700 mb-4">
+    2. เลือกส่วนประกอบ
+  </h2>
+
+  <div class="mb-6">
+    <h3 class="text-xl font-semibold text-slate-600 mb-3">เลือกเนื้อ (Base)</h3>
+    <div id="base-list" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    </div>
+  </div>
+
+  <div>
+    <h3 class="text-xl font-semibold text-slate-600 mb-3">
+      เลือกหน้า (Topping)
+    </h3>
+    <div id="topping-list" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    </div>
+  </div>
+</section>
 
     <!-- จำนวนและราคารวม -->
     <section id="quantity-section" class="card mb-8 hover-lift">
@@ -315,14 +334,24 @@
         <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
           📊 สถิติ
         </button>
+        <button id="admin-tab-desserts" class="admin-tab-btn py-2 px-4 font-semibold" onclick="showAdminTab('desserts')">
+          📒 จัดการเมนูขนม
+        </button>
         <button onclick="showAdminTab('brownie')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
-          � เมนูบราวนี่
+          📂 จัดการส่วนประกอบ
         </button>
         <button onclick="showAdminTab('summary')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="summary">
           📅 สรุปออเดอร์รายวัน
         </button>
       </div>
 
+      <section id="admin-desserts-tab" class="admin-tab-content hidden">
+        <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">รายการเมนูขนม (Desserts)</h3>
+    <button class="btn-primary" onclick="openDessertModal('new')">+ เพิ่มเมนูใหม่</button>
+        </div>
+        <div id="admin-dessert-list" class="space-y-2"></div>
+      </section>
       <!-- Brownie Tab -->
       <section id="admin-brownie-tab" class="admin-tab-content hidden">
         <div id="admin-brownie-content" class="p-4"></div>
@@ -412,6 +441,25 @@
     </div>
   </div>
 
+  <div id="dessert-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-xl p-6 w-full max-w-md shadow-2xl border-t border-white/30">
+      <h3 id="dessert-modal-title" class="text-2xl font-bold mb-4">ฟอร์มเมนูขนม</h3>
+      <form id="dessert-form">
+        <input type="hidden" id="dessert-id" />
+        <div class="mb-3"><label>ชื่อเมนู:</label><input id="dessert-name" class="w-full p-2 border rounded" required /></div>
+        <div class="mb-3"><label>Emoji (🍫):</label><input id="dessert-emoji" class="w-full p-2 border rounded" /></div>
+        <div class="mb-3"><label>คำอธิบาย:</label><textarea id="dessert-desc" class="w-full p-2 border rounded"></textarea></div>
+        <div class="flex items-center gap-2 mb-3">
+          <input type="checkbox" id="dessert-active" checked /><label>เปิดการขาย</label>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button type="button" class="btn-secondary" onclick="closeDessertModal()">ยกเลิก</button>
+          <button type="submit" class="btn-primary">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Brownie Modal -->
   <div id="brownie-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
@@ -475,7 +523,10 @@
     let userPoints = 0;
     let selectedCoupon = null;
     let availableCoupons = [];
-
+    let allDesserts = [];
+    let selectedDessert = null;
+    let currentAdminDessertId = null;
+    
     // ===============================================================
     // 2. INITIALIZATION
     // ===============================================================
@@ -496,7 +547,7 @@
         await saveUserToSupabase(userProfile);
         await loadUserData(userProfile.userId);
         await loadCoupons();
-        await loadMenus();
+        await loadDesserts();
 
         // Check admin
         if (ADMIN_IDS.includes(userProfile.userId)) {
@@ -580,46 +631,36 @@
     // ===============================================================
     // 4. MENU MANAGEMENT
     // ===============================================================
-    async function loadMenus() {
-      try {
-        const { data: items, error } = await supabase
-          .from("brownie_items")
-          .select("*")
-          .eq("is_active", true)
-          .order("id", { ascending: true });
+    async function loadMenus(dessertId) {
+  document.getElementById("base-list").innerHTML = "<p>กำลังโหลด...</p>";
+  document.getElementById("topping-list").innerHTML = "<p>กำลังโหลด...</p>";
 
-        if (error) throw error;
+  try {
+    const { data, error } = await supabase
+      .from("brownie_items")
+      .select("*")
+      .eq("is_active", true)
+      .eq("dessert_id", dessertId)
+      .order("type")
+      .order("price");
 
-        const bases = items.filter(i => i.type === "base");
-        const toppings = items.filter(i => i.type === "topping");
+    if (error) throw error;
 
-        const baseList = document.getElementById("base-list");
-        const toppingList = document.getElementById("topping-list");
+    allItems = data;
+    const baseList = allItems.filter((i) => i.type === "base");
+    const toppingList = allItems.filter((i) => i.type === "topping");
 
-        baseList.innerHTML = bases.map(b => `
-          <div class="brownie-base card cursor-pointer text-center hover-lift" 
-               onclick="selectBase(${b.id}, '${b.name.replace(/'/g, "\\'")}', ${b.price}, this)">
-            <div class="text-5xl mb-1">${extractEmoji(b.name)}</div>
-            <div class="font-semibold text-lg">${removeEmoji(b.name)}</div>
-            <p class="text-gray-600 text-sm">${b.description || ''}</p>
-            <p class="text-blue-600 font-semibold mt-2">💰 ${b.price} บาท</p>
-          </div>
-        `).join('');
+    renderMenu("base", baseList);
+    renderMenu("topping", toppingList);
 
-        toppingList.innerHTML = toppings.map(t => `
-          <div class="topping-item card cursor-pointer text-center hover-lift" 
-               onclick="selectTopping(${t.id}, '${t.name.replace(/'/g, "\\'")}', ${t.price}, this)">
-            <div class="text-5xl mb-1">${extractEmoji(t.name)}</div>
-            <div class="font-semibold text-lg">${removeEmoji(t.name)}</div>
-            <p class="text-gray-600 text-sm">${t.description || ''}</p>
-            <p class="text-purple-600 font-semibold mt-2">🍫 ${t.price} บาท</p>
-          </div>
-        `).join('');
-
-      } catch (err) {
-        console.error("❌ Error loading menus:", err);
-      }
-    }
+    selectedBaseId = null;
+    selectedToppingId = null;
+    updateTotal();
+  } catch (err) {
+    console.error("Error loading menus:", err);
+    showMessage("❌ โหลดข้อมูลขนมไม่สำเร็จ");
+  }
+}
 
     function extractEmoji(text) {
       const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
@@ -664,32 +705,69 @@
     }
 
     function addToCart() {
-      if (!selectedBase || !selectedTopping) {
-        showMessage("กรุณาเลือกเนื้อและหน้าบราวนี่");
-        return;
-      }
+  // ตรวจสอบว่าเลือกเมนูหลักแล้วหรือยัง
+  if (!selectedDessert) {
+    showMessage("❌ กรุณาเลือกเมนูขนมหลักก่อน");
+    return;
+  }
 
-      const total = (selectedBase.price + selectedTopping.price) * quantity;
-      cart.push({
-        baseName: selectedBase.name,
-        toppingName: selectedTopping.name,
-        quantity,
-        unitPrice: selectedBase.price + selectedTopping.price,
-        totalPrice: total
-      });
+  // ตรวจสอบเนื้อและหน้า
+  if (!selectedBase || !selectedTopping) {
+    showMessage("กรุณาเลือกเนื้อและหน้าขนม");
+    return;
+  }
 
-      updateCartBadge();
-      showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
-      quantity = 1;
-      document.getElementById("quantity").textContent = "1";
-      updateTotal();
-      
-      // Reset selections
-      document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
-      document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
-      selectedBase = null;
-      selectedTopping = null;
-    }
+  const total = (selectedBase.price + selectedTopping.price) * quantity;
+
+  cart.push({
+    // ✅ เพิ่มข้อมูลเมนูหลัก
+    dessertId: selectedDessert.id,
+    dessertName: selectedDessert.name,
+
+    // ✅ ของเดิม
+    baseName: selectedBase.name,
+    toppingName: selectedTopping.name,
+    quantity,
+    unitPrice: selectedBase.price + selectedTopping.price,
+    totalPrice: total
+  });
+
+  updateCartBadge();
+  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
+
+  // รีเซ็ตจำนวน
+  quantity = 1;
+  document.getElementById("quantity").textContent = "1";
+  updateTotal();
+
+  // รีเซ็ตการเลือก
+  document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
+  selectedBase = null;
+  selectedTopping = null;
+
+  // ✅ รีเซ็ตกลับไปขั้นตอนเลือกเมนูหลัก
+  resetSelection();
+}
+
+    function resetSelection() {
+  selectedDessert = null;
+  selectedBaseId = null;
+  selectedToppingId = null;
+
+  document.getElementById("quantity").value = 1;
+  updateTotal();
+
+  document.getElementById("base-list").innerHTML = "";
+  document.getElementById("topping-list").innerHTML = "";
+  document.getElementById("menu-selection").classList.add("hidden");
+
+  document.querySelectorAll("#dessert-list .menu-card").forEach(card => {
+    card.classList.remove('ring-4', 'ring-blue-500');
+  });
+
+  document.getElementById("dessert-selection").scrollIntoView({ behavior: 'smooth' });
+}
 
     function updateCartBadge() {
       const badge = document.getElementById("cart-badge");
@@ -717,27 +795,39 @@
       } else {
         let html = '<div class="space-y-3">';
         cart.forEach((item, index) => {
-          html += `
-            <div class="card border border-gray-200 p-4">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <div class="font-semibold">${item.baseName}</div>
-                  <div class="text-sm text-gray-600">หน้า: ${item.toppingName}</div>
-                  <div class="text-sm text-gray-500 mt-1">จำนวน: ${item.quantity} ชิ้น</div>
-                </div>
-                <div class="text-right">
-                  <div class="font-bold text-blue-600">${item.totalPrice} บาท</div>
-                  <div class="flex items-center gap-2 mt-2">
-                    <button onclick="updateCartQuantity(${index}, -1)" class="quantity-btn bg-red-500 hover:bg-red-600 text-white text-sm w-6 h-6">−</button>
-                    <span class="text-sm font-medium">${item.quantity}</span>
-                    <button onclick="updateCartQuantity(${index}, 1)" class="quantity-btn bg-green-500 hover:bg-green-600 text-white text-sm w-6 h-6">+</button>
-                  </div>
-                  <button onclick="removeFromCart(${index})" class="text-red-500 text-sm mt-2 hover:underline">ลบ</button>
-                </div>
-              </div>
-            </div>
-          `;
-        });
+  html += `
+    <div class="card border border-gray-200 p-4">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <!-- ✅ แสดงชื่อเมนูขนมหลัก -->
+          <div class="font-bold text-blue-600">${item.dessertName || 'เมนูขนม'}</div>
+
+          <!-- แสดงชื่อเนื้อและหน้า -->
+          <div class="text-sm text-gray-800 font-medium">${item.baseName} + ${item.toppingName}</div>
+
+          <!-- จำนวนสินค้า -->
+          <div class="text-sm text-gray-500 mt-1">จำนวน: ${item.quantity} ชิ้น</div>
+        </div>
+
+        <div class="text-right">
+          <div class="font-bold text-blue-600">${item.totalPrice} บาท</div>
+
+          <div class="flex items-center gap-2 mt-2">
+            <button onclick="updateCartQuantity(${index}, -1)" 
+                    class="quantity-btn bg-red-500 hover:bg-red-600 text-white text-sm w-6 h-6">−</button>
+            <span class="text-sm font-medium">${item.quantity}</span>
+            <button onclick="updateCartQuantity(${index}, 1)" 
+                    class="quantity-btn bg-green-500 hover:bg-green-600 text-white text-sm w-6 h-6">+</button>
+          </div>
+
+          <button onclick="removeFromCart(${index})" 
+                  class="text-red-500 text-sm mt-2 hover:underline">ลบ</button>
+        </div>
+      </div>
+    </div>
+  `;
+});
+
         html += '</div>';
         content.innerHTML = html;
       }
@@ -1176,6 +1266,93 @@
       }
     }
 
+    async function loadAdminDesserts() {
+  try {
+    const { data, error } = await supabase
+      .from("desserts")
+      .select("*")
+      .order("id");
+    if (error) throw error;
+    renderAdminDesserts(data);
+  } catch (err) {
+    console.error("Error loading admin desserts:", err);
+    showMessage("❌ ไม่สามารถโหลดรายการเมนูขนมได้");
+  }
+}
+
+    function renderAdminDesserts(desserts) {
+  const container = document.getElementById("admin-dessert-list");
+  container.innerHTML = "";
+  if (desserts.length === 0) {
+    container.innerHTML = "<p>ยังไม่มีเมนูขนม</p>";
+    return;
+  }
+
+  desserts.forEach((dessert) => {
+    const item = document.createElement("div");
+    item.className = "p-3 bg-white/60 rounded-lg flex justify-between items-center";
+    item.innerHTML = `
+      <div>
+        <span class="text-2xl">${dessert.emoji || "❓"}</span>
+        <span class="font-bold text-lg ml-2">${dessert.name}</span>
+        <span class="text-sm text-gray-600">${dessert.is_active ? " (เปิดขาย)" : " (ปิดขาย)"}</span>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn-secondary text-sm" onclick="manageDessertItems(${dessert.id})">จัดการส่วนประกอบ</button>
+        <button class="btn-secondary text-sm" onclick='openDessertModal("edit", ${JSON.stringify(dessert)})'>แก้ไข</button>
+        <button class="btn-danger text-sm" onclick="deleteDessert(${dessert.id})">ลบ</button>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+    function openDessertModal(type, dessert = null) {
+  const form = document.getElementById("dessert-form");
+  form.reset();
+
+  if (type === 'edit') {
+    document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนูขนม";
+    document.getElementById("dessert-id").value = dessert.id;
+    document.getElementById("dessert-name").value = dessert.name;
+    document.getElementById("dessert-emoji").value = dessert.emoji;
+    document.getElementById("dessert-desc").value = dessert.description;
+    document.getElementById("dessert-active").checked = dessert.is_active;
+  } else {
+    document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนูขนมใหม่";
+    document.getElementById("dessert-id").value = "";
+  }
+  document.getElementById("dessert-modal").classList.remove("hidden");
+}
+
+function closeDessertModal() {
+  document.getElementById("dessert-modal").classList.add("hidden");
+}
+
+    function manageDessertItems(dessertId, dessertName) {
+      currentAdminDessertId = dessertId; // (สำคัญ) เก็บ ID ที่จะจัดการ
+      // (เพิ่ม) อัปเดตหัวข้อของแท็บ 'brownie'
+      document.querySelector("#admin-brownie-tab h3").innerText = `รายการส่วนประกอบ (ของ: ${dessertName})`;
+      loadBrownieMenus(dessertId); // โหลด "เนื้อ/หน้า" ของ ID นี้
+      showAdminTab('brownie'); // สลับไปแท็บ "ส่วนประกอบ"
+    }
+
+    async function deleteDessert(id) {
+  if (!confirm("คุณแน่ใจหรือไม่ที่จะลบเมนูนี้?\n(คุณต้องลบ 'ส่วนประกอบ' ทั้งหมดของเมนูนี้ก่อน)")) {
+    return;
+  }
+  try {
+    const { error } = await supabase.from("desserts").delete().eq("id", id);
+    if (error) throw error;
+    showMessage("✅ ลบเมนูสำเร็จ");
+    loadAdminDesserts();
+  } catch (err) {
+    console.error(err);
+    showMessage("❌ ลบไม่สำเร็จ! (อาจมีส่วนประกอบค้างอยู่)");
+  }
+}
+
+    
     async function loadAdminOrders() {
       try {
         const { data: orders, error } = await supabase
@@ -1658,6 +1835,59 @@
         content.innerHTML = `<p class="text-red-500 text-center">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
       }
     }
+// โหลดเมนูขนมหลัก
+async function loadDesserts() {
+  try {
+    const { data, error } = await supabase
+      .from("desserts")
+      .select("*")
+      .eq("is_active", true)
+      .order("id");
+
+    if (error) throw error;
+    allDesserts = data;
+    renderDesserts();
+  } catch (err) {
+    console.error("Error loading desserts:", err);
+    showMessage("❌ ไม่สามารถโหลดรายการขนมได้");
+  }
+}
+
+// แสดงเมนูขนมหลัก
+function renderDesserts() {
+  const container = document.getElementById("dessert-list");
+  container.innerHTML = "";
+  allDesserts.forEach((dessert) => {
+    const card = document.createElement("div");
+    card.className =
+      "menu-card glass p-4 rounded-xl shadow-md cursor-pointer hover:shadow-lg hover:scale-105 active:scale-95";
+    card.innerHTML = `
+      <div class="text-4xl mb-2">${dessert.emoji || "❓"}</div>
+      <h4 class="font-semibold text-slate-800">${dessert.name}</h4>
+      <p class="text-sm text-slate-500">${dessert.description || ""}</p>
+    `;
+    card.onclick = () => selectDessert(dessert);
+    container.appendChild(card);
+  });
+}
+function selectDessert(dessert) {
+  selectedDessert = dessert;
+
+  // ยกเลิกไฮไลท์ทั้งหมด
+  document.querySelectorAll("#dessert-list .menu-card").forEach(card => {
+    card.classList.remove('ring-4', 'ring-blue-500');
+  });
+
+  // (ถ้าอยากไฮไลท์ที่เลือก)
+  const cards = [...document.querySelectorAll("#dessert-list .menu-card")];
+  const index = allDesserts.findIndex(d => d.id === dessert.id);
+  if (index >= 0) cards[index].classList.add('ring-4', 'ring-blue-500');
+
+  document.getElementById("menu-selection").classList.remove("hidden");
+  loadMenus(dessert.id); // โหลดเนื้อและหน้าของเมนูนี้
+}
+
+
 
     async function updateAllOrdersOfDay() {
       const selectedDate = document.getElementById("summary-date").value;
@@ -1720,12 +1950,14 @@
       }
     }
 
-    async function loadBrownieMenus() {
+    async function loadBrownieMenus(dessertId) {
       try {
         const { data: items, error } = await supabase
           .from("brownie_items")
           .select("*")
-          .order("id", { ascending: true });
+          .eq("dessert_id", dessertId)
+          .order("type")
+          .order("price");
 
         if (error) throw error;
 
@@ -1769,7 +2001,13 @@
       `).join("");
     }
 
-    function openBrownieModal(type, id = null) {
+    function openBrownieModal(type, id) {
+
+      if (!currentAdminDessertId) {
+        showMessage("❌ กรุณากลับไปแท็บ 'จัดการเมนูขนม' และเลือก 'จัดการส่วนประกอบ' ของเมนูที่ต้องการก่อน");
+        showAdminTab('desserts');
+        return;
+      }
       const modal = document.getElementById("brownie-modal");
       const title = document.getElementById("brownie-modal-title");
 
@@ -1872,6 +2110,34 @@
         showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     };
+    document.getElementById("dessert-form").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("dessert-id").value;
+  const name = document.getElementById("dessert-name").value;
+  const emoji = document.getElementById("dessert-emoji").value;
+  const description = document.getElementById("dessert-desc").value;
+  const isActive = document.getElementById("dessert-active").checked;
+
+  const data = { name, emoji, description, is_active: isActive };
+
+  try {
+    if (id) {
+      await supabase.from("desserts").update(data).eq("id", id);
+      showMessage("✅ อัปเดตเมนูขนมสำเร็จ");
+    } else {
+      await supabase.from("desserts").insert([data]);
+      showMessage("🎉 เพิ่มเมนูขนมใหม่สำเร็จ");
+    }
+
+    closeDessertModal();
+    loadAdminDesserts(); // รีเฟรชแท็บ 'จัดการเมนูขนม'
+    loadDesserts();      // รีเฟรชฝั่งลูกค้า
+  } catch (err) {
+    console.error(err);
+    showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+  }
+};
 
     // ===============================================================
     // 12. INITIALIZE APP
