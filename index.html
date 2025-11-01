@@ -166,21 +166,17 @@
       <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
 
-    <section id="product-type-section" class="bg-white p-6 rounded-xl shadow-md mb-6">
-  <h3 class="text-xl font-semibold mb-4">🍰 เลือกประเภทขนม</h3>
-  <div id="product-type-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-</section>
+    <!-- � เลือกเนื้อบราวนี่ -->
+    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
+      <h3 class="text-xl font-semibold mb-4">🍫 เลือกเนื้อบราวนี่</h3>
+      <div id="base-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </section>
 
-<section id="base-section" class="bg-white p-6 rounded-xl shadow-md mb-6 hidden">
-  <h3 id="base-title" class="text-xl font-semibold mb-4">🍫 เลือกเนื้อ...</h3>
-  <div id="base-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-</section>
-
-<section id="topping-section" class="bg-white p-6 rounded-xl shadow-md mb-6 hidden">
-  <h3 id="topping-title" class="text-xl font-semibold mb-4">🫀 เลือกหน้า...</h3>
-  <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-</section>
-
+    <!-- � เลือกหน้าบราวนี่ -->
+    <section class="bg-white p-6 rounded-xl shadow-md mb-6">
+      <h3 class="text-xl font-semibold mb-4">🫀 เลือกหน้าบราวนี่</h3>
+      <div id="topping-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    </section>
 
     <!-- จำนวนและราคารวม -->
     <section id="quantity-section" class="card mb-8 hover-lift">
@@ -319,8 +315,8 @@
         <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
           📊 สถิติ
         </button>
-        <button onclick="showAdminTab('menu')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
-          📋 จัดการเมนู
+        <button onclick="showAdminTab('brownie')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
+          � เมนูบราวนี่
         </button>
         <button onclick="showAdminTab('summary')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="summary">
           📅 สรุปออเดอร์รายวัน
@@ -328,15 +324,9 @@
       </div>
 
       <!-- Brownie Tab -->
-      <section id="admin-menu-tab" class="admin-tab-content hidden">
+      <section id="admin-brownie-tab" class="admin-tab-content hidden">
         <div id="admin-brownie-content" class="p-4"></div>
       </section>
-
-      <!-- 🧁 หน้าจัดการเมนู (เพิ่มใหม่ตรงนี้) -->
-    <div id="admin-menu-content" class="hidden p-4">
-      <h2 class="text-2xl font-bold mb-4">📋 จัดการเมนูขนม</h2>
-      <div id="admin-brownie-content"></div>
-    </div>
 
       <!-- Orders Tab -->
       <div id="admin-orders-tab" class="admin-tab-content">
@@ -423,46 +413,40 @@
   </div>
 
   <!-- Brownie Modal -->
- <div id="brownie-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-xl p-6 w-96 relative">
-    <h3 id="brownie-modal-title" class="text-xl font-bold mb-4">🍫 เพิ่มเมนู</h3>
-
-    <form id="brownie-form" class="space-y-3">
-      <input type="hidden" id="brownie-id">
-      <input type="hidden" id="brownie-type">
-
-      <div>
-        <label class="block text-sm font-medium">ชื่อเมนู</label>
-        <input id="brownie-name" class="w-full border p-2 rounded" required>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium">คำอธิบาย</label>
-        <textarea id="brownie-desc" class="w-full border p-2 rounded"></textarea>
-      </div>
-
-      <div class="flex gap-2">
-        <div class="flex-1">
-          <label class="block text-sm font-medium">ราคา (บาท)</label>
-          <input id="brownie-price" type="number" class="w-full border p-2 rounded" required>
+  <div id="brownie-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+      <h3 id="brownie-modal-title" class="text-xl font-semibold mb-4">� เพิ่มเมนูบราวนี่</h3>
+      <form id="brownie-form" class="space-y-3">
+        <input type="hidden" id="brownie-id">
+        <input type="hidden" id="brownie-type">
+        <div>
+          <label class="block text-sm font-medium mb-1">ชื่อเมนู (ใส่อิโมจิได้)</label>
+          <input id="brownie-name" class="w-full border rounded px-3 py-2" placeholder="เช่น 🍫 บราวนี่โกโก้" required>
         </div>
-        <div class="flex-1">
-          <label class="block text-sm font-medium">แต้ม</label>
-          <input id="brownie-points" type="number" class="w-full border p-2 rounded">
+        <div>
+          <label class="block text-sm font-medium mb-1">คำอธิบาย</label>
+          <textarea id="brownie-desc" class="w-full border rounded px-3 py-2" placeholder="คำอธิบายเมนู เช่น รสเข้มข้น หอมโกโก้"></textarea>
         </div>
-      </div>
-
-      <label class="flex items-center gap-2">
-        <input id="brownie-active" type="checkbox" checked> เปิดขาย
-      </label>
-
-      <div class="flex justify-end gap-2 mt-4">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">บันทึก</button>
-        <button type="button" onclick="closeBrownieModal()" class="bg-gray-300 px-4 py-2 rounded">ยกเลิก</button>
-      </div>
-    </form>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium mb-1">ราคา (บาท)</label>
+            <input id="brownie-price" type="number" step="0.01" class="w-full border rounded px-3 py-2" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">แต้มที่จะได้</label>
+            <input id="brownie-points" type="number" class="w-full border rounded px-3 py-2" required>
+          </div>
+        </div>
+        <label class="flex items-center gap-2 mt-2">
+          <input id="brownie-active" type="checkbox" class="w-4 h-4"> เปิดขายเมนูนี้
+        </label>
+        <div class="flex justify-end gap-2 pt-3 border-t mt-4">
+          <button type="button" onclick="closeBrownieModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">บันทึก</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
   <!-- Success Message -->
   <div id="success-message" class="fixed top-20 right-4 card shadow-lg hidden z-50">
@@ -481,30 +465,16 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
     const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"];
 
-    // ===============================================================
-// 🧠 ตัวแปร Global (ใช้เก็บสถานะของระบบทั้งหมด)
-// ===============================================================
-let supabase;
-let userProfile = null;
-let currentUser = null;
-let selectedBase = null;
-let selectedTopping = null;
-let quantity = 1;
-let cart = [];
-let userPoints = 0;
-let selectedCoupon = null;
-let availableCoupons = [];
-
-// ===============================================================
-// 🍫 เพิ่มใหม่สำหรับระบบหลายประเภทขนม
-// ===============================================================
-let selectedProductType = null; // 🧁 เก็บประเภทขนมที่ผู้ใช้เลือก เช่น "บราวนี่", "คุกกี้"
-let allMenus = [];              // 🍪 เก็บเมนูทั้งหมด (base + topping) จาก Supabase
-
-const escapeName = (name) => {
-      if (!name) return '';
-      return name.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    }
+    let supabase;
+    let userProfile = null;
+    let currentUser = null;
+    let selectedBase = null;
+    let selectedTopping = null;
+    let quantity = 1;
+    let cart = [];
+    let userPoints = 0;
+    let selectedCoupon = null;
+    let availableCoupons = [];
 
     // ===============================================================
     // 2. INITIALIZATION
@@ -526,7 +496,7 @@ const escapeName = (name) => {
         await saveUserToSupabase(userProfile);
         await loadUserData(userProfile.userId);
         await loadCoupons();
-        await loadProductTypes();
+        await loadMenus();
 
         // Check admin
         if (ADMIN_IDS.includes(userProfile.userId)) {
@@ -610,6 +580,46 @@ const escapeName = (name) => {
     // ===============================================================
     // 4. MENU MANAGEMENT
     // ===============================================================
+    async function loadMenus() {
+      try {
+        const { data: items, error } = await supabase
+          .from("brownie_items")
+          .select("*")
+          .eq("is_active", true)
+          .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        const bases = items.filter(i => i.type === "base");
+        const toppings = items.filter(i => i.type === "topping");
+
+        const baseList = document.getElementById("base-list");
+        const toppingList = document.getElementById("topping-list");
+
+        baseList.innerHTML = bases.map(b => `
+          <div class="brownie-base card cursor-pointer text-center hover-lift" 
+               onclick="selectBase(${b.id}, '${b.name.replace(/'/g, "\\'")}', ${b.price}, this)">
+            <div class="text-5xl mb-1">${extractEmoji(b.name)}</div>
+            <div class="font-semibold text-lg">${removeEmoji(b.name)}</div>
+            <p class="text-gray-600 text-sm">${b.description || ''}</p>
+            <p class="text-blue-600 font-semibold mt-2">💰 ${b.price} บาท</p>
+          </div>
+        `).join('');
+
+        toppingList.innerHTML = toppings.map(t => `
+          <div class="topping-item card cursor-pointer text-center hover-lift" 
+               onclick="selectTopping(${t.id}, '${t.name.replace(/'/g, "\\'")}', ${t.price}, this)">
+            <div class="text-5xl mb-1">${extractEmoji(t.name)}</div>
+            <div class="font-semibold text-lg">${removeEmoji(t.name)}</div>
+            <p class="text-gray-600 text-sm">${t.description || ''}</p>
+            <p class="text-purple-600 font-semibold mt-2">🍫 ${t.price} บาท</p>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error("❌ Error loading menus:", err);
+      }
+    }
 
     function extractEmoji(text) {
       const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
@@ -622,29 +632,17 @@ const escapeName = (name) => {
       return text.replace(emojiRegex, '').trim();
     }
 
-   function selectBase(element, id, name, price, points) {
-      // 1. เก็บข้อมูล (รวมแต้ม)
-      selectedBase = { id, name, price, points: points || 0 };
-      
-      // 2. อัปเดต UI (ใช้ element แทน event)
+    function selectBase(id, name, price, el) {
       document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
-      if (element) {
-          element.classList.add('selected');
-      }
-      
+      el.classList.add('selected');
+      selectedBase = { id, name, price };
       updateTotal();
     }
 
-    function selectTopping(element, id, name, price, points) {
-      // 1. เก็บข้อมูล (รวมแต้ม)
-      selectedTopping = { id, name, price, points: points || 0 };
-      
-      // 2. อัปเดต UI (ใช้ element แทน event)
+    function selectTopping(id, name, price, el) {
       document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
-      if (element) {
-          element.classList.add('selected');
-      }
-
+      el.classList.add('selected');
+      selectedTopping = { id, name, price };
       updateTotal();
     }
 
@@ -974,9 +972,9 @@ const escapeName = (name) => {
         }
 
         //await supabase
-          //.from("users")
-          //.update({ points: userPoints + earnedPoints })
-          //.eq("id", currentUser.id);
+        //  .from("users")
+        //  .update({ points: userPoints + earnedPoints })
+        //  .eq("id", currentUser.id);
 
         //userPoints += earnedPoints;
         //document.getElementById("userPoints").textContent = userPoints;
@@ -986,7 +984,7 @@ const escapeName = (name) => {
         closeCart();
         await loadCoupons();
 
-        showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับ +${earnedPoints} แต้ม เมื่อออเดอร์สำเร็จ 🎉`);
+        showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
 
       } catch (error) {
         console.error("❌ Checkout error:", error);
@@ -1150,7 +1148,7 @@ const escapeName = (name) => {
       if (tab === 'orders') loadAdminOrders();
       if (tab === 'coupons') loadAdminCoupons();
       if (tab === 'stats') loadAdminStats();
-      if (tab === 'menu') loadBrownieMenus();
+      if (tab === 'brownie') loadBrownieMenus();
       if (tab === 'summary') loadDailySummary();
     }
 
@@ -1253,67 +1251,59 @@ const escapeName = (name) => {
     }
 
     async function updateOrderStatus(orderId, newStatus) {
-  try {
-    // 1️⃣ ดึงข้อมูลออเดอร์ พร้อมข้อมูลผู้ใช้
-    const { data: order, error: fetchError } = await supabase
-      .from("orders")
-      .select("id, user_id, earned_points, status, users(line_id, display_name)")
-      .eq("id", orderId)
-      .single();
-    if (fetchError) throw fetchError;
-
-    let givePoints = false;
-
-    // 2️⃣ ตรวจสอบว่าสถานะเปลี่ยนเป็น completed และยังไม่เคย completed มาก่อน
-    if (newStatus === "completed" && order.status !== "completed") {
-      givePoints = true;
-    }
-
-    // 3️⃣ อัปเดตสถานะในฐานข้อมูล
-    const { error: updateError } = await supabase
-      .from("orders")
-      .update({ status: newStatus })
-      .eq("id", orderId);
-    if (updateError) throw updateError;
-
-    // 4️⃣ ถ้าเป็น completed → อัปเดตแต้มสะสมให้ผู้ใช้
-    if (givePoints) {
-      const { data: user, error: userError } = await supabase
-        .from("users")
-        .select("points")
-        .eq("id", order.user_id)
+    try {
+      // 1. ดึงข้อมูลออเดอร์เดิมเพื่อตรวจสอบสถานะเก่า, user_id, และแต้มที่จะได้
+      const { data: order, error: fetchError } = await supabase
+        .from('orders')
+        .select('status, user_id, earned_points')
+        .eq('id', orderId)
         .single();
-      if (userError) throw userError;
 
-      const newPoints = (user.points || 0) + (order.earned_points || 0);
+      if (fetchError) throw fetchError;
 
-      const { error: updatePointsError } = await supabase
-        .from("users")
-        .update({ points: newPoints })
-        .eq("id", order.user_id);
-      if (updatePointsError) throw updatePointsError;
+      // 2. อัปเดตสถานะออเดอร์
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
 
-      console.log(`✅ ให้แต้มสะสม ${order.earned_points} แก่ user ${order.user_id}`);
+      if (updateError) throw updateError;
+
+      // 3. ตรวจสอบว่าสถานะใหม่คือ 'completed' และสถานะเก่า *ไม่ใช่* 'completed'
+      //    (เพื่อป้องกันการให้แต้มซ้ำ)
+      if (newStatus === 'completed' && order.status !== 'completed') {
+        
+        // 3.1 ดึงแต้มปัจจุบันของผู้ใช้
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('points')
+          .eq('id', order.user_id)
+          .single();
+
+        if (userError) throw userError;
+
+        const newTotalPoints = (user.points || 0) + (order.earned_points || 0);
+
+        // 3.2 อัปเดตแต้มใหม่ให้ผู้ใช้
+        const { error: pointsError } = await supabase
+          .from('users')
+          .update({ points: newTotalPoints })
+          .eq('id', order.user_id);
+
+        if (pointsError) throw pointsError;
+        
+        console.log(` awarded ${order.earned_points} points to user ${order.user_id}. New total: ${newTotalPoints}`);
+        showMessage(`✅ อัปเดตสถานะ และให้แต้ม ${order.earned_points} แต้มเรียบร้อย`);
+      } else {
+        showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${newStatus}`);
+      }
+
+      loadAdminOrders(); // รีเฟรชรายการออเดอร์
+    } catch (error) {
+      console.error('❌ Error updating order status:', error);
+      showMessage(`❌ เกิดข้อผิดพลาด: ${error.message}`);
     }
-
-    // 5️⃣ ส่งแจ้งเตือน LINE OA
-    await sendOrderStatusNotification(order, newStatus);
-
-    // 6️⃣ แสดงข้อความสำเร็จ
-    if (givePoints) {
-      showMessage("✅ อัปเดตสถานะและให้แต้มสะสม + ส่งแจ้งเตือนเรียบร้อยแล้ว");
-    } else {
-      showMessage("✅ อัปเดตสถานะและส่งแจ้งเตือนเรียบร้อยแล้ว");
-    }
-
-    // 7️⃣ โหลดรายการใหม่
-    loadAdminOrders();
-
-  } catch (error) {
-    console.error("❌ Error updating status or points:", error);
-    showMessage("❌ เกิดข้อผิดพลาด: " + error.message);
   }
-}
 
     async function sendOrderStatusNotification(order, newStatus) {
       try {
@@ -1736,247 +1726,72 @@ const escapeName = (name) => {
     }
 
     async function loadBrownieMenus() {
-  const content = document.getElementById("admin-brownie-content");
-  content.innerHTML = `<div class="text-center text-gray-500">กำลังโหลด...</div>`;
+      try {
+        const { data: items, error } = await supabase
+          .from("brownie_items")
+          .select("*")
+          .order("id", { ascending: true });
 
-  try {
-    // โหลดประเภทขนมทั้งหมด
-    const { data: types, error: typesError } = await supabase
-      .from("product_types")
-      .select("*")
-      .order("id");
-    if (typesError) throw typesError;
+        if (error) throw error;
 
-    // โหลดเมนูทั้งหมด (base + topping)
-    const { data: items, error: itemsError } = await supabase
-      .from("brownie_items")
-      .select("*")
-      .order("product_type_id");
-    if (itemsError) throw itemsError;
+        const bases = items.filter(i => i.type === "base");
+        const toppings = items.filter(i => i.type === "topping");
 
-    let html = `
-      <button onclick="openProductTypeModal()" 
-        class="bg-green-600 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700">
-        ➕ เพิ่มประเภทขนมใหม่
-      </button>
-    `;
-
-    // วนลูปแต่ละประเภท
-    types.forEach(type => {
-      const typeItems = items.filter(i => i.product_type_id === type.id);
-      const bases = typeItems.filter(i => i.type === 'base');
-      const toppings = typeItems.filter(i => i.type === 'topping');
-
-      html += `
-        <div class="border rounded-xl p-4 mb-6 bg-white shadow-md">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="text-xl font-bold">${type.emoji || '🍰'} ${type.name}</h4>
-            <div>
-              <button onclick="openProductTypeModal(${JSON.stringify(type).replace(/"/g, "'")})" 
-                      class="text-sm px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">✏️ แก้ไข</button>
-              <button onclick="deleteProductType(${type.id})" 
-                      class="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">🗑️ ลบ</button>
-            </div>
-          </div>
-
-          <h5 class="font-semibold text-gray-700 mt-4">🍫 เนื้อ/ไส้</h5>
+        const content = document.getElementById("admin-brownie-content");
+        content.innerHTML = `
+          <h3 class="text-lg font-semibold mb-3">� เนื้อบราวนี่</h3>
+          <button onclick="openBrownieModal('base')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มเนื้อบราวนี่</button>
           ${renderBrownieList(bases)}
-          <button onclick="openBrownieModal('base', ${type.id})" 
-                  class="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2">
-            ➕ เพิ่มเนื้อ
-          </button>
 
-          <h5 class="font-semibold text-gray-700 mt-4">🫀 หน้า/ท็อปปิ้ง</h5>
+          <h3 class="text-lg font-semibold mt-6 mb-3">🍫 หน้าบราวนี่</h3>
+          <button onclick="openBrownieModal('topping')" class="mb-3 px-3 py-1 bg-green-500 text-white rounded">➕ เพิ่มหน้าบราวนี่</button>
           ${renderBrownieList(toppings)}
-          <button onclick="openBrownieModal('topping', ${type.id})" 
-                  class="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2">
-            ➕ เพิ่มหน้า
-          </button>
-        </div>
-      `;
-    });
-
-    content.innerHTML = html;
-  } catch (err) {
-    console.error("❌ Error loading admin menus:", err);
-  }
-}
-
-    async function loadProductTypes() {
-  try {
-    // 1️⃣ โหลดประเภทขนมจาก Supabase
-    const { data: types, error: typesError } = await supabase
-      .from("product_types")
-      .select("*")
-      .eq("is_active", true)
-      .order("id");
-    if (typesError) throw typesError;
-
-    // 2️⃣ โหลดเมนูทั้งหมด (ฐาน + หน้า)
-    const { data: items, error: itemsError } = await supabase
-      .from("brownie_items")
-      .select("*")
-      .eq("is_active", true)
-      .order("id");
-    if (itemsError) throw itemsError;
-
-    // เก็บเมนูทั้งหมดไว้ใน global variable
-    allMenus = items;
-
-    // 3️⃣ แสดงประเภทขนมเป็น card ให้ผู้ใช้เลือก
-    const typeList = document.getElementById("product-type-list");
-    typeList.innerHTML = types.map(type => `
-      <div class="product-type-item card cursor-pointer text-center hover-lift" 
-           onclick="selectProductType(this, ${type.id}, '${escapeName(type.name)}', '${type.emoji || '🍰'}')">
-        <div class="text-5xl mb-3">${type.emoji || '🍰'}</div>
-        <div class="font-semibold text-lg">${type.name}</div>
-      </div>
-    `).join('');
-
-  } catch (error) {
-    console.error("❌ Error loading product types:", error);
-  }
-}
-function selectProductType(element, typeId, typeName, emoji) {
-      selectedProductType = typeId;
-
-      // 1. Reset การเลือกเก่า
-      selectedBase = null;
-      selectedTopping = null;
-      
-      // 1a. อัปเดต UI การเลือกประเภท
-      document.querySelectorAll('.product-type-item').forEach(e => e.classList.remove('selected'));
-      if (element) {
-          element.classList.add('selected');
+        `;
+      } catch (err) {
+        console.error("❌ Error loading brownie menus:", err);
       }
-
-      // 2. กรอง Bases และ Toppings ที่ตรงกับ typeId
-      const bases = allMenus.filter(i => i.type === 'base' && i.product_type_id === typeId);
-      const toppings = allMenus.filter(i => i.type === 'topping' && i.product_type_id === typeId);
-
-      // (ฟังก์ชัน escapeName ควรอยู่ global)
-
-      // 3. แสดงผล Bases (หน้าเนื้อ)
-      const baseList = document.getElementById("base-list");
-      document.getElementById("base-title").innerHTML = `${emoji} เลือกเนื้อ${typeName}`;
-      baseList.innerHTML = bases.map(b => `
-        <div class="brownie-base card cursor-pointer text-center hover-lift" 
-             onclick="selectBase(this, ${b.id}, '${escapeName(b.name)}', ${b.price}, ${b.points})">
-          
-          <div class="text-4xl mb-3">${b.name ? b.name.split(' ')[0] : '...'}</div>
-          
-          <div class="font-semibold">${b.name || '(ไม่มีชื่อ)'}</div>
-          <div class="text-sm text-gray-500">${b.description}</div>
-          <div class="mt-2 font-bold text-blue-600">${b.price} บาท</div>
-        </div>
-      `).join('');
-      
-      // 4. แสดงผล Toppings (หน้าเดิม)
-      const toppingList = document.getElementById("topping-list");
-      document.getElementById("topping-title").innerHTML = `🫀 เลือกหน้า${typeName}`;
-      toppingList.innerHTML = toppings.map(t => `
-        <div class="topping-item card cursor-pointer text-center hover-lift" 
-             onclick="selectTopping(this, ${t.id}, '${escapeName(t.name)}', ${t.price}, ${t.points})">
-
-          <div class="text-4xl mb-3">${t.name ? t.name.split(' ')[0] : '...'}</div>
-          
-          <div class="font-semibold">${t.name || '(ไม่มีชื่อ)'}</div>
-          <div class="text-sm text-gray-500">${t.description}</div>
-          <div class="mt-2 font-bold text-blue-600">+${t.price} บาท</div>
-        </div>
-      `).join('');
-
-      // 5. แสดง section ที่ซ่อนไว้
-      document.getElementById("base-section").classList.remove("hidden");
-      document.getElementById("topping-section").classList.remove("hidden");
-
-      updateTotal();
     }
 
     function renderBrownieList(items) {
-  if (!items || items.length === 0)
-    return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
+      if (!items || items.length === 0)
+        return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
 
-  return items.map(i => `
-    <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
-      <div>
-        <div class="font-semibold text-lg">${i.name}</div>
-        <div class="text-sm text-gray-600">${i.description || ''}</div>
-        <div class="text-sm mt-1">
-          💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
-          ${i.is_active 
-            ? "✅ <span class='text-green-600'>เปิดขาย</span>" 
-            : "❌ <span class='text-red-500'>ปิดขาย</span>"}
+      return items.map(i => `
+        <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
+          <div>
+            <div class="font-semibold text-lg">${i.name}</div>
+            <div class="text-sm text-gray-600">${i.description || ''}</div>
+            <div class="text-sm mt-1">
+              💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
+              ${i.is_active ? "✅ <span class='text-green-600'>เปิดขาย</span>" : "❌ <span class='text-red-500'>ปิดขาย</span>"}
+            </div>
+          </div>
+          <div class="flex gap-2 mt-1">
+            <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="openBrownieModal('${i.type}', ${i.id})">✏️ แก้ไข</button>
+            <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="deleteBrownieItem(${i.id})">🗑️ ลบ</button>
+          </div>
         </div>
-      </div>
-      <div class="flex gap-2 mt-1">
-        <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" 
-          onclick="openBrownieModal('${i.type}', ${i.product_type_id}, ${JSON.stringify(i).replace(/"/g, '&quot;')})"
-          ✏️ แก้ไข
-        </button>
-        <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" 
-          onclick="deleteBrownieItem(${i.id})">
-          🗑️ ลบ
-        </button>
-      </div>
-    </div>
-  `).join("");
-}
-
-  function openBrownieModal(type, productTypeId, itemJson) {
-      const modal = document.getElementById("brownie-modal");
-      const title = document.getElementById("brownie-modal-title");
-      const form = document.getElementById("brownie-form");
-      
-      // 1. รีเซ็ต form (เผื่อมีค่าเก่า)
-      form.reset();
-      
-      // 2. ตั้งค่าพื้นฐาน
-      document.getElementById("brownie-type").value = type;
-      form.dataset.productTypeId = productTypeId; // เก็บ ID ประเภทขนมไว้ใน form
-
-      // 3. ตรวจสอบว่าเป็น "แก้ไข" (มี itemJson) หรือ "เพิ่มใหม่"
-      if (itemJson) {
-        // --- กรณีแก้ไข ---
-        title.textContent = `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
-        document.getElementById("brownie-id").value = itemJson.id;
-        document.getElementById("brownie-name").value = itemJson.name;
-        document.getElementById("brownie-desc").value = itemJson.description || "";
-        document.getElementById("brownie-price").value = itemJson.price;
-        document.getElementById("brownie-points").value = itemJson.points;
-        document.getElementById("brownie-active").checked = itemJson.is_active;
-      } else {
-        // --- กรณีเพิ่มใหม่ ---
-        title.textContent = `🰠เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
-        document.getElementById("brownie-id").value = "";
-        document.getElementById("brownie-active").checked = true;
-      }
-      
-      // 4. แสดง modal
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
+      `).join("");
     }
 
-const modal = document.getElementById("brownie-modal");
+    function openBrownieModal(type, id = null) {
+      const modal = document.getElementById("brownie-modal");
+      const title = document.getElementById("brownie-modal-title");
 
-  // ตั้งค่าพื้นฐาน
-  const isEdit = !!item;
-  document.getElementById("brownie-id").value = item ? item.id : "";
-  document.getElementById("brownie-type").value = type;
-  document.getElementById("brownie-name").value = item ? item.name : "";
-  document.getElementById("brownie-desc").value = item ? item.description || "" : "";
-  document.getElementById("brownie-price").value = item ? item.price : "";
-  document.getElementById("brownie-points").value = item ? item.points : "";
-  document.getElementById("brownie-active").checked = item ? item.is_active : true;
+      modal.classList.remove("hidden");
 
-  // เก็บค่า product_type_id ไว้ใน form (dataset)
-  const form = document.getElementById("brownie-form");
-  form.dataset.productTypeId = productTypeId;
+      document.getElementById("brownie-id").value = id || "";
+      document.getElementById("brownie-type").value = type;
+      document.getElementById("brownie-name").value = "";
+      document.getElementById("brownie-desc").value = "";
+      document.getElementById("brownie-price").value = "";
+      document.getElementById("brownie-points").value = "";
+      document.getElementById("brownie-active").checked = true;
 
-  // เปลี่ยนชื่อหัว modal
-  title.textContent = isEdit
-    ? `✏️ แก้ไขเมนู${type === "base" ? "เนื้อ" : "หน้า"}`
-    : `🍰 เพิ่มเมนู${type === "base" ? "เนื้อ" : "หน้า"}`;
+      title.textContent = id ? "✏️ แก้ไขเมนูบราวนี่" : "🍰 เพิ่มเมนูบราวนี่";
+
+      if (id) loadBrownieForEdit(id);
+    }
 
     function closeBrownieModal() {
       document.getElementById("brownie-modal").classList.add("hidden");
@@ -2009,54 +1824,6 @@ const modal = document.getElementById("brownie-modal");
       loadMenus();
     }
 
-    document.getElementById("brownie-form").onsubmit = async (e) => {
-  e.preventDefault();
-
-  const id = document.getElementById("brownie-id").value;
-  const type = document.getElementById("brownie-type").value;
-  const name = document.getElementById("brownie-name").value.trim();
-  const description = document.getElementById("brownie-desc").value.trim();
-  const price = parseFloat(document.getElementById("brownie-price").value);
-  const points = parseInt(document.getElementById("brownie-points").value) || 0;
-  const isActive = document.getElementById("brownie-active").checked;
-  const productTypeId = parseInt(e.target.dataset.productTypeId); // 👈 เพิ่มตรงนี้สำหรับระบบใหม่
-
-  if (!name || isNaN(price)) {
-    showMessage("⚠️ กรุณากรอกชื่อเมนูและราคาด้วย");
-    return;
-  }
-
-  const data = {
-    name,
-    description,
-    price,
-    points,
-    type,
-    is_active: isActive,
-    product_type_id: productTypeId, // 👈 บอกว่าเมนูนี้อยู่ในประเภทขนมไหน
-  };
-
-  try {
-    let error;
-    if (id) {
-      // แก้ไขเมนูเดิม
-      ({ error } = await supabase.from("brownie_items").update(data).eq("id", id));
-    } else {
-      // เพิ่มเมนูใหม่
-      ({ error } = await supabase.from("brownie_items").insert([data]));
-    }
-
-    if (error) throw error;
-
-    showMessage("✅ บันทึกเมนูเรียบร้อยแล้ว");
-    closeBrownieModal();
-    loadBrownieMenus();
-  } catch (err) {
-    console.error("❌ Error saving menu:", err);
-    showMessage("เกิดข้อผิดพลาด: " + err.message);
-  }
-};
-
     // ===============================================================
     // 10. UTILITY FUNCTIONS
     // ===============================================================
@@ -2080,7 +1847,7 @@ const modal = document.getElementById("brownie-modal");
     // ===============================================================
     // 11. FORM HANDLERS
     // ===============================================================
-   document.getElementById("brownie-form").onsubmit = async (e) => {
+    document.getElementById("brownie-form").onsubmit = async (e) => {
       e.preventDefault();
 
       const id = document.getElementById("brownie-id").value;
@@ -2088,44 +1855,29 @@ const modal = document.getElementById("brownie-modal");
       const name = document.getElementById("brownie-name").value;
       const description = document.getElementById("brownie-desc").value;
       const price = parseFloat(document.getElementById("brownie-price").value);
-      const points = parseInt(document.getElementById("brownie-points").value) || 0;
+      const points = parseInt(document.getElementById("brownie-points").value);
       const isActive = document.getElementById("brownie-active").checked;
-      
-      // (เพิ่มใหม่) ดึง ID ประเภทขนมจาก dataset ที่เราเก็บไว้
-      const productTypeId = parseInt(e.target.dataset.productTypeId);
 
-      // (เพิ่มใหม่) เพิ่ม product_type_id เข้าไปใน object ที่จะส่ง
-      const data = { 
-        type, 
-        name, 
-        description, 
-        price, 
-        points, 
-        is_active: isActive,
-        product_type_id: productTypeId // <-- บรรทัดนี้สำคัญ
-      };
+      const data = { type, name, description, price, points, is_active: isActive };
 
       try {
         if (id) {
-          // กรณีอัปเดต (แก้ไข)
-          const { error } = await supabase.from("brownie_items").update(data).eq("id", id);
-          if (error) throw error;
+          await supabase.from("brownie_items").update(data).eq("id", id);
           showMessage("✅ อัปเดตเมนูสำเร็จ");
         } else {
-          // กรณีเพิ่มใหม่
-          const { error } = await supabase.from("brownie_items").insert([data]);
-          if (error) throw error;
+          await supabase.from("brownie_items").insert([data]);
           showMessage("🎉 เพิ่มเมนูใหม่สำเร็จ");
         }
 
         closeBrownieModal();
-        loadBrownieMenus();    // รีเฟรชหน้า Admin
-        loadProductTypes();  // (แก้ไข) รีเฟรชเมนูหน้าหลักเป็นฟังก์ชันตัวใหม่
+        loadBrownieMenus();
+        loadMenus();
       } catch (err) {
-        console.error("❌ Error saving brownie item:", err);
-        showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + err.message);
+        console.error(err);
+        showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     };
+
     // ===============================================================
     // 12. INITIALIZE APP
     // ===============================================================
