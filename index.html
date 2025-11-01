@@ -987,7 +987,7 @@
     closeCart();
     await loadCoupons();
 
-    showMessage(`สั่งซื้อสำเร็จ! ได้รับแต้ม +${earnedPoints} แต้ม 🎉`);
+    showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
   } catch (error) {
     console.error("❌ Checkout error:", error);
     showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
