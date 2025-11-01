@@ -53,13 +53,13 @@
       box-shadow: 0 8px 25px rgba(29, 78, 216, 0.5);
     }
     .quantity-btn {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       cursor: pointer;
     }
@@ -101,6 +101,14 @@
     .badge-ready { background: #d1fae5; color: #065f46; }
     .badge-completed { background: #e0e7ff; color: #3730a3; }
     .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .menu-card {
+      cursor: pointer;
+      user-select: none;
+    }
+    @media (max-width: 640px) {
+      .card { padding: 16px; }
+      .quantity-btn { width: 36px; height: 36px; font-size: 16px; }
+    }
   </style>
 </head>
 <body class="min-h-full">
@@ -114,44 +122,36 @@
 
   <!-- Header -->
   <header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
-    <div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="max-w-6xl mx-auto px-4 py-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <div class="text-2xl float">🪙</div>
           <div>
-            <div class="text-sm text-gray-500">แต้มสะสม</div>
+            <div class="text-xs text-gray-500">แต้มสะสม</div>
             <div class="font-semibold text-gray-900">
               <span id="userPoints" class="text-orange-600 font-semibold">0</span> แต้ม
             </div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="flex items-center space-x-2">
-            <img id="userPic" src="" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300" />
-            <span id="userName" class="text-sm text-gray-600 hidden sm:block">กำลังโหลด...</span>
-          </div>
+        <div class="flex items-center gap-2">
+          <img id="userPic" src="" alt="Profile" class="w-8 h-8 rounded-full border border-gray-300" />
           <button onclick="showCart()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl text-sm hover-lift relative">
-            <span class="hidden sm:inline">🛒 ตะกร้า</span>
-            <span class="sm:hidden">🛒</span>
+            🛒
             <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
           </button>
           <button onclick="showCoupons()" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-xl text-sm hover-lift">
-            <span class="hidden sm:inline">🎫 คูปอง</span>
-            <span class="sm:hidden">🎫</span>
+            🎫
           </button>
           <button onclick="openOrderHistory()" 
             class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift">
-            <span class="hidden sm:inline">📋 ประวัติ</span>
-            <span class="sm:hidden">📋</span>
+            📋
           </button>
           <button id="admin-btn" onclick="showAdmin()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-sm hover-lift hidden">
-            <span class="hidden sm:inline">👨‍💼 Admin</span>
-            <span class="sm:hidden">👨‍💼</span>
+            👨‍💼
           </button>
           <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl text-sm hover-lift">
-            <span class="hidden sm:inline">ออกจากระบบ</span>
-            <span class="sm:hidden">🚪</span>
+            🚪
           </button>
         </div>
       </div>
@@ -159,63 +159,57 @@
   </header>
 
   <!-- Main App -->
-  <main id="main-app" class="max-w-6xl mx-auto px-4 py-8 hidden">
-    <div class="text-center mb-12">
-      <div class="text-6xl mb-4 float">🍫</div>
-      <h1 class="text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SUAN KHANOM</h1>
-      <p class="text-gray-600 text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
+  <main id="main-app" class="max-w-6xl mx-auto px-4 py-6 sm:py-8 hidden">
+    <div class="text-center mb-8 sm:mb-12">
+      <div class="text-5xl sm:text-6xl mb-4 float">🫐</div>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-2" style="background: linear-gradient(135deg, #1f2937, #374151); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SUAN KHANOM</h1>
+      <p class="text-gray-600 text-base sm:text-lg mb-4">สั่งทำพิเศษเพื่อคุณ</p>
     </div>
 
     <section id="dessert-selection" class="mb-6">
-  <h2 class="text-2xl font-bold text-slate-700 mb-4">
-    1. เลือกเมนูขนม 🍰
-  </h2>
-  <div
-    id="dessert-list"
-    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
-  >
-  </div>
-</section>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-700 mb-4">
+        1. เลือกเมนูขนม 🍰
+      </h2>
+      <div id="dessert-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4"></div>
+    </section>
 
-<section id="menu-selection" class="mb-6 hidden">
-  <h2 class="text-2xl font-bold text-slate-700 mb-4">
-    2. เลือกส่วนประกอบ
-  </h2>
+    <section id="menu-selection" class="mb-6 hidden">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-700 mb-4">
+        2. เลือกส่วนประกอบ
+      </h2>
 
-  <div class="mb-6">
-    <h3 class="text-xl font-semibold text-slate-600 mb-3">เลือกเนื้อ (Base)</h3>
-    <div id="base-list" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    </div>
-  </div>
+      <div class="mb-6">
+        <h3 class="text-lg sm:text-xl font-semibold text-slate-600 mb-3">เลือกเนื้อ (Base)</h3>
+        <div id="base-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
+      </div>
 
-  <div>
-    <h3 class="text-xl font-semibold text-slate-600 mb-3">
-      เลือกหน้า (Topping)
-    </h3>
-    <div id="topping-list" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    </div>
-  </div>
-</section>
+      <div>
+        <h3 class="text-lg sm:text-xl font-semibold text-slate-600 mb-3">
+          เลือกหน้า (Topping)
+        </h3>
+        <div id="topping-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
+      </div>
+    </section>
 
     <!-- จำนวนและราคารวม -->
-    <section id="quantity-section" class="card mb-8 hover-lift">
-      <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+    <section id="quantity-section" class="card mb-6 sm:mb-8 hover-lift">
+      <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center">
         <span class="mr-3">📦</span> จำนวนและราคารวม
       </h2>
       
-      <div class="flex items-center justify-center space-x-6">
+      <div class="flex items-center justify-center space-x-4 sm:space-x-6">
         <button onclick="changeQuantity(-1)" 
-                class="quantity-btn bg-red-500 hover:bg-red-600 text-white">
+                class="quantity-btn bg-red-500 hover:bg-red-600 text-white active:scale-95">
           −
         </button>
 
         <div class="text-center">
-          <div class="text-5xl font-bold text-gray-900" id="quantity">1</div>
+          <div class="text-4xl sm:text-5xl font-bold text-gray-900" id="quantity">1</div>
           <div class="text-sm text-gray-500 mt-2">ชิ้น</div>
         </div>
 
         <button onclick="changeQuantity(1)" 
-                class="quantity-btn bg-green-500 hover:bg-green-600 text-white">
+                class="quantity-btn bg-green-500 hover:bg-green-600 text-white active:scale-95">
           +
         </button>
       </div>
@@ -223,15 +217,15 @@
 
     <!-- ปุ่มเพิ่มลงตะกร้า -->
     <section class="card text-center hover-lift">
-      <div class="mb-6">
-        <div class="text-3xl font-bold text-gray-900">
+      <div class="mb-4 sm:mb-6">
+        <div class="text-2xl sm:text-3xl font-bold text-gray-900">
           💰 ราคารวม: <span id="total-price">0</span> บาท
         </div>
       </div>
 
       <button id="add-to-cart" 
               onclick="addToCart()" 
-              class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-base sm:text-lg disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto active:scale-95"
               disabled>
         🛒 เพิ่มลงตะกร้า
       </button>
@@ -239,14 +233,14 @@
   </main>
 
   <!-- Order History -->
-  <section id="order-history" class="hidden px-4 py-6">
+  <section id="order-history" class="hidden px-4 py-6 max-w-6xl mx-auto">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-purple-800 flex items-center gap-2">
+      <h2 class="text-lg sm:text-xl font-semibold text-purple-800 flex items-center gap-2">
         <span class="text-2xl">📦</span> ประวัติคำสั่งซื้อของฉัน
       </h2>
       <button 
         onclick="backToMain()" 
-        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition">
+        class="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition text-sm sm:text-base">
         ⬅️ กลับหน้าหลัก
       </button>
     </div>
@@ -255,9 +249,9 @@
 
   <!-- Cart Modal -->
   <div id="cart-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeModalOnBackdrop(event, 'cart-modal')">
-    <div class="card max-w-2xl w-full max-h-[80vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
+    <div class="card max-w-2xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold">🛒 ตะกร้าสินค้า</h3>
+        <h3 class="text-xl sm:text-2xl font-bold">🛒 ตะกร้าสินค้า</h3>
         <button onclick="closeCart()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
       </div>
       <div id="cart-content" class="mb-6"></div>
@@ -278,8 +272,8 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <input type="text" id="coupon-input" placeholder="กรอกโค้ดคูปอง" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
-          <button onclick="applyCouponCode()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium">ใช้</button>
+          <input type="text" id="coupon-input" placeholder="กรอกโค้ดคูปอง" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+          <button onclick="applyCouponCode()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-sm">ใช้</button>
         </div>
         <div id="coupon-message" class="text-sm mt-2 hidden"></div>
       </div>
@@ -294,21 +288,21 @@
             <span>ส่วนลด:</span>
             <span id="discount-amount">-0 บาท</span>
           </div>
-          <div class="flex justify-between items-center text-xl font-bold border-t pt-2">
+          <div class="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
             <span>รวมทั้งหมด:</span>
             <span id="cart-total" class="text-blue-600">0 บาท</span>
           </div>
         </div>
-        <button onclick="checkout()" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg">✅ ยืนยันการสั่ง</button>
+        <button onclick="checkout()" class="btn-primary w-full py-3 rounded-xl font-semibold text-base sm:text-lg">✅ ยืนยันการสั่ง</button>
       </div>
     </div>
   </div>
 
   <!-- Coupons Modal -->
   <div id="coupons-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeModalOnBackdrop(event, 'coupons-modal')">
-    <div class="card max-w-4xl w-full max-h-[80vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
+    <div class="card max-w-4xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold">🎫 คูปองของฉัน</h3>
+        <h3 class="text-xl sm:text-2xl font-bold">🎫 คูปองของฉัน</h3>
         <button onclick="closeCoupons()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
       </div>
       <div id="coupons-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -319,55 +313,55 @@
   <div id="admin-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeModalOnBackdrop(event, 'admin-modal')">
     <div class="card max-w-6xl w-full max-h-[90vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold">👨‍💼 Admin Dashboard</h3>
+        <h3 class="text-xl sm:text-2xl font-bold">👨‍💼 Admin Dashboard</h3>
         <button onclick="closeAdmin()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
       </div>
 
       <!-- Admin Tabs -->
-      <div class="flex space-x-4 mb-6 border-b">
-        <button onclick="showAdminTab('orders')" class="admin-tab px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600" data-tab="orders">
+      <div class="flex space-x-2 sm:space-x-4 mb-6 border-b overflow-x-auto">
+        <button onclick="showAdminTab('orders')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600 text-sm whitespace-nowrap" data-tab="orders">
           📦 จัดการออเดอร์
         </button>
-        <button onclick="showAdminTab('coupons')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="coupons">
+        <button onclick="showAdminTab('coupons')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-sm whitespace-nowrap" data-tab="coupons">
           🎫 จัดการคูปอง
         </button>
-        <button onclick="showAdminTab('stats')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="stats">
+        <button onclick="showAdminTab('stats')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-sm whitespace-nowrap" data-tab="stats">
           📊 สถิติ
         </button>
-        <button id="admin-tab-desserts" class="admin-tab-btn py-2 px-4 font-semibold" onclick="showAdminTab('desserts')">
-          📒 จัดการเมนูขนม
+        <button id="admin-tab-desserts" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-sm whitespace-nowrap" onclick="showAdminTab('desserts')" data-tab="desserts">
+          🔒 จัดการเมนูขนม
         </button>
-        <button onclick="showAdminTab('brownie')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="brownie">
+        <button onclick="showAdminTab('brownie')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-sm whitespace-nowrap" data-tab="brownie">
           📂 จัดการส่วนประกอบ
         </button>
-        <button onclick="showAdminTab('summary')" class="admin-tab px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900" data-tab="summary">
+        <button onclick="showAdminTab('summary')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-sm whitespace-nowrap" data-tab="summary">
           📅 สรุปออเดอร์รายวัน
         </button>
       </div>
 
       <section id="admin-desserts-tab" class="admin-tab-content hidden">
         <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">รายการเมนูขนม (Desserts)</h3>
-    <button class="btn-primary" onclick="openDessertModal('new')">+ เพิ่มเมนูใหม่</button>
+          <h3 class="text-lg sm:text-xl font-bold">รายการเมนูขนม (Desserts)</h3>
+          <button class="btn-primary px-3 py-2 text-sm sm:text-base" onclick="openDessertModal('new')">+ เพิ่มเมนูใหม่</button>
         </div>
         <div id="admin-dessert-list" class="space-y-2"></div>
       </section>
+
       <!-- Brownie Tab -->
       <section id="admin-brownie-tab" class="admin-tab-content hidden">
-  <h3 class="text-xl font-bold mb-4">รายการส่วนประกอบ (ของเมนูที่เลือก)</h3>
+        <h3 class="text-lg sm:text-xl font-bold mb-4">รายการส่วนประกอบ (ของเมนูที่เลือก)</h3>
 
-  <div class="flex gap-4 mb-4">
-    <button class="btn-primary" onclick="openBrownieModal('base', null)">
-      + เพิ่มเนื้อ (Base)
-    </button>
-    <button class="btn-primary" onclick="openBrownieModal('topping', null)">
-      + เพิ่มหน้า (Topping)
-    </button>
-  </div>
+        <div class="flex gap-2 sm:gap-4 mb-4 flex-wrap">
+          <button class="btn-primary px-3 py-2 text-sm sm:text-base" onclick="openBrownieModal('base', null)">
+            + เพิ่มเนื้อ (Base)
+          </button>
+          <button class="btn-primary px-3 py-2 text-sm sm:text-base" onclick="openBrownieModal('topping', null)">
+            + เพิ่มหน้า (Topping)
+          </button>
+        </div>
 
-  <!-- ✅ เพิ่มส่วนนี้ -->
-  <div id="admin-brownie-list" class="space-y-2"></div>
-</section>
+        <div id="admin-brownie-list" class="space-y-2"></div>
+      </section>
 
       <!-- Orders Tab -->
       <div id="admin-orders-tab" class="admin-tab-content">
@@ -377,7 +371,7 @@
       <!-- Coupons Tab -->
       <div id="admin-coupons-tab" class="admin-tab-content hidden">
         <div class="mb-6">
-          <button onclick="showCreateCouponForm()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium">
+          <button onclick="showCreateCouponForm()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-sm sm:text-base">
             ➕ สร้างคูปองใหม่
           </button>
         </div>
@@ -387,11 +381,11 @@
       <!-- Summary Tab -->
       <div id="admin-summary-tab" class="admin-tab-content hidden space-y-4">
         <div class="flex flex-wrap gap-3 items-center">
-          <input type="date" id="summary-date" class="border rounded-lg px-3 py-2 shadow-sm">
-          <button onclick="loadDailySummary()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+          <input type="date" id="summary-date" class="border rounded-lg px-3 py-2 shadow-sm text-sm">
+          <button onclick="loadDailySummary()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm">
             ดูสรุป
           </button>
-          <button onclick="updateAllOrdersOfDay()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+          <button onclick="updateAllOrdersOfDay()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition text-sm">
             อัปเดตสถานะทั้งหมดของวัน
           </button>
         </div>
@@ -411,42 +405,42 @@
   <div id="create-coupon-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeModalOnBackdrop(event, 'create-coupon-modal')">
     <div class="card max-w-md w-full hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold">➕ สร้างคูปองใหม่</h3>
+        <h3 class="text-xl sm:text-2xl font-bold">➕ สร้างคูปองใหม่</h3>
         <button onclick="closeCreateCoupon()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
       </div>
       <form onsubmit="createCoupon(event)" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">รหัสคูปอง</label>
-          <input type="text" id="coupon-code" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="เช่น WELCOME10" />
+          <input type="text" id="coupon-code" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="เช่น WELCOME10" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อคูปอง</label>
-          <input type="text" id="coupon-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="เช่น ลด 10%" />
+          <input type="text" id="coupon-title" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="เช่น ลด 10%" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย</label>
-          <input type="text" id="coupon-description" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="เช่น ลด 10% สำหรับสมาชิกใหม่" />
+          <input type="text" id="coupon-description" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="เช่น ลด 10% สำหรับสมาชิกใหม่" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทส่วนลด</label>
-          <select id="coupon-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <select id="coupon-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
             <option value="percent">เปอร์เซ็นต์ (%)</option>
             <option value="fixed">จำนวนเงิน (บาท)</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">มูลค่าส่วนลด</label>
-          <input type="number" id="coupon-value" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="เช่น 10" />
+          <input type="number" id="coupon-value" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="เช่น 10" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">ยอดขั้นต่ำ (บาท)</label>
-          <input type="number" id="coupon-min" value="0" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          <input type="number" id="coupon-min" value="0" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">จำนวนการใช้งาน</label>
-          <input type="number" id="coupon-usage" value="1" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          <input type="number" id="coupon-usage" value="1" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
         </div>
-        <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-semibold">
+        <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-semibold text-sm sm:text-base">
           สร้างคูปอง
         </button>
       </form>
@@ -455,18 +449,18 @@
 
   <div id="dessert-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="glass rounded-xl p-6 w-full max-w-md shadow-2xl border-t border-white/30">
-      <h3 id="dessert-modal-title" class="text-2xl font-bold mb-4">ฟอร์มเมนูขนม</h3>
+      <h3 id="dessert-modal-title" class="text-xl sm:text-2xl font-bold mb-4">ฟอร์มเมนูขนม</h3>
       <form id="dessert-form">
         <input type="hidden" id="dessert-id" />
-        <div class="mb-3"><label>ชื่อเมนู:</label><input id="dessert-name" class="w-full p-2 border rounded" required /></div>
-        <div class="mb-3"><label>Emoji (🍫):</label><input id="dessert-emoji" class="w-full p-2 border rounded" /></div>
-        <div class="mb-3"><label>คำอธิบาย:</label><textarea id="dessert-desc" class="w-full p-2 border rounded"></textarea></div>
+        <div class="mb-3"><label class="block text-sm font-medium mb-1">ชื่อเมนู:</label><input id="dessert-name" class="w-full p-2 border rounded text-sm" required /></div>
+        <div class="mb-3"><label class="block text-sm font-medium mb-1">Emoji (🫐):</label><input id="dessert-emoji" class="w-full p-2 border rounded text-sm" /></div>
+        <div class="mb-3"><label class="block text-sm font-medium mb-1">คำอธิบาย:</label><textarea id="dessert-desc" class="w-full p-2 border rounded text-sm"></textarea></div>
         <div class="flex items-center gap-2 mb-3">
-          <input type="checkbox" id="dessert-active" checked /><label>เปิดการขาย</label>
+          <input type="checkbox" id="dessert-active" checked /><label class="text-sm">เปิดการขาย</label>
         </div>
         <div class="flex justify-end gap-3">
-          <button type="button" class="btn-secondary" onclick="closeDessertModal()">ยกเลิก</button>
-          <button type="submit" class="btn-primary">บันทึก</button>
+          <button type="button" class="btn-secondary px-4 py-2 text-sm" onclick="closeDessertModal()">ยกเลิก</button>
+          <button type="submit" class="btn-primary px-4 py-2 text-sm">บันทึก</button>
         </div>
       </form>
     </div>
@@ -474,52 +468,49 @@
 
   <!-- Brownie Modal -->
   <div id="brownie-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-      <h3 id="brownie-modal-title" class="text-xl font-semibold mb-4">� เพิ่มเมนูบราวนี่</h3>
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
+      <h3 id="brownie-modal-title" class="text-lg sm:text-xl font-semibold mb-4">🍰 เพิ่มเมนูบราวนี่</h3>
       <form id="brownie-form" class="space-y-3">
         <input type="hidden" id="brownie-id">
         <input type="hidden" id="brownie-type">
         <div>
           <label class="block text-sm font-medium mb-1">ชื่อเมนู (ใส่อิโมจิได้)</label>
-          <input id="brownie-name" class="w-full border rounded px-3 py-2" placeholder="เช่น 🍫 บราวนี่โกโก้" required>
+          <input id="brownie-name" class="w-full border rounded px-3 py-2 text-sm" placeholder="เช่น 🫐 บราวนี่โกโก้" required>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">คำอธิบาย</label>
-          <textarea id="brownie-desc" class="w-full border rounded px-3 py-2" placeholder="คำอธิบายเมนู เช่น รสเข้มข้น หอมโกโก้"></textarea>
+          <textarea id="brownie-desc" class="w-full border rounded px-3 py-2 text-sm" placeholder="คำอธิบายเมนู เช่น รสเข้มข้น หอมโกโก้"></textarea>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium mb-1">ราคา (บาท)</label>
-            <input id="brownie-price" type="number" step="0.01" class="w-full border rounded px-3 py-2" required>
+            <input id="brownie-price" type="number" step="0.01" class="w-full border rounded px-3 py-2 text-sm" required>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">แต้มที่จะได้</label>
-            <input id="brownie-points" type="number" class="w-full border rounded px-3 py-2" required>
+            <input id="brownie-points" type="number" class="w-full border rounded px-3 py-2 text-sm" required>
           </div>
         </div>
         <label class="flex items-center gap-2 mt-2">
-          <input id="brownie-active" type="checkbox" class="w-4 h-4"> เปิดขายเมนูนี้
+          <input id="brownie-active" type="checkbox" class="w-4 h-4"> <span class="text-sm">เปิดขายเมนูนี้</span>
         </label>
         <div class="flex justify-end gap-2 pt-3 border-t mt-4">
-          <button type="button" onclick="closeBrownieModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">ยกเลิก</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">บันทึก</button>
+          <button type="button" onclick="closeBrownieModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-sm">ยกเลิก</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">บันทึก</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Success Message -->
-  <div id="success-message" class="fixed top-20 right-4 card shadow-lg hidden z-50">
+  <div id="success-message" class="fixed top-20 right-4 card shadow-lg hidden z-50 max-w-sm">
     <div class="flex items-center space-x-3">
       <div class="text-2xl">🎉</div>
-      <div id="success-text" class="font-medium text-gray-900"></div>
+      <div id="success-text" class="font-medium text-gray-900 text-sm"></div>
     </div>
   </div>
 
   <script>
-    // ===============================================================
-    // 1. CONFIGURATION
-    // ===============================================================
     const LIFF_ID = "2008357926-Ly07A5w2";
     const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
@@ -538,17 +529,13 @@
     let allDesserts = [];
     let selectedDessert = null;
     let currentAdminDessertId = null;
+    let allItems = [];
     
-    // ===============================================================
-    // 2. INITIALIZATION
-    // ===============================================================
     async function init() {
       try {
-        // Initialize Supabase
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log("✅ Supabase initialized");
 
-        // Initialize LIFF
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
           liff.login();
@@ -561,7 +548,6 @@
         await loadCoupons();
         await loadDesserts();
 
-        // Check admin
         if (ADMIN_IDS.includes(userProfile.userId)) {
           document.getElementById("admin-btn").classList.remove("hidden");
         }
@@ -575,9 +561,6 @@
       }
     }
 
-    // ===============================================================
-    // 3. USER MANAGEMENT
-    // ===============================================================
     async function saveUserToSupabase(profile) {
       try {
         const { data: existingUser, error: findError } = await supabase
@@ -622,7 +605,6 @@
         currentUser = data;
         userPoints = data.points || 0;
 
-        document.getElementById("userName").textContent = data.display_name;
         document.getElementById("userPic").src = data.picture_url;
         document.getElementById("userPoints").textContent = userPoints;
 
@@ -640,21 +622,16 @@
       }
     }
 
-    // ===============================================================
-    // 4. MENU MANAGEMENT
-    // ===============================================================
-    // (แก้ไข) รับ dessertId และกรองข้อมูล
     async function loadMenus(dessertId) { 
-      // (เพิ่ม) แสดง loading
-      document.getElementById("base-list").innerHTML = "<p>กำลังโหลด...</p>";
-      document.getElementById("topping-list").innerHTML = "<p>กำลังโหลด...</p>";
+      document.getElementById("base-list").innerHTML = "<p class='text-gray-500 text-sm'>กำลังโหลด...</p>";
+      document.getElementById("topping-list").innerHTML = "<p class='text-gray-500 text-sm'>กำลังโหลด...</p>";
 
       try {
         const { data, error } = await supabase
           .from("brownie_items")
           .select("*")
           .eq("is_active", true)
-          .eq("dessert_id", dessertId) // (สำคัญ) กรองด้วย dessertId
+          .eq("dessert_id", dessertId)
           .order("type")
           .order("price");
 
@@ -667,7 +644,6 @@
         renderMenu("base", baseList);
         renderMenu("topping", toppingList);
 
-        // (เพิ่ม) รีเซ็ตการเลือก base/topping และอัปเดตราคา
         selectedBase = null;
         selectedTopping = null;
         updateTotal();
@@ -679,29 +655,22 @@
     }
 
     function renderMenu(type, items) {
-  const container = document.getElementById(`${type}-list`);
-  if (!container) return;
+      const container = document.getElementById(`${type}-list`);
+      if (!container) return;
 
-  container.innerHTML = items.map(item => `
-    <div class="card hover-lift ${type === 'base' ? 'brownie-base' : 'topping-item'}"
-         onclick="select${type.charAt(0).toUpperCase() + type.slice(1)}(${item.id}, '${item.name}', ${item.price}, this)">
-      <div class="font-semibold">${item.name}</div>
-      <div class="text-sm text-gray-500">${item.description || ''}</div>
-      <div class="text-blue-600 font-bold mt-1">${item.price} บาท</div>
-    </div>
-  `).join("");
-}
+      if (items.length === 0) {
+        container.innerHTML = `<p class='col-span-full text-center text-gray-500 py-4 text-sm'>ยังไม่มี${type === 'base' ? 'เนื้อ' : 'หน้า'}ให้เลือก</p>`;
+        return;
+      }
 
-
-    function extractEmoji(text) {
-      const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-      const match = text.match(emojiRegex);
-      return match ? match[0] : '🍫';
-    }
-
-    function removeEmoji(text) {
-      const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-      return text.replace(emojiRegex, '').trim();
+      container.innerHTML = items.map(item => `
+        <div class="card hover-lift cursor-pointer ${type === 'base' ? 'brownie-base' : 'topping-item'} active:scale-95"
+             onclick="select${type.charAt(0).toUpperCase() + type.slice(1)}(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price}, this)">
+          <div class="font-semibold text-sm sm:text-base">${item.name}</div>
+          <div class="text-xs sm:text-sm text-gray-500 mt-1">${item.description || ''}</div>
+          <div class="text-blue-600 font-bold mt-2 text-sm sm:text-base">${item.price} บาท</div>
+        </div>
+      `).join("");
     }
 
     function selectBase(id, name, price, el) {
@@ -718,9 +687,6 @@
       updateTotal();
     }
 
-    // ===============================================================
-    // 5. CART MANAGEMENT
-    // ===============================================================
     function changeQuantity(v) {
       quantity = Math.max(1, quantity + v);
       document.getElementById("quantity").textContent = quantity;
@@ -736,69 +702,40 @@
     }
 
     function addToCart() {
-  // ตรวจสอบว่าเลือกเมนูหลักแล้วหรือยัง
-  if (!selectedDessert) {
-    showMessage("❌ กรุณาเลือกเมนูขนมหลักก่อน");
-    return;
-  }
+      if (!selectedDessert) {
+        showMessage("❌ กรุณาเลือกเมนูขนมหลักก่อน");
+        return;
+      }
 
-  // ตรวจสอบเนื้อและหน้า
-  if (!selectedBase || !selectedTopping) {
-    showMessage("กรุณาเลือกเนื้อและหน้าขนม");
-    return;
-  }
+      if (!selectedBase || !selectedTopping) {
+        showMessage("กรุณาเลือกเนื้อและหน้าขนม");
+        return;
+      }
 
-  const total = (selectedBase.price + selectedTopping.price) * quantity;
+      const total = (selectedBase.price + selectedTopping.price) * quantity;
 
-  cart.push({
-    // ✅ เพิ่มข้อมูลเมนูหลัก
-    dessertId: selectedDessert.id,
-    dessertName: selectedDessert.name,
+      cart.push({
+        dessertId: selectedDessert.id,
+        dessertName: selectedDessert.name,
+        baseName: selectedBase.name,
+        toppingName: selectedTopping.name,
+        quantity,
+        unitPrice: selectedBase.price + selectedTopping.price,
+        totalPrice: total
+      });
 
-    // ✅ ของเดิม
-    baseName: selectedBase.name,
-    toppingName: selectedTopping.name,
-    quantity,
-    unitPrice: selectedBase.price + selectedTopping.price,
-    totalPrice: total
-  });
+      updateCartBadge();
+      showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
 
-  updateCartBadge();
-  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
+      quantity = 1;
+      document.getElementById("quantity").textContent = "1";
+      updateTotal();
 
-  // รีเซ็ตจำนวน
-  quantity = 1;
-  document.getElementById("quantity").textContent = "1";
-  updateTotal();
-
-  // รีเซ็ตการเลือก
-  document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
-  document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
-  selectedBase = null;
-  selectedTopping = null;
-
-  // ✅ รีเซ็ตกลับไปขั้นตอนเลือกเมนูหลัก
-  resetSelection();
-}
-
-    function resetSelection() {
-  selectedDessert = null;
-  selectedBase = null;
-  selectedTopping = null;
-
-  document.getElementById("quantity").value = 1;
-  updateTotal();
-
-  document.getElementById("base-list").innerHTML = "";
-  document.getElementById("topping-list").innerHTML = "";
-  document.getElementById("menu-selection").classList.add("hidden");
-
-  document.querySelectorAll("#dessert-list .menu-card").forEach(card => {
-    card.classList.remove('ring-4', 'ring-blue-500');
-  });
-
-  document.getElementById("dessert-selection").scrollIntoView({ behavior: 'smooth' });
-}
+      document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
+      document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
+      selectedBase = null;
+      selectedTopping = null;
+    }
 
     function updateCartBadge() {
       const badge = document.getElementById("cart-badge");
@@ -820,45 +757,39 @@
         content.innerHTML = `
           <div class="text-center py-12">
             <div class="text-6xl mb-4">🛒</div>
-            <p class="text-gray-600 text-lg">ตะกร้าว่างเปล่า</p>
+            <p class="text-gray-600 text-base">ตะกร้าว่างเปล่า</p>
           </div>
         `;
       } else {
         let html = '<div class="space-y-3">';
         cart.forEach((item, index) => {
-  html += `
-    <div class="card border border-gray-200 p-4">
-      <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <!-- ✅ แสดงชื่อเมนูขนมหลัก -->
-          <div class="font-bold text-blue-600">${item.dessertName || 'เมนูขนม'}</div>
+          html += `
+            <div class="card border border-gray-200 p-3 sm:p-4">
+              <div class="flex justify-between items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-blue-600 text-sm sm:text-base truncate">${item.dessertName || 'เมนูขนม'}</div>
+                  <div class="text-xs sm:text-sm text-gray-800 font-medium mt-1">${item.baseName} + ${item.toppingName}</div>
+                  <div class="text-xs sm:text-sm text-gray-500 mt-1">จำนวน: ${item.quantity} ชิ้น</div>
+                </div>
 
-          <!-- แสดงชื่อเนื้อและหน้า -->
-          <div class="text-sm text-gray-800 font-medium">${item.baseName} + ${item.toppingName}</div>
+                <div class="text-right flex-shrink-0">
+                  <div class="font-bold text-blue-600 text-sm sm:text-base">${item.totalPrice} บาท</div>
 
-          <!-- จำนวนสินค้า -->
-          <div class="text-sm text-gray-500 mt-1">จำนวน: ${item.quantity} ชิ้น</div>
-        </div>
+                  <div class="flex items-center gap-1 sm:gap-2 mt-2 justify-end">
+                    <button onclick="updateCartQuantity(${index}, -1)" 
+                            class="quantity-btn bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm w-7 h-7 sm:w-8 sm:h-8">−</button>
+                    <span class="text-xs sm:text-sm font-medium w-6 text-center">${item.quantity}</span>
+                    <button onclick="updateCartQuantity(${index}, 1)" 
+                            class="quantity-btn bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm w-7 h-7 sm:w-8 sm:h-8">+</button>
+                  </div>
 
-        <div class="text-right">
-          <div class="font-bold text-blue-600">${item.totalPrice} บาท</div>
-
-          <div class="flex items-center gap-2 mt-2">
-            <button onclick="updateCartQuantity(${index}, -1)" 
-                    class="quantity-btn bg-red-500 hover:bg-red-600 text-white text-sm w-6 h-6">−</button>
-            <span class="text-sm font-medium">${item.quantity}</span>
-            <button onclick="updateCartQuantity(${index}, 1)" 
-                    class="quantity-btn bg-green-500 hover:bg-green-600 text-white text-sm w-6 h-6">+</button>
-          </div>
-
-          <button onclick="removeFromCart(${index})" 
-                  class="text-red-500 text-sm mt-2 hover:underline">ลบ</button>
-        </div>
-      </div>
-    </div>
-  `;
-});
-
+                  <button onclick="removeFromCart(${index})" 
+                          class="text-red-500 text-xs sm:text-sm mt-2 hover:underline">ลบ</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
         html += '</div>';
         content.innerHTML = html;
       }
@@ -912,9 +843,6 @@
       showMessage("ลบสินค้าออกจากตะกร้าแล้ว");
     }
 
-    // ===============================================================
-    // 6. COUPON SYSTEM
-    // ===============================================================
     async function loadCoupons() {
       try {
         const { data, error } = await supabase
@@ -941,7 +869,7 @@
         content.innerHTML = `
           <div class="col-span-2 text-center py-12">
             <div class="text-6xl mb-4">🎫</div>
-            <p class="text-gray-600 text-lg">ยังไม่มีคูปองที่ใช้ได้</p>
+            <p class="text-gray-600 text-base">ยังไม่มีคูปองที่ใช้ได้</p>
           </div>
         `;
       } else {
@@ -956,8 +884,8 @@
                   ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
                 </div>
               </div>
-              <div class="font-bold text-lg text-purple-900 mb-1">${coupon.name}</div>
-              <div class="text-sm text-gray-600 mb-2">${coupon.description}</div>
+              <div class="font-bold text-base sm:text-lg text-purple-900 mb-1">${coupon.name}</div>
+              <div class="text-xs sm:text-sm text-gray-600 mb-2">${coupon.description}</div>
               <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
               <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
               <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
@@ -1043,81 +971,72 @@
       setTimeout(() => messageEl.classList.add("hidden"), 3000);
     }
 
-    // ===============================================================
-    // 7. CHECKOUT
-    // ===============================================================
-   async function checkout() {
-  if (cart.length === 0) {
-    showMessage("ตะกร้าว่างเปล่า");
-    return;
-  }
+    async function checkout() {
+      if (cart.length === 0) {
+        showMessage("ตะกร้าว่างเปล่า");
+        return;
+      }
 
-  try {
-    const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-    let discount = 0;
+      try {
+        const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+        let discount = 0;
 
-    if (selectedCoupon) {
-      if (selectedCoupon.type === "percent") {
-        discount = Math.floor(subtotal * selectedCoupon.value / 100);
-      } else {
-        discount = Math.min(selectedCoupon.value, subtotal);
+        if (selectedCoupon) {
+          if (selectedCoupon.type === "percent") {
+            discount = Math.floor(subtotal * selectedCoupon.value / 100);
+          } else {
+            discount = Math.min(selectedCoupon.value, subtotal);
+          }
+        }
+
+        const total = Math.max(0, subtotal - discount);
+        const earnedPoints = total;
+
+        const { data: orderData, error: orderError } = await supabase
+          .from("orders")
+          .insert([{
+            user_id: currentUser.id,
+            line_id: currentUser.line_id,
+            items: cart,
+            subtotal: subtotal,
+            discount: discount,
+            total_price: total,
+            earned_points: earnedPoints,
+            coupon_code: selectedCoupon ? selectedCoupon.code : null,
+            status: "pending",
+          }])
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        await supabase.functions.invoke("send-line-notification", {
+          body: {
+            lineId: currentUser.line_id,
+            orderId: orderData.id,
+            status: "pending",
+            orderData: {
+              items: cart,
+              total_price: total,
+              subtotal: subtotal,
+              discount: discount,
+            },
+          },
+        });
+
+        cart = [];
+        selectedCoupon = null;
+        updateCartBadge();
+        closeCart();
+        await loadCoupons();
+
+        showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
+      } catch (error) {
+        console.error("❌ Checkout error:", error);
+        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
       }
     }
 
-    const total = Math.max(0, subtotal - discount);
-    const earnedPoints = total;
-
-    // ✅ บันทึกออเดอร์ลงฐานข้อมูล
-    const { data: orderData, error: orderError } = await supabase
-      .from("orders")
-      .insert([{
-        user_id: currentUser.id,
-        line_id: currentUser.line_id,
-        items: cart,
-        subtotal: subtotal,
-        discount: discount,
-        total_price: total,
-        earned_points: earnedPoints,
-        coupon_code: selectedCoupon ? selectedCoupon.code : null,
-        status: "pending",
-      }])
-      .select()
-      .single();
-
-    if (orderError) throw orderError;
-
-    // ✅ แจ้งเตือนไลน์ทันทีหลังสั่งซื้อสำเร็จ
-    await supabase.functions.invoke("send-line-notification", {
-      body: {
-        lineId: currentUser.line_id,
-        orderId: orderData.id,
-        status: "pending",
-        orderData: {
-        items: cart,
-        total_price: total,
-        subtotal: subtotal,
-        discount: discount,
-        },
-      },
-    });
-
-    // ✅ ล้างตะกร้าและอัปเดต UI
-    cart = [];
-    selectedCoupon = null;
-    updateCartBadge();
-    closeCart();
-    await loadCoupons();
-
-    showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
-  } catch (error) {
-    console.error("❌ Checkout error:", error);
-    showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
-  }
-}
-
-    // ===============================================================
-    // 8. ORDER HISTORY
-    // ===============================================================
     function openOrderHistory() {
       if (!userProfile || !userProfile.userId) {
         showMessage("กรุณาเข้าสู่ระบบก่อนดูประวัติคำสั่งซื้อ");
@@ -1136,7 +1055,7 @@
 
     async function loadOrderHistory() {
       const orderList = document.getElementById("order-list");
-      orderList.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ กำลังโหลด...</p>';
+      orderList.innerHTML = '<p class="text-gray-500 text-center py-8 text-sm">⏳ กำลังโหลด...</p>';
 
       try {
         const { data: orders, error } = await supabase
@@ -1151,7 +1070,7 @@
           orderList.innerHTML = `
             <div class="text-center py-12">
               <div class="text-6xl mb-2">🔭</div>
-              <p class="text-gray-600">ยังไม่มีคำสั่งซื้อ</p>
+              <p class="text-gray-600 text-sm">ยังไม่มีคำสั่งซื้อ</p>
             </div>`;
           return;
         }
@@ -1167,28 +1086,28 @@
 
           const items = Array.isArray(itemsArray)
             ? itemsArray.map(i => `
-              <li>🍫 <span class="font-medium text-purple-700">${i.baseName}</span> 
+              <li class="text-xs sm:text-sm">🫐 <span class="font-medium text-purple-700">${i.baseName}</span> 
               <span class="text-gray-600">+ ${i.toppingName}</span> (${i.quantity || 1})</li>
             `).join("")
-            : "<li>ไม่พบข้อมูลสินค้า</li>";
+            : "<li class='text-xs sm:text-sm'>ไม่พบข้อมูลสินค้า</li>";
 
           const canCancel = order.status === "pending";
           const statusBadge = getStatusBadge(order.status);
 
           html += `
-            <div class="p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
-              <div class="flex justify-between items-start">
+            <div class="p-3 sm:p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
+              <div class="flex justify-between items-start flex-wrap gap-2">
                 <div>
-                  <p class="font-semibold text-purple-900">Order #${order.id}</p>
-                  <p class="text-sm text-gray-500">${new Date(order.created_at).toLocaleString("th-TH")}</p>
+                  <p class="font-semibold text-purple-900 text-sm sm:text-base">Order #${order.id}</p>
+                  <p class="text-xs sm:text-sm text-gray-500">${new Date(order.created_at).toLocaleString("th-TH")}</p>
                 </div>
-                <span class="text-sm font-medium ${statusBadge.class} px-3 py-1 rounded-full">${statusBadge.label}</span>
+                <span class="text-xs font-medium ${statusBadge.class} px-3 py-1 rounded-full">${statusBadge.label}</span>
               </div>
-              <ul class="mt-3 text-sm text-gray-700 list-disc list-inside">${items}</ul>
-              <div class="flex justify-between items-center mt-4">
-                <p class="font-medium text-purple-700">ยอดรวม: ${order.total_price} บาท</p>
+              <ul class="mt-3 text-gray-700 list-disc list-inside space-y-1">${items}</ul>
+              <div class="flex justify-between items-center mt-4 flex-wrap gap-2">
+                <p class="font-medium text-purple-700 text-sm sm:text-base">ยอดรวม: ${order.total_price} บาท</p>
                 ${canCancel ? `<button onclick="cancelOrder(${order.id})"
-                  class="text-red-600 hover:text-red-800 font-medium text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
+                  class="text-red-600 hover:text-red-800 font-medium text-xs sm:text-sm px-3 py-1 border border-red-300 rounded-xl hover:bg-red-50 transition">
                   ยกเลิกคำสั่งซื้อ
                 </button>` : ""}
               </div>
@@ -1198,7 +1117,7 @@
         orderList.innerHTML = html;
       } catch (error) {
         console.error("❌ Error loading orders:", error);
-        orderList.innerHTML = `<p class="text-center text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+        orderList.innerHTML = `<p class="text-center text-red-600 text-sm">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
       }
     }
 
@@ -1238,9 +1157,6 @@
       }
     }
 
-    // ===============================================================
-    // 9. ADMIN DASHBOARD
-    // ===============================================================
     function showAdmin() {
       document.getElementById("admin-modal").classList.remove("hidden");
       showAdminTab('orders');
@@ -1271,7 +1187,8 @@
       if (tab === 'orders') loadAdminOrders();
       if (tab === 'coupons') loadAdminCoupons();
       if (tab === 'stats') loadAdminStats();
-      if (tab === 'brownie') loadBrownieMenus();
+      if (tab === 'desserts') loadAdminDesserts();
+      if (tab === 'brownie') loadBrownieMenus(currentAdminDessertId);
       if (tab === 'summary') loadDailySummary();
     }
 
@@ -1298,92 +1215,92 @@
     }
 
     async function loadAdminDesserts() {
-  try {
-    const { data, error } = await supabase
-      .from("desserts")
-      .select("*")
-      .order("id");
-    if (error) throw error;
-    renderAdminDesserts(data);
-  } catch (err) {
-    console.error("Error loading admin desserts:", err);
-    showMessage("❌ ไม่สามารถโหลดรายการเมนูขนมได้");
-  }
-}
+      try {
+        const { data, error } = await supabase
+          .from("desserts")
+          .select("*")
+          .order("id");
+        if (error) throw error;
+        renderAdminDesserts(data);
+      } catch (err) {
+        console.error("Error loading admin desserts:", err);
+        showMessage("❌ ไม่สามารถโหลดรายการเมนูขนมได้");
+      }
+    }
 
     function renderAdminDesserts(desserts) {
-  const container = document.getElementById("admin-dessert-list");
-  container.innerHTML = "";
-  if (desserts.length === 0) {
-    container.innerHTML = "<p>ยังไม่มีเมนูขนม</p>";
-    return;
-  }
+      const container = document.getElementById("admin-dessert-list");
+      container.innerHTML = "";
+      if (desserts.length === 0) {
+        container.innerHTML = "<p class='text-gray-500 text-sm'>ยังไม่มีเมนูขนม</p>";
+        return;
+      }
 
-  desserts.forEach((dessert) => {
-    const item = document.createElement("div");
-    item.className = "p-3 bg-white/60 rounded-lg flex justify-between items-center";
-    item.innerHTML = `
-      <div>
-        <span class="text-2xl">${dessert.emoji || "❓"}</span>
-        <span class="font-bold text-lg ml-2">${dessert.name}</span>
-        <span class="text-sm text-gray-600">${dessert.is_active ? " (เปิดขาย)" : " (ปิดขาย)"}</span>
-      </div>
-      <div class="flex gap-2">
-        <button class="btn-secondary text-sm" onclick="manageDessertItems(${dessert.id})">จัดการส่วนประกอบ</button>
-        <button class="btn-secondary text-sm" onclick='openDessertModal("edit", ${JSON.stringify(dessert)})'>แก้ไข</button>
-        <button class="btn-danger text-sm" onclick="deleteDessert(${dessert.id})">ลบ</button>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-}
+      desserts.forEach((dessert) => {
+        const item = document.createElement("div");
+        item.className = "p-3 bg-white/60 rounded-lg flex justify-between items-center gap-3 flex-wrap";
+        item.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">${dessert.emoji || "❓"}</span>
+            <div>
+              <span class="font-bold text-base">${dessert.name}</span>
+              <span class="text-xs text-gray-600 ml-2">${dessert.is_active ? "(เปิดขาย)" : "(ปิดขาย)"}</span>
+            </div>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button class="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2" onclick="manageDessertItems(${dessert.id}, '${dessert.name.replace(/'/g, "\\'")}')">จัดการส่วนประกอบ</button>
+            <button class="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2" onclick='openDessertModal("edit", ${JSON.stringify(dessert).replace(/'/g, "&#39;")})'>แก้ไข</button>
+            <button class="bg-red-500 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded hover:bg-red-600" onclick="deleteDessert(${dessert.id})">ลบ</button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
 
     function openDessertModal(type, dessert = null) {
-  const form = document.getElementById("dessert-form");
-  form.reset();
+      const form = document.getElementById("dessert-form");
+      form.reset();
 
-  if (type === 'edit') {
-    document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนูขนม";
-    document.getElementById("dessert-id").value = dessert.id;
-    document.getElementById("dessert-name").value = dessert.name;
-    document.getElementById("dessert-emoji").value = dessert.emoji;
-    document.getElementById("dessert-desc").value = dessert.description;
-    document.getElementById("dessert-active").checked = dessert.is_active;
-  } else {
-    document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนูขนมใหม่";
-    document.getElementById("dessert-id").value = "";
-  }
-  document.getElementById("dessert-modal").classList.remove("hidden");
-}
+      if (type === 'edit') {
+        document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนูขนม";
+        document.getElementById("dessert-id").value = dessert.id;
+        document.getElementById("dessert-name").value = dessert.name;
+        document.getElementById("dessert-emoji").value = dessert.emoji;
+        document.getElementById("dessert-desc").value = dessert.description;
+        document.getElementById("dessert-active").checked = dessert.is_active;
+      } else {
+        document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนูขนมใหม่";
+        document.getElementById("dessert-id").value = "";
+      }
+      document.getElementById("dessert-modal").classList.remove("hidden");
+    }
 
-function closeDessertModal() {
-  document.getElementById("dessert-modal").classList.add("hidden");
-}
+    function closeDessertModal() {
+      document.getElementById("dessert-modal").classList.add("hidden");
+    }
 
     function manageDessertItems(dessertId, dessertName) {
-      currentAdminDessertId = dessertId; // (สำคัญ) เก็บ ID ที่จะจัดการ
-      // (เพิ่ม) อัปเดตหัวข้อของแท็บ 'brownie'
+      currentAdminDessertId = dessertId;
       document.querySelector("#admin-brownie-tab h3").innerText = `รายการส่วนประกอบ (ของ: ${dessertName})`;
-      loadBrownieMenus(dessertId); // โหลด "เนื้อ/หน้า" ของ ID นี้
-      showAdminTab('brownie'); // สลับไปแท็บ "ส่วนประกอบ"
+      loadBrownieMenus(dessertId);
+      showAdminTab('brownie');
     }
 
     async function deleteDessert(id) {
-  if (!confirm("คุณแน่ใจหรือไม่ที่จะลบเมนูนี้?\n(คุณต้องลบ 'ส่วนประกอบ' ทั้งหมดของเมนูนี้ก่อน)")) {
-    return;
-  }
-  try {
-    const { error } = await supabase.from("desserts").delete().eq("id", id);
-    if (error) throw error;
-    showMessage("✅ ลบเมนูสำเร็จ");
-    loadAdminDesserts();
-  } catch (err) {
-    console.error(err);
-    showMessage("❌ ลบไม่สำเร็จ! (อาจมีส่วนประกอบค้างอยู่)");
-  }
-}
+      if (!confirm("คุณแน่ใจหรือไม่ที่จะลบเมนูนี้?\n(คุณต้องลบ 'ส่วนประกอบ' ทั้งหมดของเมนูนี้ก่อน)")) {
+        return;
+      }
+      try {
+        const { error } = await supabase.from("desserts").delete().eq("id", id);
+        if (error) throw error;
+        showMessage("✅ ลบเมนูสำเร็จ");
+        loadAdminDesserts();
+      } catch (err) {
+        console.error(err);
+        showMessage("❌ ลบไม่สำเร็จ! (อาจมีส่วนประกอบค้างอยู่)");
+      }
+    }
 
-    
     async function loadAdminOrders() {
       try {
         const { data: orders, error } = await supabase
@@ -1400,7 +1317,7 @@ function closeDessertModal() {
         const content = document.getElementById("admin-orders-content");
         
         if (orders.length === 0) {
-          content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีออเดอร์</p>';
+          content.innerHTML = '<p class="text-center text-gray-500 py-12 text-sm">ยังไม่มีออเดอร์</p>';
           return;
         }
 
@@ -1416,31 +1333,31 @@ function closeDessertModal() {
           }
           
           html += `
-            <div class="card border border-gray-200 p-4">
-              <div class="flex items-start justify-between mb-3">
+            <div class="card border border-gray-200 p-3 sm:p-4">
+              <div class="flex items-start justify-between mb-3 gap-3 flex-wrap">
                 <div class="flex items-center space-x-3">
                   <img src="${order.users?.picture_url || ''}" class="w-10 h-10 rounded-full" />
                   <div>
-                    <div class="font-semibold">${order.users?.display_name || 'ไม่ระบุ'}</div>
-                    <div class="text-sm text-gray-500">ออเดอร์ #${order.id}</div>
+                    <div class="font-semibold text-sm sm:text-base">${order.users?.display_name || 'ไม่ระบุ'}</div>
+                    <div class="text-xs sm:text-sm text-gray-500">ออเดอร์ #${order.id}</div>
                   </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">${getStatusText(order.status)}</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">${getStatusText(order.status)}</span>
               </div>
               
               <div class="space-y-1 mb-3">
                 ${Array.isArray(itemsArray) ? itemsArray.map(item => `
-                  <div class="text-sm text-gray-600">• ${item.baseName} + ${item.toppingName} × ${item.quantity}</div>
-                `).join('') : '<div class="text-sm text-gray-500">ไม่พบข้อมูลสินค้า</div>'}
+                  <div class="text-xs sm:text-sm text-gray-600">• ${item.baseName} + ${item.toppingName} × ${item.quantity}</div>
+                `).join('') : '<div class="text-xs sm:text-sm text-gray-500">ไม่พบข้อมูลสินค้า</div>'}
               </div>
               
-              <div class="flex items-center justify-between pt-3 border-t">
+              <div class="flex items-center justify-between pt-3 border-t gap-3 flex-wrap">
                 <div>
-                  <div class="text-sm text-gray-500">ราคารวม: <span class="font-bold text-gray-900">${order.total_price} บาท</span></div>
+                  <div class="text-xs sm:text-sm text-gray-500">ราคารวม: <span class="font-bold text-gray-900">${order.total_price} บาท</span></div>
                   <div class="text-xs text-gray-400">${new Date(order.created_at).toLocaleString('th-TH')}</div>
                 </div>
                 <div class="flex gap-2">
-                  <select onchange="updateOrderStatus(${order.id}, this.value)" class="text-sm border border-gray-300 rounded px-2 py-1">
+                  <select onchange="updateOrderStatus(${order.id}, this.value)" class="text-xs sm:text-sm border border-gray-300 rounded px-2 py-1">
                     <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>รอดำเนินการ</option>
                     <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>กำลังเตรียม</option>
                     <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>พร้อมรับ</option>
@@ -1461,52 +1378,47 @@ function closeDessertModal() {
     }
 
     async function updateOrderStatus(orderId, newStatus) {
-  try {
-    // ดึงข้อมูลออเดอร์เดิม
-    const { data: orderData, error: fetchError } = await supabase
-      .from('orders')
-      .select('status, user_id, earned_points, line_id, items, total_price, subtotal, discount, id')
-      .eq('id', orderId)
-      .single();
+      try {
+        const { data: orderData, error: fetchError } = await supabase
+          .from('orders')
+          .select('status, user_id, earned_points, line_id, items, total_price, subtotal, discount, id')
+          .eq('id', orderId)
+          .single();
 
-    if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
 
-    // อัปเดตสถานะ
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId);
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({ status: newStatus })
+          .eq('id', orderId);
 
-    if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-    // ✅ แจ้งเตือน LINE
-    await sendOrderStatusNotification(orderData, newStatus);
+        await sendOrderStatusNotification(orderData, newStatus);
 
-    // ✅ ให้แต้มถ้าสถานะเป็น completed
-    if (newStatus === 'completed' && orderData.status !== 'completed') {
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('points')
-        .eq('id', orderData.user_id)
-        .single();
+        if (newStatus === 'completed' && orderData.status !== 'completed') {
+          const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('points')
+            .eq('id', orderData.user_id)
+            .single();
 
-      if (userError) throw userError;
+          if (userError) throw userError;
 
-      const newPoints = (user.points || 0) + (orderData.earned_points || 0);
-      await supabase.from('users').update({ points: newPoints }).eq('id', orderData.user_id);
+          const newPoints = (user.points || 0) + (orderData.earned_points || 0);
+          await supabase.from('users').update({ points: newPoints }).eq('id', orderData.user_id);
 
-      showMessage(`✅ อัปเดตสถานะและให้แต้ม ${orderData.earned_points} แต้มเรียบร้อย`);
-    } else {
-      showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${getStatusText(newStatus)}`);
+          showMessage(`✅ อัปเดตสถานะและให้แต้ม ${orderData.earned_points} แต้มเรียบร้อย`);
+        } else {
+          showMessage(`✅ อัปเดตสถานะออเดอร์ #${orderId} เป็น ${getStatusText(newStatus)}`);
+        }
+
+        loadAdminOrders();
+      } catch (error) {
+        console.error("❌ Error updating order status:", error);
+        showMessage(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+      }
     }
-
-    loadAdminOrders();
-  } catch (error) {
-    console.error("❌ Error updating order status:", error);
-    showMessage(`❌ เกิดข้อผิดพลาด: ${error.message}`);
-  }
-}
-
 
     async function sendOrderStatusNotification(order, newStatus) {
       try {
@@ -1516,10 +1428,10 @@ function closeDessertModal() {
             orderId: order.id,
             status: newStatus,
             orderData: {
-            items: order.items,
-            total_price: order.total_price,
-            subtotal: order.subtotal,
-            discount: order.discount
+              items: order.items,
+              total_price: order.total_price,
+              subtotal: order.subtotal,
+              discount: order.discount
             }
           }
         });
@@ -1547,41 +1459,41 @@ function closeDessertModal() {
         const content = document.getElementById("admin-coupons-content");
         
         if (coupons.length === 0) {
-          content.innerHTML = '<p class="text-center text-gray-500 py-12">ยังไม่มีคูปอง</p>';
+          content.innerHTML = '<p class="text-center text-gray-500 py-12 text-sm">ยังไม่มีคูปอง</p>';
           return;
         }
 
         let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
         coupons.forEach(coupon => {
           html += `
-            <div class="card border-2 border-purple-200 p-4">
-              <div class="flex items-start justify-between mb-3">
+            <div class="card border-2 border-purple-200 p-3 sm:p-4">
+              <div class="flex items-start justify-between mb-3 gap-3 flex-wrap">
                 <div>
-                  <div class="font-bold text-lg text-purple-900">${coupon.name}</div>
-                  <div class="text-sm text-gray-600">${coupon.description}</div>
+                  <div class="font-bold text-base sm:text-lg text-purple-900">${coupon.name}</div>
+                  <div class="text-xs sm:text-sm text-gray-600">${coupon.description}</div>
                 </div>
                 <div class="space-y-1 text-right">
-                  <label class="flex items-center justify-end">
+                  <label class="flex items-center justify-end text-xs sm:text-sm">
                     <input type="checkbox" ${coupon.is_active ? 'checked' : ''} 
                            onchange="toggleCoupon(${coupon.id}, this.checked)" class="mr-2" />
-                    <span class="text-sm">เปิดใช้</span>
+                    <span>เปิดใช้</span>
                   </label>
-                  <label class="flex items-center justify-end">
+                  <label class="flex items-center justify-end text-xs sm:text-sm">
                     <input type="checkbox" ${coupon.show_in_list ? 'checked' : ''} 
                            onchange="toggleCouponVisibility(${coupon.id}, this.checked)" class="mr-2" />
-                    <span class="text-sm">แสดงในคูปองของฉัน</span>
+                    <span>แสดงในคูปองของฉัน</span>
                   </label>
                 </div>
               </div>
               
-              <div class="space-y-1 text-sm text-gray-600">
+              <div class="space-y-1 text-xs sm:text-sm text-gray-600">
                 <div>รหัส: <span class="font-mono font-bold">${coupon.code}</span></div>
                 <div>ส่วนลด: ${coupon.type === 'percent' ? coupon.value + '%' : coupon.value + ' บาท'}</div>
                 <div>ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
                 <div>ใช้ไป: ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง</div>
               </div>
               
-              <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-sm font-medium">
+              <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">
                 🗑️ ลบคูปอง
               </button>
             </div>
@@ -1726,53 +1638,47 @@ function closeDessertModal() {
 
         const content = document.getElementById("admin-stats-content");
         content.innerHTML = `
-          <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6">
+          <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 sm:p-6">
             <div class="text-3xl mb-2">📊</div>
-            <div class="text-sm opacity-90 mb-1">ยอดขายรวม</div>
-            <div class="text-3xl font-bold">${totalRevenue.toLocaleString()} บาท</div>
+            <div class="text-xs sm:text-sm opacity-90 mb-1">ยอดขายรวม</div>
+            <div class="text-2xl sm:text-3xl font-bold">${totalRevenue.toLocaleString()} บาท</div>
           </div>
 
-          <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white p-6">
+          <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white p-4 sm:p-6">
             <div class="text-3xl mb-2">📦</div>
-            <div class="text-sm opacity-90 mb-1">ออเดอร์ทั้งหมด</div>
-            <div class="text-3xl font-bold">${totalOrders}</div>
+            <div class="text-xs sm:text-sm opacity-90 mb-1">ออเดอร์ทั้งหมด</div>
+            <div class="text-2xl sm:text-3xl font-bold">${totalOrders}</div>
             <div class="text-xs opacity-75 mt-2">สำเร็จ: ${completedOrders} | รอดำเนินการ: ${pendingOrders}</div>
           </div>
 
-          <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6">
+          <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 sm:p-6">
             <div class="text-3xl mb-2">👥</div>
-            <div class="text-sm opacity-90 mb-1">ผู้ใช้ทั้งหมด</div>
-            <div class="text-3xl font-bold">${usersCount}</div>
+            <div class="text-xs sm:text-sm opacity-90 mb-1">ผู้ใช้ทั้งหมด</div>
+            <div class="text-2xl sm:text-3xl font-bold">${usersCount}</div>
           </div>
 
-          <div class="card bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6">
-            <div class="text-3xl mb-2">💰</div>
-            <div class="text-sm opacity-90 mb-1">ยอดเฉลี่ยต่อออเดอร์</div>
-            <div class="text-3xl font-bold">${totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0} บาท</div>
-          </div>
-
-          <div class="card col-span-full p-6">
-            <h4 class="font-semibold text-lg mb-4">📈 สถานะออเดอร์</h4>
-            <div class="grid grid-cols-5 gap-4">
+          <div class="card col-span-full p-4 sm:p-6">
+            <h4 class="font-semibold text-base sm:text-lg mb-4">📈 สถานะออเดอร์</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div class="text-center">
-                <div class="text-2xl font-bold text-yellow-600">${orders.filter(o => o.status === 'pending').length}</div>
-                <div class="text-sm text-gray-600">รอดำเนินการ</div>
+                <div class="text-xl sm:text-2xl font-bold text-yellow-600">${orders.filter(o => o.status === 'pending').length}</div>
+                <div class="text-xs sm:text-sm text-gray-600">รอดำเนินการ</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">${orders.filter(o => o.status === 'preparing').length}</div>
-                <div class="text-sm text-gray-600">กำลังเตรียม</div>
+                <div class="text-xl sm:text-2xl font-bold text-blue-600">${orders.filter(o => o.status === 'preparing').length}</div>
+                <div class="text-xs sm:text-sm text-gray-600">กำลังเตรียม</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">${orders.filter(o => o.status === 'ready').length}</div>
-                <div class="text-sm text-gray-600">พร้อมรับ</div>
+                <div class="text-xl sm:text-2xl font-bold text-green-600">${orders.filter(o => o.status === 'ready').length}</div>
+                <div class="text-xs sm:text-sm text-gray-600">พร้อมรับ</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-indigo-600">${orders.filter(o => o.status === 'completed').length}</div>
-                <div class="text-sm text-gray-600">สำเร็จ</div>
+                <div class="text-xl sm:text-2xl font-bold text-indigo-600">${orders.filter(o => o.status === 'completed').length}</div>
+                <div class="text-xs sm:text-sm text-gray-600">สำเร็จ</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-red-600">${orders.filter(o => o.status === 'cancelled').length}</div>
-                <div class="text-sm text-gray-600">ยกเลิก</div>
+                <div class="text-xl sm:text-2xl font-bold text-red-600">${orders.filter(o => o.status === 'cancelled').length}</div>
+                <div class="text-xs sm:text-sm text-gray-600">ยกเลิก</div>
               </div>
             </div>
           </div>
@@ -1788,7 +1694,7 @@ function closeDessertModal() {
       const content = document.getElementById("summary-content");
 
       if (!selectedDate) {
-        content.innerHTML = `<p class="text-gray-500 text-center">⚠️ กรุณาเลือกวันที่ก่อน</p>`;
+        content.innerHTML = `<p class="text-gray-500 text-center text-sm">⚠️ กรุณาเลือกวันที่ก่อน</p>`;
         return;
       }
 
@@ -1806,7 +1712,7 @@ function closeDessertModal() {
         if (error) throw error;
 
         if (orders.length === 0) {
-          content.innerHTML = `<p class="text-gray-500 text-center">ไม่มีออเดอร์ในวันที่ ${selectedDate}</p>`;
+          content.innerHTML = `<p class="text-gray-500 text-center text-sm">ไม่มีออเดอร์ในวันที่ ${selectedDate}</p>`;
           return;
         }
 
@@ -1829,32 +1735,32 @@ function closeDessertModal() {
         });
 
         let html = `
-          <h3 class="text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate}</h3>
+          <h3 class="text-base sm:text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate}</h3>
           <div class="mb-4">
-            <p>ออเดอร์ทั้งหมด: <b>${totalOrders}</b> รายการ</p>
-            <p>ยอดขายรวม: <b>${totalRevenue}</b> บาท</p>
+            <p class="text-sm sm:text-base">ออเดอร์ทั้งหมด: <b>${totalOrders}</b> รายการ</p>
+            <p class="text-sm sm:text-base">ยอดขายรวม: <b>${totalRevenue}</b> บาท</p>
           </div>
 
           <div class="border-t pt-4">
-            <h4 class="font-semibold text-purple-700 mb-2">� รายการรวม (เนื้อ + หน้า)</h4>
+            <h4 class="font-semibold text-purple-700 mb-2 text-sm sm:text-base">🍰 รายการรวม (เนื้อ + หน้า)</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               ${Object.entries(comboCounts)
-                .map(([combo, qty]) => `<p>• ${combo} — <b>${qty}</b> ชิ้น</p>`)
+                .map(([combo, qty]) => `<p class="text-xs sm:text-sm">• ${combo} — <b>${qty}</b> ชิ้น</p>`)
                 .join('')}
             </div>
           </div>
 
           <div class="mt-6 flex flex-col items-center gap-3">
-            <select id="update-status-select" class="border rounded px-3 py-2 text-sm">
+            <select id="update-status-select" class="border rounded px-3 py-2 text-xs sm:text-sm w-full max-w-xs">
               <option value="">-- เลือกสถานะที่จะอัปเดตทั้งหมด --</option>
               <option value="pending">🕐 รอดำเนินการ</option>
-              <option value="preparing">� กำลังเตรียม</option>
+              <option value="preparing">🍳 กำลังเตรียม</option>
               <option value="ready">📦 พร้อมรับ</option>
               <option value="completed">✅ สำเร็จ</option>
               <option value="cancelled">❌ ยกเลิก</option>
             </select>
             <button onclick="updateAllOrdersOfDay()" 
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm shadow">
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs sm:text-sm shadow">
               🔄 อัปเดตสถานะทั้งหมดของวัน
             </button>
           </div>
@@ -1863,62 +1769,64 @@ function closeDessertModal() {
         content.innerHTML = html;
       } catch (err) {
         console.error(err);
-        content.innerHTML = `<p class="text-red-500 text-center">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+        content.innerHTML = `<p class="text-red-500 text-center text-sm">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
       }
     }
-// โหลดเมนูขนมหลัก
-async function loadDesserts() {
-  try {
-    const { data, error } = await supabase
-      .from("desserts")
-      .select("*")
-      .eq("is_active", true)
-      .order("id");
 
-    if (error) throw error;
-    allDesserts = data;
-    renderDesserts();
-  } catch (err) {
-    console.error("Error loading desserts:", err);
-    showMessage("❌ ไม่สามารถโหลดรายการขนมได้");
-  }
-}
+    async function loadDesserts() {
+      try {
+        const { data, error } = await supabase
+          .from("desserts")
+          .select("*")
+          .eq("is_active", true)
+          .order("id");
 
-// แสดงเมนูขนมหลัก
-function renderDesserts() {
-  const container = document.getElementById("dessert-list");
-  container.innerHTML = "";
-  allDesserts.forEach((dessert) => {
-    const card = document.createElement("div");
-    card.className =
-      "menu-card glass p-4 rounded-xl shadow-md cursor-pointer hover:shadow-lg hover:scale-105 active:scale-95";
-    card.innerHTML = `
-      <div class="text-4xl mb-2">${dessert.emoji || "❓"}</div>
-      <h4 class="font-semibold text-slate-800">${dessert.name}</h4>
-      <p class="text-sm text-slate-500">${dessert.description || ""}</p>
-    `;
-    card.onclick = () => selectDessert(dessert);
-    container.appendChild(card);
-  });
-}
-function selectDessert(dessert) {
-  selectedDessert = dessert;
+        if (error) throw error;
+        allDesserts = data;
+        renderDesserts();
+      } catch (err) {
+        console.error("Error loading desserts:", err);
+        showMessage("❌ ไม่สามารถโหลดรายการขนมได้");
+      }
+    }
 
-  // ยกเลิกไฮไลท์ทั้งหมด
-  document.querySelectorAll("#dessert-list .menu-card").forEach(card => {
-    card.classList.remove('ring-4', 'ring-blue-500');
-  });
+    function renderDesserts() {
+      const container = document.getElementById("dessert-list");
+      container.innerHTML = "";
+      
+      if (allDesserts.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8 text-sm">ยังไม่มีเมนูขนมให้เลือก</p>';
+        return;
+      }
+      
+      allDesserts.forEach((dessert) => {
+        const card = document.createElement("div");
+        card.className = "menu-card glass p-4 rounded-xl shadow-md cursor-pointer hover:shadow-lg hover:scale-105 active:scale-95 transition";
+        card.innerHTML = `
+          <div class="text-3xl sm:text-4xl mb-2">${dessert.emoji || "❓"}</div>
+          <h4 class="font-semibold text-slate-800 text-sm sm:text-base">${dessert.name}</h4>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">${dessert.description || ""}</p>
+        `;
+        card.onclick = () => selectDessert(dessert);
+        container.appendChild(card);
+      });
+    }
 
-  // (ถ้าอยากไฮไลท์ที่เลือก)
-  const cards = [...document.querySelectorAll("#dessert-list .menu-card")];
-  const index = allDesserts.findIndex(d => d.id === dessert.id);
-  if (index >= 0) cards[index].classList.add('ring-4', 'ring-blue-500');
+    function selectDessert(dessert) {
+      selectedDessert = dessert;
 
-  document.getElementById("menu-selection").classList.remove("hidden");
-  loadMenus(dessert.id); // โหลดเนื้อและหน้าของเมนูนี้
-}
+      document.querySelectorAll("#dessert-list .menu-card").forEach(card => {
+        card.classList.remove('ring-4', 'ring-blue-500');
+      });
 
+      const cards = [...document.querySelectorAll("#dessert-list .menu-card")];
+      const index = allDesserts.findIndex(d => d.id === dessert.id);
+      if (index >= 0) cards[index].classList.add('ring-4', 'ring-blue-500');
 
+      document.getElementById("menu-selection").classList.remove("hidden");
+      document.getElementById("menu-selection").scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loadMenus(dessert.id);
+    }
 
     async function updateAllOrdersOfDay() {
       const selectedDate = document.getElementById("summary-date").value;
@@ -1982,9 +1890,10 @@ function selectDessert(dessert) {
     }
 
     async function loadBrownieMenus(dessertId) {
+      const container = document.getElementById("admin-brownie-list");
+      
       if (!dessertId) {
-        document.getElementById("admin-brownie-list").innerHTML = 
-          "<p>เกิดข้อผิดพลาด: ไม่พบ ID ของเมนูขนม</p>";
+        container.innerHTML = "<p class='text-gray-500 text-sm'>เกิดข้อผิดพลาด: ไม่พบ ID ของเมนูขนม</p>";
         return;
       }
 
@@ -1992,47 +1901,48 @@ function selectDessert(dessert) {
         const { data, error } = await supabase
           .from("brownie_items")
           .select("*")
-          .eq("dessert_id", dessertId) // (สำคัญ) กรองข้อมูล
+          .eq("dessert_id", dessertId)
           .order("type")
           .order("price");
           
         if (error) throw error;
-        renderBrownieList(data); // ฟังก์ชัน renderBrownieList ใช้ของเดิมได้
+        container.innerHTML = renderBrownieList(data);
       } catch (err) {
         console.error("Error loading brownie menus:", err);
         showMessage("❌ ไม่สามารถโหลดรายการส่วนประกอบได้");
+        container.innerHTML = "<p class='text-red-500 text-sm'>ไม่สามารถโหลดข้อมูลได้</p>";
       }
     }
 
     function renderBrownieList(items) {
       if (!items || items.length === 0)
-        return `<p class="text-gray-500 italic">ยังไม่มีข้อมูล</p>`;
+        return `<p class="text-gray-500 italic text-sm">ยังไม่มีข้อมูล</p>`;
 
       return items.map(i => `
-        <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition">
-          <div>
-            <div class="font-semibold text-lg">${i.name}</div>
-            <div class="text-sm text-gray-600">${i.description || ''}</div>
-            <div class="text-sm mt-1">
+        <div class="flex justify-between items-start border p-3 rounded-lg mb-2 bg-white shadow-sm hover:shadow-md transition gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm sm:text-base">${i.name}</div>
+            <div class="text-xs sm:text-sm text-gray-600">${i.description || ''}</div>
+            <div class="text-xs sm:text-sm mt-1">
               💰 ${i.price} บาท | 🎯 ${i.points} แต้ม | 
               ${i.is_active ? "✅ <span class='text-green-600'>เปิดขาย</span>" : "❌ <span class='text-red-500'>ปิดขาย</span>"}
             </div>
           </div>
-          <div class="flex gap-2 mt-1">
-            <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="openBrownieModal('${i.type}', ${i.id})">✏️ แก้ไข</button>
-            <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="deleteBrownieItem(${i.id})">🗑️ ลบ</button>
+          <div class="flex gap-2 flex-shrink-0">
+            <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs sm:text-sm" onclick="openBrownieModal('${i.type}', ${i.id})">✏️ แก้ไข</button>
+            <button class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs sm:text-sm" onclick="deleteBrownieItem(${i.id})">🗑️ ลบ</button>
           </div>
         </div>
       `).join("");
     }
 
     function openBrownieModal(type, id) {
-
       if (!currentAdminDessertId) {
         showMessage("❌ กรุณากลับไปแท็บ 'จัดการเมนูขนม' และเลือก 'จัดการส่วนประกอบ' ของเมนูที่ต้องการก่อน");
         showAdminTab('desserts');
         return;
       }
+      
       const modal = document.getElementById("brownie-modal");
       const title = document.getElementById("brownie-modal-title");
 
@@ -2078,13 +1988,13 @@ function selectDessert(dessert) {
       }
 
       showMessage("🗑️ ลบเมนูสำเร็จ");
-      loadBrownieMenus();
-      loadMenus();
+      loadBrownieMenus(currentAdminDessertId);
+      
+      if (selectedDessert && selectedDessert.id === currentAdminDessertId) {
+        loadMenus(currentAdminDessertId);
+      }
     }
 
-    // ===============================================================
-    // 10. UTILITY FUNCTIONS
-    // ===============================================================
     function showMessage(message) {
       const successMessage = document.getElementById("success-message");
       const successText = document.getElementById("success-text");
@@ -2102,14 +2012,9 @@ function selectDessert(dessert) {
       }
     }
 
-    // ===============================================================
-    // 11. FORM HANDLERS
-    // ===============================================================
-    // (แก้ไข) นี่คือเวอร์ชันที่ถูกต้องสำหรับ "brownie-form"
     document.getElementById("brownie-form").onsubmit = async (e) => {
       e.preventDefault();
 
-      // (เพิ่ม) ตรวจสอบว่ากำลังจัดการเมนูไหนอยู่
       if (!currentAdminDessertId) {
         showMessage("❌ เกิดข้อผิดพลาด ไม่ทราบว่ากำลังแก้ไขเมนูใด");
         return;
@@ -2123,7 +2028,6 @@ function selectDessert(dessert) {
       const points = parseInt(document.getElementById("brownie-points").value);
       const isActive = document.getElementById("brownie-active").checked;
 
-      // (แก้ไข) เพิ่ม dessert_id เข้าไปใน object ที่จะบันทึก
       const data = { 
         type, 
         name, 
@@ -2131,26 +2035,23 @@ function selectDessert(dessert) {
         price, 
         points, 
         is_active: isActive,
-        dessert_id: currentAdminDessertId // (สำคัญ)
+        dessert_id: currentAdminDessertId
       };
 
       try {
         if (id) {
-          // อัปเดต
           const { error } = await supabase.from("brownie_items").update(data).eq("id", id);
           if (error) throw error;
           showMessage("✅ อัปเดตส่วนประกอบสำเร็จ");
         } else {
-          // เพิ่มใหม่
           const { error } = await supabase.from("brownie_items").insert([data]);
           if (error) throw error;
           showMessage("🎉 เพิ่มส่วนประกอบใหม่สำเร็จ");
         }
 
         closeBrownieModal();
-        // (แก้ไข) โหลดซ้ำโดยใช้ ID เดิมที่เก็บไว้
-        loadBrownieMenus(currentAdminDessertId); 
-        // (เพิ่ม) รีเฟรชฝั่งลูกค้าเผื่อมีการเปลี่ยนแปลง
+        loadBrownieMenus(currentAdminDessertId);
+        
         if (selectedDessert && selectedDessert.id === currentAdminDessertId) {
           loadMenus(currentAdminDessertId);
         }
@@ -2159,8 +2060,7 @@ function selectDessert(dessert) {
         showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     };
-    
-    // (ถูกต้องแล้ว) โค้ด "dessert-form" ที่คุณเพิ่มมานี้ ถูกต้องแล้วครับ
+
     document.getElementById("dessert-form").onsubmit = async (e) => {
       e.preventDefault();
 
@@ -2184,17 +2084,14 @@ function selectDessert(dessert) {
         }
 
         closeDessertModal();
-        loadAdminDesserts(); // รีเฟรชแท็บ 'จัดการเมนูขนม'
-        loadDesserts();      // รีเฟรชฝั่งลูกค้า
+        loadAdminDesserts();
+        loadDesserts();
       } catch (err) {
         console.error(err);
         showMessage("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     };
 
-    // ===============================================================
-    // 12. INITIALIZE APP
-    // ===============================================================
     window.addEventListener("load", init);
   </script>
 </body>
