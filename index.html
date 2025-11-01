@@ -517,7 +517,7 @@
         await saveUserToSupabase(userProfile);
         await loadUserData(userProfile.userId);
         await loadCoupons();
-        await loadMenus();
+        await loadDesserts();
 
         // Check admin
         if (ADMIN_IDS.includes(userProfile.userId)) {
