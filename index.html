@@ -204,7 +204,7 @@
   <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
     <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
 
-      <!-- 🪙 แต้มสะสม (แสดงทุกหน้าจอ แต่ย่อขนาดบนมือถือ) -->
+      <!-- 🪙 แต้มสะสม -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         <div class="text-xl sm:text-2xl float">🪙</div>
         <div class="leading-tight">
@@ -215,44 +215,40 @@
         </div>
       </div>
 
-      <!-- 👤 รูปโปรไฟล์ + ปุ่มเมนูทั้งหมด -->
+      <!-- 👤 ปุ่มไอคอนทั้งหมด -->
       <div class="flex items-center flex-wrap justify-end gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
 
         <!-- รูปโปรไฟล์ -->
         <img id="userPic" src="" alt="Profile"
              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-300 object-cover order-1 sm:order-none" />
 
-        <!-- ปุ่มตะกร้า -->
+        <!-- ปุ่มไอคอนล้วน -->
         <button onclick="showCart()"
-                class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-xl text-sm hover-lift relative flex-1 sm:flex-none text-center">
-          🛒 ตะกร้า
+                class="bg-orange-500 hover:bg-orange-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift relative">
+          🛒
           <span id="cart-badge"
-                class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
         </button>
 
-        <!-- ปุ่มคูปอง -->
         <button onclick="showCoupons()"
-                class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-xl text-sm hover-lift flex-1 sm:flex-none text-center">
-          🎫 คูปอง
+                class="bg-purple-500 hover:bg-purple-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift">
+          🎫
         </button>
 
-        <!-- ปุ่มประวัติ -->
         <button onclick="openOrderHistory()"
-                class="btn-secondary px-3 py-2 rounded-xl text-sm hover-lift flex-1 sm:flex-none text-center">
-          📋 ประวัติ
+                class="btn-secondary w-9 h-9 rounded-full flex items-center justify-center hover-lift">
+          📋
         </button>
 
-        <!-- ปุ่มแอดมิน -->
         <button id="admin-btn" onclick="showAdmin()"
-                class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-sm hover-lift hidden flex-1 sm:flex-none text-center">
-          👨‍💼 เมนูแอดมิน
+                class="bg-indigo-500 hover:bg-indigo-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift hidden">
+          👨‍💼
         </button>
+
       </div>
     </div>
   </div>
 </header>
-
-
 
 
   <!-- Main App -->
