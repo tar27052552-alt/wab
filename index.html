@@ -204,7 +204,7 @@
   <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
     <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
 
-      <!-- 🪙 แต้มสะสม -->
+      <!-- 🪙 แต้ม + ชื่อผู้ใช้ (ชื่อซ่อนในมือถือ) -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         <div class="text-xl sm:text-2xl float">🪙</div>
         <div class="leading-tight">
@@ -213,38 +213,46 @@
             <span id="userPoints" class="text-orange-600 font-semibold">0</span> แต้ม
           </div>
         </div>
+        <!-- 👤 ชื่อผู้ใช้ (แสดงเฉพาะจอใหญ่) -->
+        <span id="userName" class="hidden sm:inline-block font-medium text-gray-800 ml-2"></span>
       </div>
 
-      <!-- 👤 ปุ่มไอคอนทั้งหมด -->
+      <!-- 👤 รูปโปรไฟล์ + เมนู -->
       <div class="flex items-center flex-wrap justify-end gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
 
         <!-- รูปโปรไฟล์ -->
         <img id="userPic" src="" alt="Profile"
              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-300 object-cover order-1 sm:order-none" />
 
-        <!-- ปุ่มไอคอนล้วน -->
+        <!-- 🛒 ตะกร้า -->
         <button onclick="showCart()"
-                class="bg-orange-500 hover:bg-orange-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift relative">
-          🛒
+                class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 sm:px-4 sm:py-2 text-sm">
+          <span>🛒</span>
+          <span class="hidden sm:inline">ตะกร้า</span>
           <span id="cart-badge"
                 class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
         </button>
 
+        <!-- 🎫 คูปอง -->
         <button onclick="showCoupons()"
-                class="bg-purple-500 hover:bg-purple-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift">
-          🎫
+                class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 sm:px-4 sm:py-2 text-sm">
+          <span>🎫</span>
+          <span class="hidden sm:inline">คูปอง</span>
         </button>
 
+        <!-- 📋 ประวัติ -->
         <button onclick="openOrderHistory()"
-                class="btn-secondary w-9 h-9 rounded-full flex items-center justify-center hover-lift">
-          📋
+                class="btn-secondary rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 sm:px-4 sm:py-2 text-sm">
+          <span>📋</span>
+          <span class="hidden sm:inline">ประวัติ</span>
         </button>
 
+        <!-- 👨‍💼 เมนูแอดมิน -->
         <button id="admin-btn" onclick="showAdmin()"
-                class="bg-indigo-500 hover:bg-indigo-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover-lift hidden">
-          👨‍💼
+                class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 sm:px-4 sm:py-2 text-sm hidden">
+          <span>👨‍💼</span>
+          <span class="hidden sm:inline">เมนูแอดมิน</span>
         </button>
-
       </div>
     </div>
   </div>
@@ -705,6 +713,7 @@
 
         document.getElementById("userPic").src = data.picture_url;
         document.getElementById("userPoints").textContent = userPoints;
+        document.getElementById("userName").textContent = data.display_name || "";
 
         console.log("✅ User data loaded:", data);
       } catch (error) {
