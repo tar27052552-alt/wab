@@ -152,21 +152,20 @@
       }
     }
     .logo-image {
-  width: 6rem;
-  height: 6rem;
-  object-fit: contain;
-  border-radius: 50%;                /* มุมโค้งกลมตามโลโก้ */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* เพิ่มเงาให้ลอยขึ้น */
-  background: transparent;           /* ❌ เอาพื้นหลังขาวออก */
-  padding: 0;                        /* ❌ เอาระยะขอบออก */
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  object-fit: cover; /* ✅ เติมภาพให้เต็มวงกลม */
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
 @media (min-width: 640px) {
   .logo-image {
-    width: 7rem;
-    height: 7rem;
+    width: 8rem;
+    height: 8rem;
   }
 }
+
 
     .shop-closed-overlay {
       position: fixed;
