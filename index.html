@@ -196,32 +196,37 @@
   @media (min-width: 640px) {
     h1 { font-size: 2rem; }
   }
+  /* ✅ Layout การ์ด (ชุดที่ถูกต้อง) */
+#dessert-list, 
+#base-list, 
+#topping-list {
+  display: grid;
+  grid-template-columns: 1fr; /* ค่าเริ่มต้น (< 640px) */
+  gap: 1rem;
+}
 
-  /* ✅ Layout การ์ดสุดท้าย (ของจริง ใช้งานได้แน่นอน) */
+/* 2 ช่อง (640px - 779px) */
+@media (min-width: 640px) {
   #dessert-list, #base-list, #topping-list {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
+}
 
-  @media (min-width: 640px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
+/* 3 ช่อง (780px - 1199px) */
+@media (min-width: 780px) {
+  #dessert-list, #base-list, #topping-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
   }
+}
 
-  @media (min-width: 780px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(3, 1fr) !important; /* ✅ 3 ช่องแน่นอน */
-      gap: 1.5rem !important;
-    }
+/* 4 ช่อง (≥ 1200px) */
+@media (min-width: 1200px) {
+  #dessert-list, #base-list, #topping-list {
+    grid-template-columns: repeat(4, 1fr);
   }
-
-  @media (min-width: 1200px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(4, 1fr) !important;
-    }
-  }
+}
 </style>
 
 
