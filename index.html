@@ -699,40 +699,45 @@
     }
 
     function addToCart() {
-      if (!selectedDessert) {
-        showMessage("❌ กรุณาเลือกเมนูขนมหลักก่อน");
-        return;
-      }
+  if (!selectedDessert) {
+    showMessage("❌ กรุณาเลือกเมนูขนมหลักก่อน");
+    return;
+  }
 
-      if (!selectedBase || !selectedTopping) {
-        showMessage("กรุณาเลือกเนื้อและหน้าขนม");
-        return;
-      }
+  if (!selectedBase || !selectedTopping) {
+    showMessage("กรุณาเลือกเนื้อและหน้าขนม");
+    return;
+  }
 
-      const total = (selectedBase.price + selectedTopping.price) * quantity;
+  const total = (selectedBase.price + selectedTopping.price) * quantity;
 
-      cart.push({
-        dessertId: selectedDessert.id,
-        dessertName: selectedDessert.name,
-        baseName: selectedBase.name,
-        toppingName: selectedTopping.name,
-        quantity,
-        unitPrice: selectedBase.price + selectedTopping.price,
-        totalPrice: total
-      });
+  cart.push({
+    dessertId: selectedDessert.id,
+    dessertName: selectedDessert.name,
+    baseName: selectedBase.name,
+    toppingName: selectedTopping.name,
+    quantity,
+    unitPrice: selectedBase.price + selectedTopping.price,
+    totalPrice: total
+  });
 
-      updateCartBadge();
-      showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
+  updateCartBadge();
+  showMessage("🧺 เพิ่มลงตะกร้าแล้ว!");
 
-      quantity = 1;
-      document.getElementById("quantity").textContent = "1";
-      updateTotal();
+  // ✅ รีเซ็ตค่าหลังเพิ่ม
+  quantity = 1;
+  document.getElementById("quantity").textContent = "1";
+  updateTotal();
+  document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
+  selectedBase = null;
+  selectedTopping = null;
 
-      document.querySelectorAll('.brownie-base').forEach(e => e.classList.remove('selected'));
-      document.querySelectorAll('.topping-item').forEach(e => e.classList.remove('selected'));
-      selectedBase = null;
-      selectedTopping = null;
-    }
+  // ✅ กลับไปเลือกเมนูใหม่
+  document.getElementById("menu-selection").classList.add("hidden");
+  document.getElementById("dessert-selection").classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
     function updateCartBadge() {
       const badge = document.getElementById("cart-badge");
