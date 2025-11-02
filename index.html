@@ -633,6 +633,12 @@
     let selectedDessert = null;
     let currentAdminDessertId = null;
     let allItems = [];
+
+    function safeShow(id, action = 'remove', cls = 'hidden') {
+    const el = document.getElementById(id);
+    if (el) el.classList[action](cls);
+}
+
     
     async function init() {
       try {
