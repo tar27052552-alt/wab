@@ -109,6 +109,86 @@
       .card { padding: 16px; }
       .quantity-btn { width: 36px; height: 36px; font-size: 16px; }
     }
+    /* 🧁 ปุ่มเมนูขนม / เนื้อ / หน้า */
+.menu-card {
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+  padding: 16px 12px;
+  text-align: center;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.menu-card:hover {
+  border-color: #6366f1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.2);
+}
+
+.menu-card.selected {
+  border: 3px solid #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+  transform: scale(1.03);
+}
+
+/* ข้อความในปุ่ม */
+.menu-card .title {
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.menu-card .price {
+  font-size: 0.85rem;
+  color: #2563eb;
+  margin-top: 2px;
+}
+
+/* ✅ Layout ของ grid ปุ่มให้พอดีทุกหน้าจอ */
+#dessert-list,
+#base-list,
+#topping-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  #dessert-list,
+  #base-list,
+  #topping-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .menu-card {
+    padding: 14px 10px;
+  }
+
+  .menu-card .title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  #dessert-list,
+  #base-list,
+  #topping-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  #dessert-list,
+  #base-list,
+  #topping-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
   </style>
 </head>
 <body class="min-h-full">
@@ -164,29 +244,34 @@
     </div>
 
     <section id="dessert-selection" class="mb-6">
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-700 mb-4">
-        1. เลือกเมนูขนม 🍰
-      </h2>
-      <div id="dessert-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4"></div>
-    </section>
+  <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-700 mb-3 sm:mb-4 text-center sm:text-left border-b-2 border-indigo-100 pb-1">
+    เลือกเมนูขนม
+  </h2>
 
-    <section id="menu-selection" class="mb-6 hidden">
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-700 mb-4">
-        2. เลือกส่วนประกอบ
-      </h2>
+  <div id="dessert-list"
+       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mt-3">
+  </div>
+</section>
 
-      <div class="mb-6">
-        <h3 class="text-lg sm:text-xl font-semibold text-slate-600 mb-3">เลือกเนื้อ (Base)</h3>
-        <div id="base-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
-      </div>
+<section id="menu-selection" class="mb-6 hidden">
+  <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-700 mb-3 sm:mb-4 text-center sm:text-left border-b-2 border-indigo-100 pb-1">
+    เลือกส่วนประกอบ
+  </h2>
 
-      <div>
-        <h3 class="text-lg sm:text-xl font-semibold text-slate-600 mb-3">
-          เลือกหน้า (Topping)
-        </h3>
-        <div id="topping-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
-      </div>
-    </section>
+  <div class="mb-6">
+    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-slate-600 mb-3 text-center sm:text-left">
+      เลือกเนื้อ (Base)
+    </h3>
+    <div id="base-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
+  </div>
+
+  <div>
+    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-slate-600 mb-3 text-center sm:text-left">
+      เลือกหน้า (Topping)
+    </h3>
+    <div id="topping-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"></div>
+  </div>
+</section>
 
     <!-- จำนวนและราคารวม -->
     <section id="quantity-section" class="card mb-6 sm:mb-8 hover-lift">
