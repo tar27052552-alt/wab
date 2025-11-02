@@ -196,37 +196,31 @@
   @media (min-width: 640px) {
     h1 { font-size: 2rem; }
   }
-  /* ✅ Layout การ์ด (ชุดที่ถูกต้อง) */
-#dessert-list, 
-#base-list, 
-#topping-list {
-  display: grid;
-  grid-template-columns: 1fr; /* ค่าเริ่มต้น (< 640px) */
-  gap: 1rem;
+  #dessert-list, #base-list, #topping-list {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1rem !important;
 }
 
-/* 2 ช่อง (640px - 779px) */
 @media (min-width: 640px) {
   #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
-/* 3 ช่อง (780px - 1199px) */
 @media (min-width: 780px) {
   #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr) !important; /* ✅ 3 ช่องแน่นอน */
+    gap: 1.5rem !important;
   }
 }
 
-/* 4 ช่อง (≥ 1200px) */
 @media (min-width: 1200px) {
   #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr) !important;
   }
 }
+
 </style>
 
 
@@ -326,7 +320,7 @@
       <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-700 mb-3 sm:mb-4 text-center sm:text-left border-b-2 border-indigo-100 pb-1">
         เลือกเมนูขนม
       </h2>
-      <div id="dessert-list" class="mt-3"></div>
+      <div id="dessert-list" class="grid"></div>
     </section>
 
     <section id="menu-selection" class="mb-4 sm:mb-6 hidden">
@@ -338,14 +332,14 @@
         <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-600 mb-3 text-center sm:text-left">
           เลือกเนื้อ (Base)
         </h3>
-        <div id="base-list"></div>
+        <div id="base-list" class="grid"></div>
       </div>
 
       <div>
         <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-slate-600 mb-3 text-center sm:text-left">
           เลือกหน้า (Topping)
         </h3>
-        <div id="topping-list"></div>
+        <div id="topping-list" class="grid"></div>
       </div>
     </section>
 
