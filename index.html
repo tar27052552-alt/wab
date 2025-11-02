@@ -209,11 +209,11 @@
     </div>
   </div>
 
- <header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
+<header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
   <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
     <div class="flex items-center justify-between gap-2 sm:gap-3 flex-nowrap overflow-x-auto">
 
-      <!-- ซ้าย: แต้มสะสม -->
+      <!-- 🎯 ด้านซ้าย: แต้มสะสม -->
       <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
         <div class="text-base sm:text-xl">🪙</div>
         <div class="leading-tight">
@@ -224,33 +224,35 @@
         </div>
       </div>
 
-      <!-- ขวา: เมนู + รูป + ชื่อ -->
+      <!-- 🍰 ด้านขวา: เมนู + รูป + ชื่อ -->
       <div class="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0 ml-auto">
-        <!-- ปุ่มตะกร้า -->
+        
+        <!-- ตะกร้า -->
         <button onclick="showCart()" 
-                class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm relative">
+          class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm relative">
           <span>🛒</span>
           <span class="hidden sm:inline">ตะกร้า</span>
-          <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+          <span id="cart-badge" 
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
         </button>
 
-        <!-- ปุ่มคูปอง -->
+        <!-- คูปอง -->
         <button onclick="showCoupons()" 
-                class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm">
+          class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm">
           <span>🎫</span>
           <span class="hidden sm:inline">คูปอง</span>
         </button>
 
-        <!-- ปุ่มประวัติ -->
+        <!-- ประวัติ -->
         <button onclick="openOrderHistory()" 
-                class="btn-secondary rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm">
+          class="btn-secondary rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm">
           <span>📋</span>
           <span class="hidden sm:inline">ประวัติ</span>
         </button>
 
-        <!-- ปุ่มแอดมิน -->
+        <!-- แอดมิน -->
         <button id="admin-btn" onclick="showAdmin()" 
-                class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm hidden">
+          class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm hidden">
           <span>👨‍💼</span>
           <span class="hidden sm:inline">แอดมิน</span>
         </button>
@@ -261,7 +263,7 @@
 
         <!-- ชื่ออยู่ข้างรูป -->
         <span id="userName" 
-              class="text-xs sm:text-sm font-medium text-gray-800 whitespace-nowrap ml-1 sm:ml-2"></span>
+              class="hidden sm:inline text-xs sm:text-sm font-medium text-gray-800 whitespace-nowrap ml-1 sm:ml-2"></span>
       </div>
     </div>
   </div>
