@@ -251,6 +251,40 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+   /* 💪 Force layout 3 การ์ดต่อแถวเมื่อจอ ≥ 780px */
+@media (min-width: 780px) {
+  body #dessert-list,
+  body #base-list,
+  body #topping-list {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* มือถือ = 1 ช่อง, แท็บเล็ต = 2 ช่อง, Desktop = 4 ช่อง */
+@media (max-width: 639px) {
+  body #dessert-list,
+  body #base-list,
+  body #topping-list {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (min-width: 640px) and (max-width: 779px) {
+  body #dessert-list,
+  body #base-list,
+  body #topping-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (min-width: 1200px) {
+  body #dessert-list,
+  body #base-list,
+  body #topping-list {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
 </style>
 
 </head>
