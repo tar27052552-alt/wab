@@ -187,69 +187,49 @@
 }
 
   </style>
-</head>
-<body class="min-h-full">
-  <!-- Loading Screen -->
-  <div id="loading-screen" class="loading-screen">
-    <div class="text-center">
-      <div class="spinner mb-4 mx-auto"></div>
-      <p class="text-white text-lg sm:text-xl font-semibold">กำลังโหลด...</p>
-    </div>
-  </div>
+<header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
+  <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 sm:gap-3">
 
-  <!-- Shop Closed Overlay -->
-  <div id="shop-closed-overlay" class="shop-closed-overlay hidden">
-    <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-md text-center shadow-2xl">
-      <div class="text-5xl sm:text-6xl mb-4">😴</div>
-      <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">ร้านปิดรับออเดอร์</h3>
-      <p class="text-sm sm:text-base text-gray-600 mb-6">ขออภัยครับ ตอนนี้ทางร้านกำลังปิดรับออเดอร์อยู่<br>กรุณาลองใหม่อีกครั้งในภายหลัง</p>
-      <button onclick="closeShopClosedOverlay()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium text-sm sm:text-base">
-        เข้าใจแล้ว
-      </button>
-    </div>
-  </div>
-
-  <header id="main-header" class="glass shadow-sm border-b border-white/20 sticky top-0 z-40 hidden">
-    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="text-base sm:text-xl float">🪙</div>
-          <div class="leading-tight">
-            <div class="text-xs text-gray-500">แต้มสะสม</div>
-            <div class="font-semibold text-gray-900 text-sm sm:text-base">
-              <span id="userPoints" class="text-orange-600 font-semibold">0</span> แต้ม
-            </div>
+      <!-- 🔹 บรรทัดบน: แต้มสะสม -->
+      <div class="flex items-center justify-center sm:justify-start space-x-2 sm:space-x-3">
+        <div class="text-base sm:text-xl">🪙</div>
+        <div class="leading-tight text-center sm:text-left">
+          <div class="text-xs text-gray-500">แต้มสะสม</div>
+          <div class="font-semibold text-gray-900 text-sm sm:text-base">
+            <span id="userPoints" class="text-orange-600 font-semibold">200</span> แต้ม
           </div>
-          <span id="userName" class="hidden sm:inline-block font-medium text-gray-800 ml-2 text-sm"></span>
-        </div>
-
-        <div class="flex items-center flex-wrap justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-          <img id="userPic" src="" alt="Profile" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-300 object-cover order-1 sm:order-none" />
-          
-          <button onclick="showCart()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 text-xs sm:text-sm relative">
-            <span>🛒</span>
-            <span class="hidden sm:inline">ตะกร้า</span>
-            <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
-          </button>
-
-          <button onclick="showCoupons()" class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 text-xs sm:text-sm">
-            <span>🎫</span>
-            <span class="hidden sm:inline">คูปอง</span>
-          </button>
-
-          <button onclick="openOrderHistory()" class="btn-secondary rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 text-xs sm:text-sm">
-            <span>📋</span>
-            <span class="hidden sm:inline">ประวัติ</span>
-          </button>
-
-          <button id="admin-btn" onclick="showAdmin()" class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-1 hover-lift px-3 py-2 text-xs sm:text-sm hidden">
-            <span>👨‍💼</span>
-            <span class="hidden sm:inline">แอดมิน</span>
-          </button>
         </div>
       </div>
+
+      <!-- 🔹 บรรทัดล่าง: ปุ่มเมนู + ชื่อ + รูป -->
+      <div class="flex items-center justify-center sm:justify-end flex-wrap gap-2 sm:gap-3">
+        <button onclick="showCart()" class="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center justify-center hover-lift px-3 py-2 text-xs sm:text-sm relative">
+          🛒
+          <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">1</span>
+        </button>
+
+        <button onclick="showCoupons()" class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center hover-lift px-3 py-2 text-xs sm:text-sm">
+          🎫
+        </button>
+
+        <button onclick="openOrderHistory()" class="btn-secondary rounded-xl flex items-center justify-center hover-lift px-3 py-2 text-xs sm:text-sm">
+          📋
+        </button>
+
+        <button id="admin-btn" onclick="showAdmin()" class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center hover-lift px-3 py-2 text-xs sm:text-sm hidden">
+          👨‍💼
+        </button>
+
+        <span id="userName" class="font-medium text-gray-800 text-sm sm:text-base truncate max-w-[100px] sm:max-w-[150px] text-right"></span>
+
+        <img id="userPic" src="" alt="Profile" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-gray-300 object-cover" />
+      </div>
+
     </div>
-  </header>
+  </div>
+</header>
+
 
   <main id="main-app" class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 hidden">
     <div class="text-center mb-6 sm:mb-8 lg:mb-12">
