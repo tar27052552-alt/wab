@@ -152,12 +152,22 @@
       }
     }
     .logo-image {
-  width: 18vw;       /* 18% ของความกว้างหน้าจอ */
-  max-width: 100px;  /* ขนาดสูงสุด */
-  min-width: 60px;   /* ขนาดต่ำสุด */
-  height: auto;
+  width: 6rem;       /* ขยายขนาดโลโก้ให้ใหญ่ขึ้น */
+  height: 6rem;
   object-fit: contain;
+  border-radius: 50%;        /* ทำให้ดูโค้งมนแบบเหรียญโลโก้ */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* เพิ่มเงาเบาๆ */
+  background: white;          /* ให้ขอบโลโก้ดูเด่นบนพื้นหลังฟ้าอ่อน */
+  padding: 0.5rem;            /* เพิ่มระยะขอบรอบๆ */
 }
+
+@media (min-width: 640px) {
+  .logo-image {
+    width: 7rem;   /* บนจอใหญ่ ขยายเพิ่มอีกนิด */
+    height: 7rem;
+  }
+}
+
     .shop-closed-overlay {
       position: fixed;
       inset: 0;
@@ -168,6 +178,15 @@
       z-index: 60;
       padding: 1rem;
     }
+    h1 {
+  font-size: 1.75rem; /* ขนาดกำลังดีบนมือถือ */
+}
+@media (min-width: 640px) {
+  h1 {
+    font-size: 2rem; /* จอใหญ่ให้ขยายเพิ่มเล็กน้อย */
+  }
+}
+
   </style>
 </head>
 <body class="min-h-full">
