@@ -159,33 +159,6 @@
     .menu-card .price { font-size: 0.875rem; }
   }
 
-  /* ✅ Layout การ์ดให้เหมือนภาพ */
-  #dessert-list, #base-list, #topping-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  @media (min-width: 640px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
-    }
-  }
-
-  @media (min-width: 780px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    #dessert-list, #base-list, #topping-list {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
   /* 🌳 โลโก้ร้าน */
   .logo-image {
     width: 7rem;
@@ -224,68 +197,33 @@
     h1 { font-size: 2rem; }
   }
 
-  /* ✅ ปรับ layout การ์ดให้เป็น 3 ช่องเมื่อจอ ≥ 780px */
-#dessert-list, #base-list, #topping-list {
-  display: grid;
-  grid-template-columns: 1fr; /* มือถือ */
-  gap: 1rem;
-}
-
-@media (min-width: 640px) {
+  /* ✅ Layout การ์ดสุดท้าย (ของจริง ใช้งานได้แน่นอน) */
   #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(2, 1fr); /* แท็บเล็ตแนวนอน */
-  }
-}
-
-/* 💡 เพิ่ม breakpoint ใหม่สำหรับจอ ≥ 780px */
-@media (min-width: 780px) {
-  #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(3, 1fr); /* ✅ 3 ช่องต่อแถว */
-    gap: 1.25rem;
-  }
-}
-
-/* 🖥️ จอใหญ่พิเศษ (desktop) */
-@media (min-width: 1200px) {
-  #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-   /* 💪 Force layout 3 การ์ดต่อแถวเมื่อจอ ≥ 780px */
-@media (min-width: 780px) {
-  body #dessert-list,
-  body #base-list,
-  body #topping-list {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1.5rem !important;
-  }
-}
-
-/* มือถือ = 1 ช่อง, แท็บเล็ต = 2 ช่อง, Desktop = 4 ช่อง */
-@media (max-width: 639px) {
-  body #dessert-list,
-  body #base-list,
-  body #topping-list {
     grid-template-columns: 1fr !important;
+    gap: 1rem !important;
   }
-}
-@media (min-width: 640px) and (max-width: 779px) {
-  body #dessert-list,
-  body #base-list,
-  body #topping-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-@media (min-width: 1200px) {
-  body #dessert-list,
-  body #base-list,
-  body #topping-list {
-    grid-template-columns: repeat(4, 1fr) !important;
-  }
-}
 
+  @media (min-width: 640px) {
+    #dessert-list, #base-list, #topping-list {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  @media (min-width: 780px) {
+    #dessert-list, #base-list, #topping-list {
+      grid-template-columns: repeat(3, 1fr) !important; /* ✅ 3 ช่องแน่นอน */
+      gap: 1.5rem !important;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    #dessert-list, #base-list, #topping-list {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  }
 </style>
+
 
 </head>
 <body class="min-h-full">
