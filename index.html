@@ -223,6 +223,34 @@
   @media (min-width: 640px) {
     h1 { font-size: 2rem; }
   }
+
+  /* ✅ ปรับ layout การ์ดให้เป็น 3 ช่องเมื่อจอ ≥ 780px */
+#dessert-list, #base-list, #topping-list {
+  display: grid;
+  grid-template-columns: 1fr; /* มือถือ */
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  #dessert-list, #base-list, #topping-list {
+    grid-template-columns: repeat(2, 1fr); /* แท็บเล็ตแนวนอน */
+  }
+}
+
+/* 💡 เพิ่ม breakpoint ใหม่สำหรับจอ ≥ 780px */
+@media (min-width: 780px) {
+  #dessert-list, #base-list, #topping-list {
+    grid-template-columns: repeat(3, 1fr); /* ✅ 3 ช่องต่อแถว */
+    gap: 1.25rem;
+  }
+}
+
+/* 🖥️ จอใหญ่พิเศษ (desktop) */
+@media (min-width: 1200px) {
+  #dessert-list, #base-list, #topping-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
 </style>
 
 </head>
