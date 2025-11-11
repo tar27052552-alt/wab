@@ -2339,15 +2339,15 @@ async function saveCoupon(e) {
   e.preventDefault();
 
   const id = document.getElementById("coupon-id").value;
-  const coupon = {
-    name: document.getElementById("coupon-name").value,
-    code: document.getElementById("coupon-code").value.toUpperCase(),
-    type: document.getElementById("coupon-type").value,
-    value: parseInt(document.getElementById("coupon-value").value),
-    min_purchase: parseInt(document.getElementById("coupon-min").value),
-    usage_limit: parseInt(document.getElementById("coupon-limit").value),
-    is_active: document.getElementById("coupon-active").checked,
-  };
+ const coupon = {
+  name: document.getElementById("coupon-name").value,
+  code: document.getElementById("coupon-code").value.toUpperCase(),
+  type: document.getElementById("coupon-type").value,
+  value: parseInt(document.getElementById("coupon-value").value),
+  min_purchase: parseInt(document.getElementById("coupon-min").value),
+  usage_limit: parseInt(document.getElementById("coupon-limit").value),
+  is_active: document.getElementById("coupon-active").checked,
+};
 
   let result;
   if (id) {
