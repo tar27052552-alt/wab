@@ -2373,6 +2373,31 @@ async function saveCoupon(e) {
   }
 }
 
+// แก้ไขคูปอง
+async function editCoupon(id) {
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("❌ editCoupon error:", error);
+      alert("โหลดข้อมูลคูปองไม่สำเร็จ");
+      return;
+    }
+
+    // เปิดโมดอลพร้อมกรอกข้อมูลคูปองเดิม
+    openCouponModal(data);
+
+  } catch (err) {
+    console.error("❌ Unexpected error editing coupon:", err);
+    alert("เกิดข้อผิดพลาดระหว่างเปิดข้อมูลคูปอง");
+  }
+}
+
+
 // ลบคูปอง
 async function deleteCoupon(id) {
   if (!confirm("ต้องการลบคูปองนี้หรือไม่?")) return;
