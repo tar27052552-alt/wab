@@ -1730,32 +1730,35 @@
       document.getElementById("admin-modal").classList.add("hidden");
     }
 
-    function showAdminTab(tab) {
-      document.querySelectorAll(".admin-tab").forEach(el => {
-        el.classList.remove("border-blue-600", "text-blue-600");
-        el.classList.add("border-transparent", "text-gray-600");
-      });
+   function showAdminTab(tab) {
+  document.querySelectorAll(".admin-tab").forEach(el => {
+    el.classList.remove("border-blue-600", "text-blue-600");
+    el.classList.add("border-transparent", "text-gray-600");
+  });
 
-      document.querySelectorAll(".admin-tab-content").forEach(el => {
-        el.classList.add("hidden");
-      });
+  document.querySelectorAll(".admin-tab-content").forEach(el => {
+    el.classList.add("hidden");
+  });
 
-      const activeTab = document.querySelector(`[data-tab="${tab}"]`);
-      if (activeTab) {
-        activeTab.classList.remove("border-transparent", "text-gray-600");
-        activeTab.classList.add("border-blue-600", "text-blue-600");
-      }
+  const activeTab = document.querySelector(`[data-tab="${tab}"]`);
+  if (activeTab) {
+    activeTab.classList.remove("border-transparent", "text-gray-600");
+    activeTab.classList.add("border-blue-600", "text-blue-600");
+  }
 
-      document.getElementById(`admin-${tab}-tab`).classList.remove("hidden");
+  document.getElementById(`admin-${tab}-tab`).classList.remove("hidden");
 
-      if (tab === 'shop-status') updateShopStatusUI();
-      if (tab === 'orders') loadAdminOrders();
-      if (tab === 'rewards') loadAdminRewards();
-      if (tab === 'stats') loadAdminStats();
-      if (tab === 'desserts') loadAdminDesserts();
-      if (tab === 'brownie') loadBrownieMenus(currentAdminDessertId);
-      if (tab === 'summary') loadOrderSummary();
-    }
+  // ✅ โหลดข้อมูลของแท็บที่เลือก
+  if (tab === 'shop-status') updateShopStatusUI();
+  if (tab === 'orders') loadAdminOrders();
+  if (tab === 'rewards') loadAdminRewards();
+  if (tab === 'stats') loadAdminStats();
+  if (tab === 'desserts') loadAdminDesserts();
+  if (tab === 'brownie') loadBrownieMenus(currentAdminDessertId);
+  if (tab === 'summary') loadOrderSummary();
+  if (tab === 'coupons') loadCoupons(); // ← เพิ่มบรรทัดนี้!
+}
+
 
     async function loadAdminOrders() {
       try {
