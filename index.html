@@ -114,7 +114,6 @@
     to { transform: rotate(360deg); }
   }
 
-  /* 🍰 การ์ดเมนู */
   .menu-card {
     background: white;
     border-radius: 1rem;
@@ -159,7 +158,6 @@
     .menu-card .price { font-size: 0.875rem; }
   }
 
-  /* 🌳 โลโก้ร้าน */
   .logo-image {
     width: 7rem;
     height: 7rem;
@@ -176,7 +174,6 @@
     }
   }
 
-  /* 🔒 หน้าปิดร้าน */
   .shop-closed-overlay {
     position: fixed;
     inset: 0;
@@ -188,7 +185,6 @@
     padding: 1rem;
   }
 
-  /* 🧁 หัวข้อ */
   h1 {
     font-size: 1.75rem;
   }
@@ -210,7 +206,7 @@
 
 @media (min-width: 780px) {
   #dessert-list, #base-list, #topping-list {
-    grid-template-columns: repeat(3, 1fr) !important; /* ✅ 3 ช่องแน่นอน */
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 1.5rem !important;
   }
 }
@@ -261,7 +257,7 @@
         </div>
       </div>
 
-      <!-- 🍰 ด้านขวา: เมนู + รูป + ชื่อ -->
+      <!-- 🰠ด้านขวา: เมนู + รูป + ชื่อ -->
       <div class="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0 ml-auto">
         
         <!-- ตะกร้า -->
@@ -273,11 +269,11 @@
                 class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
         </button>
 
-        <!-- คูปอง -->
-        <button onclick="showCoupons()" 
+        <!-- แลกแต้ม (เปลี่ยนจาก "คูปอง") -->
+        <button onclick="showRewards()" 
           class="bg-purple-500 hover:bg-purple-600 text-white rounded-xl flex items-center justify-center gap-1 px-3 py-2 text-xs sm:text-sm">
-          <span>🎫</span>
-          <span class="hidden sm:inline">คูปอง</span>
+          <span>🎁</span>
+          <span class="hidden sm:inline">แลกแต้ม</span>
         </button>
 
         <!-- ประวัติ -->
@@ -318,7 +314,7 @@
     <p class="text-gray-600 text-sm sm:text-base lg:text-lg mb-3 sm:mb-4">สั่งทำพิเศษเพื่อคุณ</p>
   </div>
 
-  <!-- 🍰 เลือกเมนูขนม -->
+  <!-- 🰠เลือกเมนูขนม -->
   <section id="dessert-selection" class="mb-4 sm:mb-6">
     <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-700 mb-3 sm:mb-4 text-center sm:text-left border-b-2 border-indigo-100 pb-1">
       เลือกเมนูขนม
@@ -326,7 +322,7 @@
     <div id="dessert-list" class="grid w-full"></div>
   </section>
 
-  <!-- 🧁 เลือกส่วนประกอบ -->
+  <!-- 🧊 เลือกส่วนประกอบ -->
   <section id="menu-selection" class="mb-4 sm:mb-6 hidden">
     <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-700 mb-3 sm:mb-4 text-center sm:text-left border-b-2 border-indigo-100 pb-1">
       เลือกส่วนประกอบ
@@ -395,6 +391,44 @@
     <div id="order-list" class="space-y-3 sm:space-y-4"></div>
   </section>
 
+  <!-- Rewards Modal (แลกแต้ม) -->
+  <div id="rewards-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'rewards-modal')">
+    <div class="card max-w-4xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">🎁 แลกแต้มรับรางวัล</h3>
+        <button onclick="closeRewards()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+      </div>
+      
+      <!-- แสดงแต้มที่มี -->
+      <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-4 mb-6">
+        <div class="text-sm opacity-90">แต้มสะสมของคุณ</div>
+        <div class="text-3xl font-bold"><span id="modal-user-points">0</span> แต้ม</div>
+      </div>
+
+      <!-- ปุ่มดูคูปองของฉัน -->
+      <div class="mb-6">
+        <button onclick="showMyCoupons()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium text-sm sm:text-base">
+          🎫 คูปองของฉัน
+        </button>
+      </div>
+
+      <!-- รายการของรางวัลที่แลกได้ -->
+      <h4 class="font-semibold text-gray-900 mb-4">🎯 เลือกของรางวัลที่ต้องการแลก</h4>
+      <div id="rewards-content" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"></div>
+    </div>
+  </div>
+
+  <!-- My Coupons Modal (คูปองของฉัน) -->
+  <div id="my-coupons-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'my-coupons-modal')">
+    <div class="card max-w-4xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">🎫 คูปองของฉัน</h3>
+        <button onclick="closeMyCoupons()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+      </div>
+      <div id="my-coupons-content" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"></div>
+    </div>
+  </div>
+
   <!-- Cart Modal -->
   <div id="cart-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'cart-modal')">
     <div class="card max-w-2xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
@@ -407,7 +441,7 @@
       <div id="coupon-section" class="mb-4 sm:mb-6 p-3 sm:p-4 bg-purple-50 rounded-xl">
         <div class="flex items-center justify-between mb-3">
           <h4 class="font-semibold text-gray-900 text-sm sm:text-base">🎫 ใช้คูปอง</h4>
-          <button onclick="showCoupons()" class="text-purple-600 text-xs sm:text-sm hover:underline">ดูคูปองทั้งหมด</button>
+          <button onclick="showMyCouponsForCart()" class="text-purple-600 text-xs sm:text-sm hover:underline">เลือกจากคูปองของฉัน</button>
         </div>
         <div id="selected-coupon" class="hidden mb-3 p-3 bg-white rounded-lg border-2 border-purple-300">
           <div class="flex items-center justify-between">
@@ -445,17 +479,6 @@
     </div>
   </div>
 
-  <!-- Coupons Modal -->
-  <div id="coupons-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'coupons-modal')">
-    <div class="card max-w-4xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between mb-4 sm:mb-6">
-        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">🎫 คูปองของฉัน</h3>
-        <button onclick="closeCoupons()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
-      </div>
-      <div id="coupons-content" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"></div>
-    </div>
-  </div>
-
   <!-- Admin Modal -->
   <div id="admin-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'admin-modal')">
     <div class="card max-w-6xl w-full max-h-[90vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
@@ -466,32 +489,32 @@
 
       <div class="flex space-x-2 sm:space-x-4 mb-4 sm:mb-6 border-b overflow-x-auto">
         <button onclick="showAdminTab('shop-status')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600 text-xs sm:text-sm whitespace-nowrap" data-tab="shop-status">
-          🏪 เปิด/ปิดร้าน
+          🪠เปิด/ปิดร้าน
         </button>
         <button onclick="showAdminTab('orders')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="orders">
           📦 จัดการออเดอร์
         </button>
-        <button onclick="showAdminTab('coupons')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="coupons">
-          🎫 จัดการคูปอง
+        <button onclick="showAdminTab('rewards')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="rewards">
+          🎁 จัดการของรางวัล
         </button>
         <button onclick="showAdminTab('stats')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="stats">
           📊 สถิติ
         </button>
         <button onclick="showAdminTab('desserts')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="desserts">
-          🍰 จัดการเมนูขนม
+          🰠จัดการเมนูขนม
         </button>
         <button onclick="showAdminTab('brownie')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="brownie">
           📂 จัดการส่วนประกอบ
         </button>
         <button onclick="showAdminTab('summary')" class="admin-tab px-3 sm:px-4 py-2 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-900 text-xs sm:text-sm whitespace-nowrap" data-tab="summary">
-          📅 สรุปออเดอร์รายวัน
+          📅 สรุปออเดอร์ตามสถานะ
         </button>
       </div>
 
       <!-- Shop Status Tab -->
       <section id="admin-shop-status-tab" class="admin-tab-content">
         <div class="max-w-2xl mx-auto text-center">
-          <div class="text-5xl sm:text-6xl mb-4" id="shop-status-icon">🏪</div>
+          <div class="text-5xl sm:text-6xl mb-4" id="shop-status-icon">🪠</div>
           <h3 class="text-xl sm:text-2xl font-bold mb-4" id="shop-status-text">กำลังโหลด...</h3>
           <p class="text-sm sm:text-base text-gray-600 mb-6">เมื่อปิดร้าน ลูกค้าจะไม่สามารถยืนยันออเดอร์ได้</p>
           <button id="toggle-shop-btn" onclick="toggleShopStatus()" class="px-6 py-3 rounded-xl font-semibold text-base sm:text-lg">
@@ -517,21 +540,29 @@
         <div id="admin-orders-content"></div>
       </div>
 
-      <!-- Coupons Tab -->
-      <div id="admin-coupons-tab" class="admin-tab-content hidden">
+      <!-- Rewards Tab (จัดการของรางวัล) -->
+      <div id="admin-rewards-tab" class="admin-tab-content hidden">
         <div class="mb-4 sm:mb-6">
-          <button onclick="showCreateCouponForm()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-xs sm:text-sm lg:text-base">
-            ➕ สร้างคูปองใหม่
+          <button onclick="showCreateRewardForm()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-xs sm:text-sm lg:text-base">
+            ➕ สร้างของรางวัลใหม่
           </button>
         </div>
-        <div id="admin-coupons-content"></div>
+        <div id="admin-rewards-content"></div>
       </div>
 
-      <!-- Summary Tab -->
+      <!-- Summary Tab (สรุปออเดอร์ตามสถานะ) -->
       <div id="admin-summary-tab" class="admin-tab-content hidden space-y-4">
         <div class="flex flex-wrap gap-3 items-center">
           <input type="date" id="summary-date" class="border rounded-lg px-3 py-2 shadow-sm text-xs sm:text-sm">
-          <button onclick="loadDailySummary()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-xs sm:text-sm">
+          <select id="summary-status" class="border rounded-lg px-3 py-2 shadow-sm text-xs sm:text-sm">
+            <option value="">ทุกสถานะ</option>
+            <option value="pending">🕓 รอดำเนินการ</option>
+            <option value="preparing">👨‍🍳 กำลังทำ</option>
+            <option value="ready">🚚 พร้อมส่ง</option>
+            <option value="completed">✅ เสร็จสิ้น</option>
+            <option value="cancelled">❌ ยกเลิก</option>
+          </select>
+          <button onclick="loadOrderSummary()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-xs sm:text-sm">
             ดูสรุป
           </button>
           <button onclick="updateAllOrdersOfDay()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition text-xs sm:text-sm">
@@ -539,7 +570,7 @@
           </button>
         </div>
         <div id="summary-content" class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200 min-h-[150px]">
-          <p class="text-gray-500 text-center text-xs sm:text-sm">📆 กรุณาเลือกวันที่เพื่อดูสรุปออเดอร์</p>
+          <p class="text-gray-500 text-center text-xs sm:text-sm">📆 กรุณาเลือกวันที่และสถานะเพื่อดูสรุปออเดอร์</p>
         </div>
       </div>
 
@@ -573,47 +604,43 @@
     </div>
   </div>
 
-  <!-- Create Coupon Modal -->
-  <div id="create-coupon-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'create-coupon-modal')">
+  <!-- Create Reward Modal -->
+  <div id="create-reward-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'create-reward-modal')">
     <div class="card max-w-md w-full hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-4 sm:mb-6">
-        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">➕ สร้างคูปองใหม่</h3>
-        <button onclick="closeCreateCoupon()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">➕ สร้างของรางวัลใหม่</h3>
+        <button onclick="closeCreateReward()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
       </div>
-      <form onsubmit="createCoupon(event)" class="space-y-3 sm:space-y-4">
+      <form onsubmit="createReward(event)" class="space-y-3 sm:space-y-4">
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">รหัสคูปอง</label>
-          <input type="text" id="coupon-code" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น WELCOME10" />
-        </div>
-        <div>
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">ชื่อคูปอง</label>
-          <input type="text" id="coupon-title" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น ลด 10%" />
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">ชื่อรางวัล</label>
+          <input type="text" id="reward-name" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น คูปองลด 10%" />
         </div>
         <div>
           <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">คำอธิบาย</label>
-          <input type="text" id="coupon-description" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น ลด 10% สำหรับสมาชิกใหม่" />
+          <input type="text" id="reward-description" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น ลด 10% สำหรับสมาชิกใหม่" />
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">แต้มที่ต้องใช้</label>
+          <input type="number" id="reward-points" required min="1" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น 100" />
         </div>
         <div>
           <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">ประเภทส่วนลด</label>
-          <select id="coupon-type" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm">
+          <select id="reward-type" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm">
             <option value="percent">เปอร์เซ็นต์ (%)</option>
             <option value="fixed">จำนวนเงิน (บาท)</option>
           </select>
         </div>
         <div>
           <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">มูลค่าส่วนลด</label>
-          <input type="number" id="coupon-value" required min="1" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น 10" />
+          <input type="number" id="reward-value" required min="1" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" placeholder="เช่น 10" />
         </div>
         <div>
           <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">ยอดขั้นต่ำ (บาท)</label>
-          <input type="number" id="coupon-min" value="0" min="0" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" />
-        </div>
-        <div>
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">จำนวนการใช้งาน</label>
-          <input type="number" id="coupon-usage" value="1" min="1" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" />
+          <input type="number" id="reward-min" value="0" min="0" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm" />
         </div>
         <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-semibold text-xs sm:text-sm lg:text-base">
-          สร้างคูปอง
+          สร้างของรางวัล
         </button>
       </form>
     </div>
@@ -630,7 +657,7 @@
           <input id="dessert-name" class="w-full p-2 border rounded text-xs sm:text-sm" required />
         </div>
         <div class="mb-3">
-          <label class="block text-xs sm:text-sm font-medium mb-1">Emoji (🍫):</label>
+          <label class="block text-xs sm:text-sm font-medium mb-1">Emoji (🫐):</label>
           <input id="dessert-emoji" class="w-full p-2 border rounded text-xs sm:text-sm" />
         </div>
         <div class="mb-3">
@@ -652,13 +679,13 @@
   <!-- Brownie Modal -->
   <div id="brownie-modal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-3 sm:p-4">
     <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full max-w-md mx-4">
-      <h3 id="brownie-modal-title" class="text-base sm:text-lg lg:text-xl font-semibold mb-4">🍰 เพิ่มเมนูบราวนี่</h3>
+      <h3 id="brownie-modal-title" class="text-base sm:text-lg lg:text-xl font-semibold mb-4">🰠เพิ่มเมนูบราวนี่</h3>
       <form id="brownie-form" class="space-y-3">
         <input type="hidden" id="brownie-id">
         <input type="hidden" id="brownie-type">
         <div>
           <label class="block text-xs sm:text-sm font-medium mb-1">ชื่อเมนู (ใส่อิโมจิได้)</label>
-          <input id="brownie-name" class="w-full border rounded px-3 py-2 text-xs sm:text-sm" placeholder="เช่น 🍫 บราวนี่โกโก้" required>
+          <input id="brownie-name" class="w-full border rounded px-3 py-2 text-xs sm:text-sm" placeholder="เช่น 🫐 บราวนี่โกโก้" required>
         </div>
         <div>
           <label class="block text-xs sm:text-sm font-medium mb-1">คำอธิบาย</label>
@@ -709,7 +736,8 @@
     let cart = [];
     let userPoints = 0;
     let selectedCoupon = null;
-    let availableCoupons = [];
+    let availableRewards = [];
+    let userCoupons = [];
     let allDesserts = [];
     let selectedDessert = null;
     let currentAdminDessertId = null;
@@ -731,7 +759,8 @@
         userProfile = await liff.getProfile();
         await saveUserToSupabase(userProfile);
         await loadUserData(userProfile.userId);
-        await loadCoupons();
+        await loadRewards();
+        await loadUserCoupons();
         await loadDesserts();
         await loadShopStatus();
 
@@ -765,7 +794,7 @@
           shopIsOpen = true;
         }
 
-        console.log("🏪 Shop status:", shopIsOpen ? "Open" : "Closed");
+        console.log("🪠Shop status:", shopIsOpen ? "Open" : "Closed");
       } catch (error) {
         console.error("❌ Error loading shop status:", error);
         shopIsOpen = true;
@@ -797,14 +826,14 @@
       const btn = document.getElementById("toggle-shop-btn");
 
       if (shopIsOpen) {
-        icon.textContent = "🏪";
+        icon.textContent = "🪠";
         text.textContent = "ร้านเปิดรับออเดอร์";
         btn.textContent = "🔒 ปิดร้าน";
         btn.className = "px-6 py-3 rounded-xl font-semibold text-base sm:text-lg bg-red-500 hover:bg-red-600 text-white";
       } else {
         icon.textContent = "😴";
         text.textContent = "ร้านปิดรับออเดอร์";
-        btn.textContent = "🏪 เปิดร้าน";
+        btn.textContent = "🪠เปิดร้าน";
         btn.className = "px-6 py-3 rounded-xl font-semibold text-base sm:text-lg bg-green-500 hover:bg-green-600 text-white";
       }
     }
@@ -866,6 +895,190 @@
         console.error("❌ Error loading user data:", error);
         throw error;
       }
+    }
+
+    // ฟังก์ชันแลกแต้ม
+    async function loadRewards() {
+      try {
+        const { data, error } = await supabase
+          .from("rewards")
+          .select("*")
+          .eq("is_active", true)
+          .order("points_required", { ascending: true });
+
+        if (error) throw error;
+
+        availableRewards = data || [];
+        console.log("✅ Rewards loaded:", availableRewards.length);
+      } catch (error) {
+        console.error("❌ Error loading rewards:", error);
+      }
+    }
+
+    async function loadUserCoupons() {
+      try {
+        const { data, error } = await supabase
+          .from("user_coupons")
+          .select("*, rewards(*)")
+          .eq("user_id", currentUser.id)
+          .eq("is_used", false)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        userCoupons = data || [];
+        console.log("✅ User coupons loaded:", userCoupons.length);
+      } catch (error) {
+        console.error("❌ Error loading user coupons:", error);
+      }
+    }
+
+    function showRewards() {
+      const modal = document.getElementById("rewards-modal");
+      const content = document.getElementById("rewards-content");
+      document.getElementById("modal-user-points").textContent = userPoints;
+
+      if (availableRewards.length === 0) {
+        content.innerHTML = `
+          <div class="col-span-2 text-center py-12">
+            <div class="text-5xl sm:text-6xl mb-4">🎁</div>
+            <p class="text-gray-600 text-sm sm:text-base">ยังไม่มีของรางวัลที่แลกได้</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        availableRewards.forEach(reward => {
+          const canRedeem = userPoints >= reward.points_required;
+          html += `
+            <div class="card border-2 ${canRedeem ? 'border-purple-200 hover:border-purple-400' : 'border-gray-200 opacity-50'} p-3 sm:p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="text-2xl sm:text-3xl">🎁</div>
+                <div class="text-xs ${canRedeem ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
+                  ${reward.points_required} แต้ม
+                </div>
+              </div>
+              <div class="font-bold text-sm sm:text-base lg:text-lg text-purple-900 mb-1">${reward.name}</div>
+              <div class="text-xs sm:text-sm text-gray-600 mb-2">${reward.description}</div>
+              <div class="text-xs text-gray-500 mb-3">ส่วนลด: ${reward.discount_type === 'percent' ? reward.discount_value + '%' : reward.discount_value + ' บาท'}</div>
+              ${canRedeem ? `
+                <button onclick="redeemReward(${reward.id})" class="w-full bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-xs sm:text-sm">
+                  🎁 แลกเลย
+                </button>
+              ` : `
+                <button disabled class="w-full bg-gray-300 text-gray-500 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm cursor-not-allowed">
+                  แต้มไม่พอ
+                </button>
+              `}
+            </div>
+          `;
+        });
+        content.innerHTML = html;
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeRewards() {
+      document.getElementById("rewards-modal").classList.add("hidden");
+    }
+
+    async function redeemReward(rewardId) {
+      try {
+        const reward = availableRewards.find(r => r.id === rewardId);
+        if (!reward) {
+          showMessage("❌ ไม่พบรางวัลนี้");
+          return;
+        }
+
+        if (userPoints < reward.points_required) {
+          showMessage("❌ แต้มของคุณไม่เพียงพอ");
+          return;
+        }
+
+        if (!confirm(`ต้องการแลกแต้ม ${reward.points_required} แต้ม เป็น "${reward.name}" หรือไม่?`)) {
+          return;
+        }
+
+        // หักแต้ม
+        const newPoints = userPoints - reward.points_required;
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ points: newPoints })
+          .eq("id", currentUser.id);
+
+        if (updateError) throw updateError;
+
+        // สร้างคูปองให้ผู้ใช้
+        const couponCode = `REWARD${Date.now()}`;
+        const { error: couponError } = await supabase
+          .from("user_coupons")
+          .insert([{
+            user_id: currentUser.id,
+            reward_id: rewardId,
+            coupon_code: couponCode,
+            is_used: false
+          }]);
+
+        if (couponError) throw couponError;
+
+        userPoints = newPoints;
+        document.getElementById("userPoints").textContent = userPoints;
+        document.getElementById("modal-user-points").textContent = userPoints;
+
+        showMessage(`🎉 แลก "${reward.name}" สำเร็จ! รหัสคูปอง: ${couponCode}`);
+        
+        await loadUserCoupons();
+        closeRewards();
+
+      } catch (error) {
+        console.error("❌ Error redeeming reward:", error);
+        showMessage("เกิดข้อผิดพลาดในการแลกของรางวัล");
+      }
+    }
+
+    function showMyCoupons() {
+      const modal = document.getElementById("my-coupons-modal");
+      const content = document.getElementById("my-coupons-content");
+
+      if (userCoupons.length === 0) {
+        content.innerHTML = `
+          <div class="col-span-2 text-center py-12">
+            <div class="text-5xl sm:text-6xl mb-4">🎫</div>
+            <p class="text-gray-600 text-sm sm:text-base">คุณยังไม่มีคูปอง</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        userCoupons.forEach(coupon => {
+          html += `
+            <div class="card border-2 border-purple-200 p-3 sm:p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="text-2xl sm:text-3xl">🎫</div>
+                <div class="text-xs ${coupon.is_used ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'} px-2 py-1 rounded-full">
+                  ${coupon.is_used ? 'ใช้แล้ว' : 'ใช้ได้'}
+                </div>
+              </div>
+              <div class="font-bold text-sm sm:text-base lg:text-lg text-purple-900 mb-1">${coupon.rewards.name}</div>
+              <div class="text-xs sm:text-sm text-gray-600 mb-2">${coupon.rewards.description}</div>
+              <div class="text-xs text-gray-500 mb-2">รหัส: <span class="font-mono font-bold">${coupon.coupon_code}</span></div>
+              <div class="text-xs text-gray-500">ส่วนลด: ${coupon.rewards.discount_type === 'percent' ? coupon.rewards.discount_value + '%' : coupon.rewards.discount_value + ' บาท'}</div>
+              <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.rewards.min_purchase} บาท</div>
+            </div>
+          `;
+        });
+        content.innerHTML = html;
+      }
+
+      closeRewards();
+      modal.classList.remove("hidden");
+    }
+
+    function closeMyCoupons() {
+      document.getElementById("my-coupons-modal").classList.add("hidden");
+    }
+
+    function showMyCouponsForCart() {
+      showMyCoupons();
     }
 
     async function loadMenus(dessertId) { 
@@ -1061,10 +1274,10 @@
       let discount = 0;
 
       if (selectedCoupon) {
-        if (selectedCoupon.type === 'percent') {
-          discount = Math.floor(subtotal * selectedCoupon.value / 100);
+        if (selectedCoupon.discount_type === 'percent') {
+          discount = Math.floor(subtotal * selectedCoupon.discount_value / 100);
         } else {
-          discount = Math.min(selectedCoupon.value, subtotal);
+          discount = Math.min(selectedCoupon.discount_value, subtotal);
         }
       }
 
@@ -1092,71 +1305,6 @@
       showMessage("ลบสินค้าออกจากตะกร้าแล้ว");
     }
 
-    async function loadCoupons() {
-      try {
-        const { data, error } = await supabase
-          .from("coupons")
-          .select("*")
-          .eq("is_active", true)
-          .eq("show_in_list", true)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        availableCoupons = data || [];
-        console.log("✅ Coupons loaded:", availableCoupons.length);
-      } catch (error) {
-        console.error("❌ Error loading coupons:", error);
-      }
-    }
-
-    function showCoupons() {
-      const modal = document.getElementById("coupons-modal");
-      const content = document.getElementById("coupons-content");
-
-      if (availableCoupons.length === 0) {
-        content.innerHTML = `
-          <div class="col-span-2 text-center py-12">
-            <div class="text-5xl sm:text-6xl mb-4">🎫</div>
-            <p class="text-gray-600 text-sm sm:text-base">ยังไม่มีคูปองที่ใช้ได้</p>
-          </div>
-        `;
-      } else {
-        let html = '';
-        availableCoupons.forEach(coupon => {
-          const canUse = coupon.usage_limit > coupon.usage_count;
-          html += `
-            <div class="card border-2 ${canUse ? 'border-purple-200 hover:border-purple-400 cursor-pointer' : 'border-gray-200 opacity-50'} p-3 sm:p-4" ${canUse ? `onclick="selectCouponFromList('${coupon.code}')"` : ''}>
-              <div class="flex items-start justify-between mb-3">
-                <div class="text-2xl sm:text-3xl">🎫</div>
-                <div class="text-xs ${canUse ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} px-2 py-1 rounded-full">
-                  ${canUse ? 'ใช้ได้' : 'หมดแล้ว'}
-                </div>
-              </div>
-              <div class="font-bold text-sm sm:text-base lg:text-lg text-purple-900 mb-1">${coupon.name}</div>
-              <div class="text-xs sm:text-sm text-gray-600 mb-2">${coupon.description}</div>
-              <div class="text-xs text-gray-500">รหัส: ${coupon.code}</div>
-              <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-              <div class="text-xs text-gray-500">เหลือ: ${coupon.usage_limit - coupon.usage_count} ครั้ง</div>
-            </div>
-          `;
-        });
-        content.innerHTML = html;
-      }
-
-      modal.classList.remove("hidden");
-    }
-
-    function closeCoupons() {
-      document.getElementById("coupons-modal").classList.add("hidden");
-    }
-
-    function selectCouponFromList(code) {
-      document.getElementById("coupon-input").value = code;
-      closeCoupons();
-      applyCouponCode();
-    }
-
     async function applyCouponCode() {
       const code = document.getElementById("coupon-input").value.trim().toUpperCase();
 
@@ -1168,32 +1316,38 @@
       const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
 
       try {
-        const { data: coupon, error } = await supabase
-          .from("coupons")
-          .select("*")
-          .eq("code", code)
-          .eq("is_active", true)
+        // ค้นหาคูปองจาก user_coupons
+        const { data: userCoupon, error } = await supabase
+          .from("user_coupons")
+          .select("*, rewards(*)")
+          .eq("coupon_code", code)
+          .eq("user_id", currentUser.id)
+          .eq("is_used", false)
           .single();
 
-        if (error || !coupon) {
-          showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
+        if (error || !userCoupon) {
+          showCouponMessage("ไม่พบคูปองนี้หรือถูกใช้ไปแล้ว", "error");
           return;
         }
 
-        if (coupon.usage_count >= coupon.usage_limit) {
-          showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
+        if (subtotal < userCoupon.rewards.min_purchase) {
+          showCouponMessage(`ยอดขั้นต่ำ ${userCoupon.rewards.min_purchase} บาท`, "error");
           return;
         }
 
-        if (subtotal < coupon.min_purchase) {
-          showCouponMessage(`ยอดขั้นต่ำ ${coupon.min_purchase} บาท`, "error");
-          return;
-        }
+        selectedCoupon = {
+          id: userCoupon.id,
+          code: userCoupon.coupon_code,
+          name: userCoupon.rewards.name,
+          description: userCoupon.rewards.description,
+          discount_type: userCoupon.rewards.discount_type,
+          discount_value: userCoupon.rewards.discount_value,
+          min_purchase: userCoupon.rewards.min_purchase
+        };
 
-        selectedCoupon = coupon;
         document.getElementById("selected-coupon").classList.remove("hidden");
-        document.getElementById("coupon-name").textContent = coupon.name;
-        document.getElementById("coupon-desc").textContent = coupon.description;
+        document.getElementById("coupon-name").textContent = selectedCoupon.name;
+        document.getElementById("coupon-desc").textContent = selectedCoupon.description;
         document.getElementById("coupon-input").value = "";
 
         updateCartTotal();
@@ -1236,11 +1390,17 @@
         let discount = 0;
 
         if (selectedCoupon) {
-          if (selectedCoupon.type === "percent") {
-            discount = Math.floor(subtotal * selectedCoupon.value / 100);
+          if (selectedCoupon.discount_type === "percent") {
+            discount = Math.floor(subtotal * selectedCoupon.discount_value / 100);
           } else {
-            discount = Math.min(selectedCoupon.value, subtotal);
+            discount = Math.min(selectedCoupon.discount_value, subtotal);
           }
+
+          // ทำเครื่องหมายคูปองว่าใช้แล้ว
+          await supabase
+            .from("user_coupons")
+            .update({ is_used: true, used_at: new Date().toISOString() })
+            .eq("id", selectedCoupon.id);
         }
 
         const total = Math.max(0, subtotal - discount);
@@ -1282,7 +1442,7 @@
         selectedCoupon = null;
         updateCartBadge();
         closeCart();
-        await loadCoupons();
+        await loadUserCoupons();
 
         showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
       } catch (error) {
@@ -1340,7 +1500,7 @@
 
           const items = Array.isArray(itemsArray)
             ? itemsArray.map(i => `
-              <li class="text-xs sm:text-sm">🍫 <span class="font-medium text-purple-700">${i.baseName}</span> 
+              <li class="text-xs sm:text-sm">🫐 <span class="font-medium text-purple-700">${i.baseName}</span> 
               <span class="text-gray-600">+ ${i.toppingName}</span> (${i.quantity || 1})</li>
             `).join("")
             : "<li class='text-xs sm:text-sm'>ไม่พบข้อมูลสินค้า</li>";
@@ -1440,11 +1600,11 @@
 
       if (tab === 'shop-status') updateShopStatusUI();
       if (tab === 'orders') loadAdminOrders();
-      if (tab === 'coupons') loadAdminCoupons();
+      if (tab === 'rewards') loadAdminRewards();
       if (tab === 'stats') loadAdminStats();
       if (tab === 'desserts') loadAdminDesserts();
       if (tab === 'brownie') loadBrownieMenus(currentAdminDessertId);
-      if (tab === 'summary') loadDailySummary();
+      if (tab === 'summary') loadOrderSummary();
     }
 
     async function loadAdminOrders() {
@@ -1644,54 +1804,47 @@
       }
     }
 
-    async function loadAdminCoupons() {
+    // Admin Rewards Functions
+    async function loadAdminRewards() {
       try {
-        const { data: coupons, error } = await supabase
-          .from("coupons")
+        const { data: rewards, error } = await supabase
+          .from("rewards")
           .select("*")
-          .order("created_at", { ascending: false });
+          .order("points_required", { ascending: true });
 
         if (error) throw error;
 
-        const content = document.getElementById("admin-coupons-content");
+        const content = document.getElementById("admin-rewards-content");
         
-        if (coupons.length === 0) {
-          content.innerHTML = '<p class="text-center text-gray-500 py-12 text-xs sm:text-sm">ยังไม่มีคูปอง</p>';
+        if (rewards.length === 0) {
+          content.innerHTML = '<p class="text-center text-gray-500 py-12 text-xs sm:text-sm">ยังไม่มีของรางวัล</p>';
           return;
         }
 
         let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">';
-        coupons.forEach(coupon => {
+        rewards.forEach(reward => {
           html += `
             <div class="card border-2 border-purple-200 p-3 sm:p-4">
               <div class="flex items-start justify-between mb-3 gap-3 flex-wrap">
                 <div>
-                  <div class="font-bold text-sm sm:text-base lg:text-lg text-purple-900">${coupon.name}</div>
-                  <div class="text-xs sm:text-sm text-gray-600">${coupon.description}</div>
+                  <div class="font-bold text-sm sm:text-base lg:text-lg text-purple-900">${reward.name}</div>
+                  <div class="text-xs sm:text-sm text-gray-600">${reward.description}</div>
                 </div>
-                <div class="space-y-1 text-right">
-                  <label class="flex items-center justify-end text-xs sm:text-sm">
-                    <input type="checkbox" ${coupon.is_active ? 'checked' : ''} 
-                           onchange="toggleCoupon(${coupon.id}, this.checked)" class="mr-2" />
-                    <span>เปิดใช้</span>
-                  </label>
-                  <label class="flex items-center justify-end text-xs sm:text-sm">
-                    <input type="checkbox" ${coupon.show_in_list ? 'checked' : ''} 
-                           onchange="toggleCouponVisibility(${coupon.id}, this.checked)" class="mr-2" />
-                    <span>แสดงในคูปองของฉัน</span>
-                  </label>
-                </div>
+                <label class="flex items-center justify-end text-xs sm:text-sm">
+                  <input type="checkbox" ${reward.is_active ? 'checked' : ''} 
+                         onchange="toggleReward(${reward.id}, this.checked)" class="mr-2" />
+                  <span>เปิดใช้</span>
+                </label>
               </div>
               
               <div class="space-y-1 text-xs sm:text-sm text-gray-600">
-                <div>รหัส: <span class="font-mono font-bold">${coupon.code}</span></div>
-                <div>ส่วนลด: ${coupon.type === 'percent' ? coupon.value + '%' : coupon.value + ' บาท'}</div>
-                <div>ยอดขั้นต่ำ: ${coupon.min_purchase} บาท</div>
-                <div>ใช้ไป: ${coupon.usage_count} / ${coupon.usage_limit} ครั้ง</div>
+                <div>แต้มที่ต้องใช้: <span class="font-bold">${reward.points_required} แต้ม</span></div>
+                <div>ส่วนลด: ${reward.discount_type === 'percent' ? reward.discount_value + '%' : reward.discount_value + ' บาท'}</div>
+                <div>ยอดขั้นต่ำ: ${reward.min_purchase} บาท</div>
               </div>
               
-              <button onclick="deleteCoupon(${coupon.id})" class="mt-3 text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">
-                🗑️ ลบคูปอง
+              <button onclick="deleteReward(${reward.id})" class="mt-3 text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">
+                🗑️ ลบรางวัล
               </button>
             </div>
           `;
@@ -1700,116 +1853,90 @@
         content.innerHTML = html;
 
       } catch (error) {
-        console.error("❌ Error loading coupons:", error);
+        console.error("❌ Error loading rewards:", error);
       }
     }
 
-    function showCreateCouponForm() {
-      document.getElementById("create-coupon-modal").classList.remove("hidden");
+    function showCreateRewardForm() {
+      document.getElementById("create-reward-modal").classList.remove("hidden");
     }
 
-    function closeCreateCoupon() {
-      document.getElementById("create-coupon-modal").classList.add("hidden");
+    function closeCreateReward() {
+      document.getElementById("create-reward-modal").classList.add("hidden");
     }
 
-    async function createCoupon(event) {
+    async function createReward(event) {
       event.preventDefault();
 
       try {
-        const code = document.getElementById("coupon-code").value.toUpperCase();
-        const name = document.getElementById("coupon-title").value;
-        const description = document.getElementById("coupon-description").value;
-        const type = document.getElementById("coupon-type").value;
-        const value = parseInt(document.getElementById("coupon-value").value);
-        const minPurchase = parseInt(document.getElementById("coupon-min").value);
-        const usageLimit = parseInt(document.getElementById("coupon-usage").value);
+        const name = document.getElementById("reward-name").value;
+        const description = document.getElementById("reward-description").value;
+        const pointsRequired = parseInt(document.getElementById("reward-points").value);
+        const discountType = document.getElementById("reward-type").value;
+        const discountValue = parseInt(document.getElementById("reward-value").value);
+        const minPurchase = parseInt(document.getElementById("reward-min").value);
 
         const { error } = await supabase
-          .from("coupons")
+          .from("rewards")
           .insert([{
-            code,
             name,
             description,
-            type,
-            value,
+            points_required: pointsRequired,
+            discount_type: discountType,
+            discount_value: discountValue,
             min_purchase: minPurchase,
-            usage_limit: usageLimit,
-            usage_count: 0,
-            is_active: true,
-            show_in_list: true
+            is_active: true
           }]);
 
         if (error) throw error;
 
-        showMessage("สร้างคูปองสำเร็จ! 🎉");
-        closeCreateCoupon();
-        loadAdminCoupons();
-        loadCoupons();
+        showMessage("สร้างของรางวัลสำเร็จ! 🎉");
+        closeCreateReward();
+        loadAdminRewards();
+        loadRewards();
         event.target.reset();
 
       } catch (error) {
-        console.error("❌ Error creating coupon:", error);
+        console.error("❌ Error creating reward:", error);
         showMessage("เกิดข้อผิดพลาด: " + error.message);
       }
     }
 
-    async function toggleCoupon(couponId, isActive) {
+    async function toggleReward(rewardId, isActive) {
       try {
         const { error } = await supabase
-          .from("coupons")
+          .from("rewards")
           .update({ is_active: isActive })
-          .eq("id", couponId);
+          .eq("id", rewardId);
 
         if (error) throw error;
 
-        showMessage(isActive ? "เปิดใช้คูปองแล้ว" : "ปิดใช้คูปองแล้ว");
-        loadCoupons();
+        showMessage(isActive ? "เปิดใช้รางวัลแล้ว" : "ปิดใช้รางวัลแล้ว");
+        loadRewards();
 
       } catch (error) {
-        console.error("❌ Error toggling coupon:", error);
+        console.error("❌ Error toggling reward:", error);
         showMessage("เกิดข้อผิดพลาด");
       }
     }
 
-    async function toggleCouponVisibility(couponId, showInList) {
-      try {
-        const { error } = await supabase
-          .from("coupons")
-          .update({ show_in_list: showInList })
-          .eq("id", couponId);
-
-        if (error) throw error;
-
-        showMessage(showInList
-          ? "คูปองนี้จะแสดงในหน้า 'คูปองของฉัน' ✅"
-          : "คูปองนี้ถูกซ่อนไว้ ต้องกรอกรหัสก่อนเท่านั้น 🔐"
-        );
-
-        loadAdminCoupons();
-        loadCoupons();
-      } catch (error) {
-        console.error("❌ Error toggling coupon visibility:", error);
-        showMessage("เกิดข้อผิดพลาดในการเปลี่ยนการแสดงคูปอง");
-      }
-    }
-
-    async function deleteCoupon(couponId) {
-      if (!confirm("ต้องการลบคูปองนี้หรือไม่?")) return;
+    async function deleteReward(rewardId) {
+      if (!confirm("ต้องการลบรางวัลนี้หรือไม่?")) return;
 
       try {
         const { error } = await supabase
-          .from("coupons")
+          .from("rewards")
           .delete()
-          .eq("id", couponId);
+          .eq("id", rewardId);
 
         if (error) throw error;
 
-        showMessage("ลบคูปองสำเร็จ");
-        loadAdminCoupons();
-        loadCoupons();
+        showMessage("ลบรางวัลสำเร็จ");
+        loadAdminRewards();
+        loadRewards();
 
       } catch (error) {
-        console.error("❌ Error deleting coupon:", error);
+        console.error("❌ Error deleting reward:", error);
         showMessage("เกิดข้อผิดพลาด");
       }
     }
@@ -1886,8 +2013,9 @@
       }
     }
 
-    async function loadDailySummary() {
+    async function loadOrderSummary() {
       const selectedDate = document.getElementById("summary-date").value;
+      const selectedStatus = document.getElementById("summary-status").value;
       const content = document.getElementById("summary-content");
 
       if (!selectedDate) {
@@ -1900,16 +2028,22 @@
         const end = new Date(selectedDate);
         end.setDate(end.getDate() + 1);
 
-        const { data: orders, error } = await supabase
+        let query = supabase
           .from("orders")
           .select("*")
           .gte("created_at", start.toISOString())
           .lt("created_at", end.toISOString());
 
+        if (selectedStatus) {
+          query = query.eq("status", selectedStatus);
+        }
+
+        const { data: orders, error } = await query;
+
         if (error) throw error;
 
         if (orders.length === 0) {
-          content.innerHTML = `<p class="text-gray-500 text-center text-xs sm:text-sm">ไม่มีออเดอร์ในวันที่ ${selectedDate}</p>`;
+          content.innerHTML = `<p class="text-gray-500 text-center text-xs sm:text-sm">ไม่มีออเดอร์ในวันที่ ${selectedDate} ${selectedStatus ? 'สถานะ: ' + getStatusText(selectedStatus) : ''}</p>`;
           return;
         }
 
@@ -1932,14 +2066,14 @@
         });
 
         let html = `
-          <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate}</h3>
+          <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate} ${selectedStatus ? '- สถานะ: ' + getStatusText(selectedStatus) : ''}</h3>
           <div class="mb-4">
             <p class="text-xs sm:text-sm">ออเดอร์ทั้งหมด: <b>${totalOrders}</b> รายการ</p>
             <p class="text-xs sm:text-sm">ยอดขายรวม: <b>${totalRevenue}</b> บาท</p>
           </div>
 
           <div class="border-t pt-4">
-            <h4 class="font-semibold text-purple-700 mb-2 text-xs sm:text-sm">🍰 รายการรวม (เนื้อ + หน้า)</h4>
+            <h4 class="font-semibold text-purple-700 mb-2 text-xs sm:text-sm">🰠รายการรวม (เนื้อ + หน้า)</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               ${Object.entries(comboCounts)
                 .map(([combo, qty]) => `<p class="text-xs sm:text-sm">• ${combo} — <b>${qty}</b> ชิ้น</p>`)
@@ -1950,9 +2084,9 @@
           <div class="mt-6 flex flex-col items-center gap-3">
             <select id="update-status-select" class="border rounded px-3 py-2 text-xs sm:text-sm w-full max-w-xs">
               <option value="">-- เลือกสถานะที่จะอัปเดตทั้งหมด --</option>
-              <option value="pending">🕐 รอดำเนินการ</option>
-              <option value="preparing">🍳 กำลังเตรียม</option>
-              <option value="ready">📦 พร้อมรับ</option>
+              <option value="pending">🕓 รอดำเนินการ</option>
+              <option value="preparing">👨‍🍳 กำลังทำ</option>
+              <option value="ready">🚚 พร้อมส่ง</option>
               <option value="completed">✅ สำเร็จ</option>
               <option value="cancelled">❌ ยกเลิก</option>
             </select>
@@ -2024,7 +2158,7 @@
         showMessage(
           `✅ อัปเดตสถานะทั้งหมด ${orders.length} ออเดอร์ในวันที่ ${selectedDate} เป็น "${getStatusText(newStatus)}" สำเร็จ`
         );
-        loadDailySummary();
+        loadOrderSummary();
       } catch (err) {
         console.error("❌ Error in updateAllOrdersOfDay:", err);
         showMessage("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
@@ -2240,7 +2374,7 @@
       document.getElementById("brownie-points").value = "";
       document.getElementById("brownie-active").checked = true;
 
-      title.textContent = id ? "✏️ แก้ไขเมนูบราวนี่" : "🍰 เพิ่มเมนูบราวนี่";
+      title.textContent = id ? "✏️ แก้ไขเมนูบราวนี่" : "🰠เพิ่มเมนูบราวนี่";
 
       if (id) loadBrownieForEdit(id);
     }
