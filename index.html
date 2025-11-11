@@ -2253,7 +2253,7 @@
       }
     }
 
-    // ===================================================
+// ===================================================
 // 🎫 ADMIN COUPONS MANAGEMENT
 // ===================================================
 
@@ -2348,7 +2348,11 @@ async function saveCoupon(e) {
   usage_limit: parseInt(document.getElementById("coupon-limit").value),
   is_active: document.getElementById("coupon-active").checked,
 };
-
+  console.log("🎯 coupon before save:", coupon);
+  if (!coupon.name.trim() || !coupon.code.trim()) {
+  alert("กรุณากรอกชื่อและรหัสคูปองให้ครบ");
+  return;
+}
   let result;
   if (id) {
     result = await supabase.from("coupons").update(coupon).eq("id", id);
