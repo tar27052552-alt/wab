@@ -446,8 +446,8 @@
         <div id="selected-coupon" class="hidden mb-3 p-3 bg-white rounded-lg border-2 border-purple-300">
           <div class="flex items-center justify-between">
             <div>
-              <div class="font-medium text-purple-900 text-sm sm:text-base" id="coupon-name"></div>
-              <div class="text-xs sm:text-sm text-purple-700" id="coupon-desc"></div>
+              <div class="font-medium text-purple-900 text-sm sm:text-base" id="cart-coupon-name"></div>
+              <div class="text-xs sm:text-sm text-purple-700" id="cart-coupon-desc"></div>
             </div>
             <button onclick="removeCoupon()" class="text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">ลบ</button>
           </div>
@@ -1423,10 +1423,11 @@
       };
 
       // แสดงผลใน UI
-      document.getElementById("selected-coupon").classList.remove("hidden");
-      document.getElementById("coupon-name").textContent = selectedCoupon.name;
-      document.getElementById("coupon-desc").textContent = selectedCoupon.description;
-      document.getElementById("coupon-input").value = "";
+        document.getElementById("selected-coupon").classList.remove("hidden");
+        document.getElementById("cart-coupon-name").textContent = selectedCoupon.name;
+        document.getElementById("cart-coupon-desc").textContent = selectedCoupon.description;
+        document.getElementById("coupon-input").value = "";
+
 
       updateCartTotal();
       showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
