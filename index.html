@@ -1391,11 +1391,13 @@
   try {
     // 🟣 1. ตรวจคูปองสาธารณะจากตาราง coupons ก่อน
     const { data: coupon, error: couponError } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", code)
-      .eq("is_active", true)
-      .maybeSingle();
+  .from("coupons")
+  .select("*")
+  .eq("code", code)
+  .eq("is_active", true)
+  .eq("show_in_list", true)
+  .maybeSingle();
+
 
     if (coupon && !couponError) {
       // ตรวจว่าหมดจำนวนใช้หรือยัง
@@ -2283,23 +2285,28 @@ async function loadCoupons() {
   }
 
   container.innerHTML = data.map(c => `
-    <div class="p-3 border rounded-lg bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <div>
-        <div class="font-semibold">${c.name} <span class="text-gray-500 text-xs">(${c.code})</span></div>
-        <div class="text-sm text-gray-600">${c.description || ''}</div>
-        <div class="text-xs text-gray-500">ส่วนลด: ${c.type === 'percent' ? c.value + '%' : c.value + '฿'} • ขั้นต่ำ ${c.min_purchase || 0}฿</div>
-        <div class="text-xs text-gray-400">ใช้ไป ${c.usage_count || 0}/${c.usage_limit || '∞'} ครั้ง</div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="editCoupon(${c.id})" class="text-blue-600 hover:underline text-sm">แก้ไข</button>
-        <button onclick="deleteCoupon(${c.id})" class="text-red-500 hover:underline text-sm">ลบ</button>
-        <button onclick="toggleCoupon(${c.id}, ${!c.is_active})" 
-                class="text-sm ${c.is_active ? 'text-green-600' : 'text-gray-400'}">
-          ${c.is_active ? '🟢 เปิด' : '⚪ ปิด'}
-        </button>
-      </div>
+  <div class="p-3 border rounded-lg bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <div>
+      <div class="font-semibold">${c.name} <span class="text-gray-500 text-xs">(${c.code})</span></div>
+      <div class="text-sm text-gray-600">${c.description || ''}</div>
+      <div class="text-xs text-gray-500">ส่วนลด: ${c.type === 'percent' ? c.value + '%' : c.value + '฿'} • ขั้นต่ำ ${c.min_purchase || 0}฿</div>
+      <div class="text-xs text-gray-400">ใช้ไป ${c.usage_count || 0}/${c.usage_limit || '∞'} ครั้ง</div>
     </div>
-  `).join("");
+
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      <button onclick="editCoupon(${c.id})" class="text-blue-600 hover:underline">แก้ไข</button>
+      <button onclick="deleteCoupon(${c.id})" class="text-red-500 hover:underline">ลบ</button>
+      <button onclick="toggleCoupon(${c.id}, ${!c.is_active})" 
+              class="${c.is_active ? 'text-green-600' : 'text-gray-400'}">
+        ${c.is_active ? '🟢 เปิด' : '⚪ ปิด'}
+      </button>
+      <button onclick="toggleShowInList(${c.id}, ${!c.show_in_list})" 
+              class="${c.show_in_list ? 'text-purple-600' : 'text-gray-400'}">
+        ${c.show_in_list ? '📢 แสดงในคลัง' : '🙈 ซ่อนในคลัง'}
+      </button>
+    </div>
+  </div>
+`).join("");
 }
 
 // เปิด / ปิดคูปอง
@@ -2310,6 +2317,21 @@ async function toggleCoupon(id, newState) {
     .eq("id", id);
   if (error) console.error("toggleCoupon error:", error);
   loadCoupons();
+}
+
+// ✅ เปิด/ปิดการแสดงคูปองในคลังของลูกค้า
+async function toggleShowInList(id, newState) {
+  const { error } = await supabase
+    .from("coupons")
+    .update({ show_in_list: newState })
+    .eq("id", id);
+
+  if (error) {
+    console.error("❌ toggleShowInList error:", error);
+    alert("เกิดข้อผิดพลาดในการเปลี่ยนสถานะการแสดงคูปอง");
+  } else {
+    loadCoupons(); // โหลดใหม่หลังอัปเดต
+  }
 }
 
 // เปิดโมดอลเพิ่ม / แก้ไข
