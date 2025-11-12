@@ -1130,7 +1130,7 @@
         let html = '';
         userCoupons.forEach(coupon => {
           html += `
-            <div class="card border-2 border-purple-200 p-3 sm:p-4">
+            <div class="card border-2 ${coupon.is_used ? 'border-gray-200 opacity-50' : 'border-purple-200 hover:border-purple-400 cursor-pointer'} p-3 sm:p-4" ${!coupon.is_used ? `onclick="selectCouponFromMyCoupons('${coupon.coupon_code}')"` : ''}>
               <div class="flex items-start justify-between mb-3">
                 <div class="text-2xl sm:text-3xl">🎫</div>
                 <div class="text-xs ${coupon.is_used ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'} px-2 py-1 rounded-full">
@@ -1142,6 +1142,7 @@
               <div class="text-xs text-gray-500 mb-2">รหัส: <span class="font-mono font-bold">${coupon.coupon_code}</span></div>
               <div class="text-xs text-gray-500">ส่วนลด: ${coupon.rewards.discount_type === 'percent' ? coupon.rewards.discount_value + '%' : coupon.rewards.discount_value + ' บาท'}</div>
               <div class="text-xs text-gray-500">ยอดขั้นต่ำ: ${coupon.rewards.min_purchase} บาท</div>
+              ${!coupon.is_used ? '<div class="mt-3 text-xs text-purple-600 font-medium text-center">คลิกเพื่อใช้คูปอง</div>' : ''}
             </div>
           `;
         });
@@ -1150,6 +1151,12 @@
 
       closeRewards();
       modal.classList.remove("hidden");
+    }
+
+    function selectCouponFromMyCoupons(couponCode) {
+      closeMyCoupons();
+      document.getElementById("coupon-input").value = couponCode;
+      applyCouponCode();
     }
 
     function closeMyCoupons() {
@@ -1395,34 +1402,69 @@
       const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
 
       try {
-        // ค้นหาคูปองจาก user_coupons
-        const { data: userCoupon, error } = await supabase
+        // ค้นหาคูปองจาก user_coupons (ของรางวัลที่แลกมา)
+        const { data: userCoupon, error: userCouponError } = await supabase
           .from("user_coupons")
           .select("*, rewards(*)")
           .eq("coupon_code", code)
           .eq("user_id", currentUser.id)
           .eq("is_used", false)
-          .single();
+          .maybeSingle();
 
-        if (error || !userCoupon) {
-          showCouponMessage("ไม่พบคูปองนี้หรือถูกใช้ไปแล้ว", "error");
-          return;
+        // ถ้าไม่พบใน user_coupons ให้ค้นหาใน coupons (คูปองแบบเก่า)
+        if (!userCoupon) {
+          const { data: normalCoupon, error: normalCouponError } = await supabase
+            .from("coupons")
+            .select("*")
+            .eq("code", code)
+            .eq("is_active", true)
+            .single();
+
+          if (normalCouponError || !normalCoupon) {
+            showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
+            return;
+          }
+
+          // ตรวจสอบจำนวนการใช้งาน
+          if (normalCoupon.usage_count >= normalCoupon.usage_limit) {
+            showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
+            return;
+          }
+
+          if (subtotal < normalCoupon.min_purchase) {
+            showCouponMessage(`ยอดขั้นต่ำ ${normalCoupon.min_purchase} บาท`, "error");
+            return;
+          }
+
+          selectedCoupon = {
+            id: normalCoupon.id,
+            code: normalCoupon.code,
+            name: normalCoupon.name,
+            description: normalCoupon.description,
+            discount_type: normalCoupon.type,
+            discount_value: normalCoupon.value,
+            min_purchase: normalCoupon.min_purchase,
+            coupon_type: 'normal' // ระบุว่าเป็นคูปองแบบเก่า
+          };
+
+        } else {
+          // เป็นคูปองจากการแลกแต้ม
+          if (subtotal < userCoupon.rewards.min_purchase) {
+            showCouponMessage(`ยอดขั้นต่ำ ${userCoupon.rewards.min_purchase} บาท`, "error");
+            return;
+          }
+
+          selectedCoupon = {
+            id: userCoupon.id,
+            code: userCoupon.coupon_code,
+            name: userCoupon.rewards.name,
+            description: userCoupon.rewards.description,
+            discount_type: userCoupon.rewards.discount_type,
+            discount_value: userCoupon.rewards.discount_value,
+            min_purchase: userCoupon.rewards.min_purchase,
+            coupon_type: 'reward' // ระบุว่าเป็นคูปองจากแลกแต้ม
+          };
         }
-
-        if (subtotal < userCoupon.rewards.min_purchase) {
-          showCouponMessage(`ยอดขั้นต่ำ ${userCoupon.rewards.min_purchase} บาท`, "error");
-          return;
-        }
-
-        selectedCoupon = {
-          id: userCoupon.id,
-          code: userCoupon.coupon_code,
-          name: userCoupon.rewards.name,
-          description: userCoupon.rewards.description,
-          discount_type: userCoupon.rewards.discount_type,
-          discount_value: userCoupon.rewards.discount_value,
-          min_purchase: userCoupon.rewards.min_purchase
-        };
 
         document.getElementById("selected-coupon").classList.remove("hidden");
         document.getElementById("coupon-name").textContent = selectedCoupon.name;
@@ -1476,10 +1518,25 @@
           }
 
           // ทำเครื่องหมายคูปองว่าใช้แล้ว
-          await supabase
-            .from("user_coupons")
-            .update({ is_used: true, used_at: new Date().toISOString() })
-            .eq("id", selectedCoupon.id);
+          if (selectedCoupon.coupon_type === 'reward') {
+            // คูปองจากการแลกแต้ม
+            await supabase
+              .from("user_coupons")
+              .update({ is_used: true, used_at: new Date().toISOString() })
+              .eq("id", selectedCoupon.id);
+          } else if (selectedCoupon.coupon_type === 'normal') {
+            // คูปองแบบเก่า - เพิ่มจำนวนการใช้
+            const { data: currentCoupon } = await supabase
+              .from("coupons")
+              .select("usage_count")
+              .eq("id", selectedCoupon.id)
+              .single();
+
+            await supabase
+              .from("coupons")
+              .update({ usage_count: (currentCoupon.usage_count || 0) + 1 })
+              .eq("id", selectedCoupon.id);
+          }
         }
 
         const total = Math.max(0, subtotal - discount);
@@ -1522,6 +1579,7 @@
         updateCartBadge();
         closeCart();
         await loadUserCoupons();
+        await loadCoupons();
 
         showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
       } catch (error) {
