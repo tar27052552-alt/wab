@@ -1424,16 +1424,23 @@
           .eq("is_used", false)
           .maybeSingle();
 
+        console.log("🔍 ค้นหาใน user_coupons:", userCoupon);
+
         // ถ้าไม่พบใน user_coupons ให้ค้นหาใน coupons (คูปองแบบเก่า)
         if (!userCoupon) {
+          console.log("🔍 ไม่พบใน user_coupons, ค้นหาใน coupons...");
+          
           const { data: normalCoupon, error: normalCouponError } = await supabase
             .from("coupons")
             .select("*")
             .eq("code", code)
             .eq("is_active", true)
-            .single();
+            .maybeSingle();
 
-          if (normalCouponError || !normalCoupon) {
+          console.log("🔍 ผลลัพธ์จาก coupons:", normalCoupon);
+          console.log("❌ Error:", normalCouponError);
+
+          if (!normalCoupon) {
             showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
             return;
           }
@@ -1460,6 +1467,8 @@
             coupon_type: 'normal' // ระบุว่าเป็นคูปองแบบเก่า
           };
 
+          console.log("✅ ใช้คูปองแบบเก่าสำเร็จ:", selectedCoupon);
+
         } else {
           // เป็นคูปองจากการแลกแต้ม
           if (subtotal < userCoupon.rewards.min_purchase) {
@@ -1477,6 +1486,8 @@
             min_purchase: userCoupon.rewards.min_purchase,
             coupon_type: 'reward' // ระบุว่าเป็นคูปองจากแลกแต้ม
           };
+
+          console.log("✅ ใช้คูปองจากแลกแต้มสำเร็จ:", selectedCoupon);
         }
 
         document.getElementById("selected-coupon").classList.remove("hidden");
@@ -1489,7 +1500,7 @@
 
       } catch (error) {
         console.error("❌ Error applying coupon:", error);
-        showCouponMessage("เกิดข้อผิดพลาด", "error");
+        showCouponMessage("เกิดข้อผิดพลาด: " + error.message, "error");
       }
     }
 
