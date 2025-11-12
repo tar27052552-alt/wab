@@ -419,7 +419,7 @@
   </div>
 
   <!-- My Coupons Modal (คูปองของฉัน) -->
-  <div id="my-coupons-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'my-coupons-modal')">
+  <div id="my-coupons-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[60] flex items-center justify-center p-3 sm:p-4" onclick="closeModalOnBackdrop(event, 'my-coupons-modal')">
     <div class="card max-w-4xl w-full max-h-[85vh] overflow-y-auto hover-lift" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-4 sm:mb-6">
         <h3 class="text-lg sm:text-xl lg:text-2xl font-bold">🎫 คูปองของฉัน</h3>
@@ -1155,8 +1155,20 @@
 
     function selectCouponFromMyCoupons(couponCode) {
       closeMyCoupons();
-      document.getElementById("coupon-input").value = couponCode;
-      applyCouponCode();
+      // รอให้ modal ปิดก่อน แล้วค่อยกรอกและใช้คูปอง
+      setTimeout(() => {
+        if (!document.getElementById("cart-modal").classList.contains("hidden")) {
+          document.getElementById("coupon-input").value = couponCode;
+          applyCouponCode();
+        } else {
+          // ถ้าตะกร้าปิดอยู่ ให้เปิดตะกร้าก่อน
+          showCart();
+          setTimeout(() => {
+            document.getElementById("coupon-input").value = couponCode;
+            applyCouponCode();
+          }, 300);
+        }
+      }, 300);
     }
 
     function closeMyCoupons() {
@@ -1164,7 +1176,8 @@
     }
 
     function showMyCouponsForCart() {
-      showMyCoupons();
+      // เปิดหน้าคูปองของฉันทับตะกร้า
+      document.getElementById("my-coupons-modal").classList.remove("hidden");
     }
 
     async function loadMenus(dessertId) { 
