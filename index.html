@@ -1433,7 +1433,7 @@
           const { data: normalCoupon, error: normalCouponError } = await supabase
             .from("coupons")
             .select("*")
-            .eq("code", code)
+            .ilike("code", code)
             .eq("is_active", true)
             .maybeSingle();
 
