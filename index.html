@@ -1800,6 +1800,7 @@
       let html = '<div class="space-y-3 sm:space-y-4">';
       orders.forEach(order => {
         const statusClass = getStatusBadgeClass(order.status);
+        const isCancelled = order.status === 'cancelled';
         
         let itemsArray = [];
         try {
@@ -1809,7 +1810,7 @@
         }
         
         html += `
-          <div class="card border border-gray-200 p-3 sm:p-4">
+          <div class="card border border-gray-200 p-3 sm:p-4 ${isCancelled ? 'opacity-60' : ''}">
             <div class="flex items-start justify-between mb-3 gap-3 flex-wrap">
               <div class="flex items-center space-x-3">
                 <img src="${order.users?.picture_url || ''}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full" />
@@ -1833,13 +1834,19 @@
                 <div class="text-xs text-gray-400">${new Date(order.created_at).toLocaleString('th-TH')}</div>
               </div>
               <div class="flex gap-2">
-                <select onchange="updateOrderStatus(${order.id}, this.value)" class="text-xs sm:text-sm border border-gray-300 rounded px-2 py-1">
-                  <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>รอดำเนินการ</option>
-                  <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>กำลังเตรียม</option>
-                  <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>พร้อมรับ</option>
-                  <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>สำเร็จ</option>
-                  <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ยกเลิก</option>
-                </select>
+                ${isCancelled ? `
+                  <div class="text-xs sm:text-sm text-red-600 font-medium px-3 py-2">
+                    🚫 ยกเลิกแล้ว
+                  </div>
+                ` : `
+                  <select onchange="updateOrderStatus(${order.id}, this.value)" class="text-xs sm:text-sm border border-gray-300 rounded px-2 py-1">
+                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>รอดำเนินการ</option>
+                    <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>กำลังเตรียม</option>
+                    <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>พร้อมรับ</option>
+                    <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>สำเร็จ</option>
+                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ยกเลิก</option>
+                  </select>
+                `}
               </div>
             </div>
           </div>
@@ -1912,6 +1919,13 @@
 
         if (fetchError) throw fetchError;
 
+        // ตรวจสอบว่าออเดอร์เป็นสถานะยกเลิกหรือไม่
+        if (orderData.status === 'cancelled') {
+          showMessage("❌ ไม่สามารถเปลี่ยนสถานะของออเดอร์ที่ยกเลิกแล้วได้");
+          loadAdminOrders(); // โหลดข้อมูลใหม่เพื่อรีเซ็ต dropdown
+          return;
+        }
+
         const { error: updateError } = await supabase
           .from('orders')
           .update({ status: newStatus })
@@ -1942,6 +1956,7 @@
       } catch (error) {
         console.error("❌ Error updating order status:", error);
         showMessage(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+        loadAdminOrders(); // โหลดข้อมูลใหม่เพื่อรีเซ็ต dropdown
       }
     }
 
