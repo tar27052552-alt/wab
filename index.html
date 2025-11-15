@@ -566,7 +566,7 @@
       <!-- Summary Tab (สรุปออเดอร์ตามสถานะ) -->
       <div id="admin-summary-tab" class="admin-tab-content hidden space-y-4">
         <div class="flex flex-wrap gap-3 items-center">
-          <input type="date" id="summary-date" class="border rounded-lg px-3 py-2 shadow-sm text-xs sm:text-sm">
+          <input type="date" id="summary-date" class="border rounded-lg px-3 py-2 shadow-sm text-xs sm:text-sm" placeholder="ไม่บังคับ">
           <select id="summary-status" class="border rounded-lg px-3 py-2 shadow-sm text-xs sm:text-sm">
             <option value="">ทุกสถานะ</option>
             <option value="pending">🕓 รอดำเนินการ</option>
@@ -578,12 +578,12 @@
           <button onclick="loadOrderSummary()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition text-xs sm:text-sm">
             ดูสรุป
           </button>
-          <button onclick="updateAllOrdersOfDay()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition text-xs sm:text-sm">
-            อัปเดตสถานะทั้งหมดของวัน
+          <button onclick="updateAllFilteredOrders()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition text-xs sm:text-sm">
+            อัปเดตสถานะทั้งหมด
           </button>
         </div>
         <div id="summary-content" class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200 min-h-[150px]">
-          <p class="text-gray-500 text-center text-xs sm:text-sm">📆 กรุณาเลือกวันที่และสถานะเพื่อดูสรุปออเดอร์</p>
+          <p class="text-gray-500 text-center text-xs sm:text-sm">📆 เลือกเงื่อนไขแล้วกด "ดูสรุป" เพื่อดูออเดอร์</p>
         </div>
       </div>
 
@@ -1405,121 +1405,104 @@
     }
 
     async function applyCouponCode() {
-  const code = document.getElementById("coupon-input").value.trim().toUpperCase();
+      const code = document.getElementById("coupon-input").value.trim().toUpperCase();
 
-  if (!code) {
-    showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
-    return;
-  }
+      if (!code) {
+        showCouponMessage("กรุณากรอกโค้ดคูปอง", "error");
+        return;
+      }
 
-  const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+      const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
 
-  try {
-    // 🔍 1. ค้นหาคูปองจาก user_coupons (ของรางวัลที่แลกมา)
-    const { data: userCoupon, error: userCouponError } = await supabase
-      .from("user_coupons")
-      .select("*, rewards(*)")
-      .eq("coupon_code", code)
-      .eq("user_id", currentUser.id)
-      .eq("is_used", false)
-      .maybeSingle();
-
-    console.log("🔍 ค้นหาใน user_coupons:", userCoupon);
-
-    // ✅ ถ้าไม่พบใน user_coupons → ค้นหาใน coupons (คูปองแบบเก่า)
-    if (!userCoupon) {
-      console.log("🔍 ไม่พบใน user_coupons, ค้นหาใน coupons...");
-
-      const { data: normalCoupon, error: normalCouponError } = await supabase
-        .from("coupons")
-        .select("*")
-        .ilike("code", code)
-        .eq("is_active", true)
-        .maybeSingle();
-
-      console.log("🔍 ผลลัพธ์จาก coupons:", normalCoupon);
-      console.log("❌ Error:", normalCouponError);
-
-      // 🟣 ถ้าไม่เจอใน coupons (active = true)
-      if (!normalCoupon) {
-        console.log("⚙️ ลองค้นหาโดยไม่สนใจ is_active...");
-        const { data: anyCoupon, error: anyCouponError } = await supabase
-          .from("coupons")
-          .select("*")
-          .ilike("code", code)
+      try {
+        // ค้นหาคูปองจาก user_coupons (ของรางวัลที่แลกมา)
+        const { data: userCoupon, error: userCouponError } = await supabase
+          .from("user_coupons")
+          .select("*, rewards(*)")
+          .eq("coupon_code", code)
+          .eq("user_id", currentUser.id)
+          .eq("is_used", false)
           .maybeSingle();
 
-        console.log("🔍 ค้นหาโดยไม่สนใจ is_active:", anyCoupon);
-        console.log("❌ Error (anyCoupon):", anyCouponError);
+        console.log("🔍 ค้นหาใน user_coupons:", userCoupon);
 
-        if (anyCoupon && anyCoupon.is_active === false) {
-          showCouponMessage("คูปองนี้ถูกปิดการใช้งานแล้ว", "error");
-          return;
+        // ถ้าไม่พบใน user_coupons ให้ค้นหาใน coupons (คูปองแบบเก่า)
+        if (!userCoupon) {
+          console.log("🔍 ไม่พบใน user_coupons, ค้นหาใน coupons...");
+          
+          const { data: normalCoupon, error: normalCouponError } = await supabase
+            .from("coupons")
+            .select("*")
+            .eq("code", code)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          console.log("🔍 ผลลัพธ์จาก coupons:", normalCoupon);
+          console.log("❌ Error:", normalCouponError);
+
+          if (!normalCoupon) {
+            showCouponMessage("ไม่พบคูปองนี้หรือหมดอายุแล้ว", "error");
+            return;
+          }
+
+          // ตรวจสอบจำนวนการใช้งาน
+          if (normalCoupon.usage_count >= normalCoupon.usage_limit) {
+            showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
+            return;
+          }
+
+          if (subtotal < normalCoupon.min_purchase) {
+            showCouponMessage(`ยอดขั้นต่ำ ${normalCoupon.min_purchase} บาท`, "error");
+            return;
+          }
+
+          selectedCoupon = {
+            id: normalCoupon.id,
+            code: normalCoupon.code,
+            name: normalCoupon.name,
+            description: normalCoupon.description,
+            discount_type: normalCoupon.type,
+            discount_value: normalCoupon.value,
+            min_purchase: normalCoupon.min_purchase,
+            coupon_type: 'normal' // ระบุว่าเป็นคูปองแบบเก่า
+          };
+
+          console.log("✅ ใช้คูปองแบบเก่าสำเร็จ:", selectedCoupon);
+
+        } else {
+          // เป็นคูปองจากการแลกแต้ม
+          if (subtotal < userCoupon.rewards.min_purchase) {
+            showCouponMessage(`ยอดขั้นต่ำ ${userCoupon.rewards.min_purchase} บาท`, "error");
+            return;
+          }
+
+          selectedCoupon = {
+            id: userCoupon.id,
+            code: userCoupon.coupon_code,
+            name: userCoupon.rewards.name,
+            description: userCoupon.rewards.description,
+            discount_type: userCoupon.rewards.discount_type,
+            discount_value: userCoupon.rewards.discount_value,
+            min_purchase: userCoupon.rewards.min_purchase,
+            coupon_type: 'reward' // ระบุว่าเป็นคูปองจากแลกแต้ม
+          };
+
+          console.log("✅ ใช้คูปองจากแลกแต้มสำเร็จ:", selectedCoupon);
         }
 
-        showCouponMessage("ไม่พบคูปองนี้ในระบบ", "error");
-        return;
+        document.getElementById("selected-coupon").classList.remove("hidden");
+        document.getElementById("coupon-name").textContent = selectedCoupon.name;
+        document.getElementById("coupon-desc").textContent = selectedCoupon.description;
+        document.getElementById("coupon-input").value = "";
+
+        updateCartTotal();
+        showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
+
+      } catch (error) {
+        console.error("❌ Error applying coupon:", error);
+        showCouponMessage("เกิดข้อผิดพลาด: " + error.message, "error");
       }
-
-      // ✅ ตรวจสอบจำนวนการใช้งาน
-      if (normalCoupon.usage_count >= normalCoupon.usage_limit) {
-        showCouponMessage("คูปองนี้ถูกใช้หมดแล้ว", "error");
-        return;
-      }
-
-      if (subtotal < normalCoupon.min_purchase) {
-        showCouponMessage(`ยอดขั้นต่ำ ${normalCoupon.min_purchase} บาท`, "error");
-        return;
-      }
-
-      selectedCoupon = {
-        id: normalCoupon.id,
-        code: normalCoupon.code,
-        name: normalCoupon.name,
-        description: normalCoupon.description,
-        discount_type: normalCoupon.type,
-        discount_value: normalCoupon.value,
-        min_purchase: normalCoupon.min_purchase,
-        coupon_type: 'normal'
-      };
-
-      console.log("✅ ใช้คูปองแบบเก่าสำเร็จ:", selectedCoupon);
-
-    } else {
-      // 🎁 คูปองจากการแลกแต้ม
-      if (subtotal < userCoupon.rewards.min_purchase) {
-        showCouponMessage(`ยอดขั้นต่ำ ${userCoupon.rewards.min_purchase} บาท`, "error");
-        return;
-      }
-
-      selectedCoupon = {
-        id: userCoupon.id,
-        code: userCoupon.coupon_code,
-        name: userCoupon.rewards.name,
-        description: userCoupon.rewards.description,
-        discount_type: userCoupon.rewards.discount_type,
-        discount_value: userCoupon.rewards.discount_value,
-        min_purchase: userCoupon.rewards.min_purchase,
-        coupon_type: 'reward'
-      };
-
-      console.log("✅ ใช้คูปองจากแลกแต้มสำเร็จ:", selectedCoupon);
     }
-
-    // 💬 แสดงผลบนหน้าเว็บ
-    document.getElementById("selected-coupon").classList.remove("hidden");
-    document.getElementById("coupon-name").textContent = selectedCoupon.name;
-    document.getElementById("coupon-desc").textContent = selectedCoupon.description;
-    document.getElementById("coupon-input").value = "";
-
-    updateCartTotal();
-    showCouponMessage("ใช้คูปองสำเร็จ! 🎉", "success");
-
-  } catch (error) {
-    console.error("❌ Error applying coupon:", error);
-    showCouponMessage("เกิดข้อผิดพลาด: " + error.message, "error");
-  }
-}
 
     function removeCoupon() {
       selectedCoupon = null;
@@ -2258,7 +2241,7 @@
         if (error) throw error;
 
         showMessage(showInList
-          ? "คูปองนี้จะแสดงในคลังของทุกคน ✅"
+          ? "คูปองนี้จะแสดงในหน้า 'คูปองของฉัน' ✅"
           : "คูปองนี้ถูกซ่อนไว้ ต้องกรอกรหัสก่อนเท่านั้น 🔒"
         );
 
@@ -2368,32 +2351,28 @@
       const selectedStatus = document.getElementById("summary-status").value;
       const content = document.getElementById("summary-content");
 
-      if (!selectedDate) {
-        content.innerHTML = `<p class="text-gray-500 text-center text-xs sm:text-sm">⚠️ กรุณาเลือกวันที่ก่อน</p>`;
-        return;
-      }
-
       try {
-        const start = new Date(selectedDate);
-        const end = new Date(selectedDate);
-        end.setDate(end.getDate() + 1);
+        let query = supabase.from("orders").select("*");
 
-        let query = supabase
-          .from("orders")
-          .select("*")
-          .gte("created_at", start.toISOString())
-          .lt("created_at", end.toISOString());
+        // ถ้ามีการเลือกวันที่
+        if (selectedDate) {
+          const start = new Date(selectedDate);
+          const end = new Date(selectedDate);
+          end.setDate(end.getDate() + 1);
+          query = query.gte("created_at", start.toISOString()).lt("created_at", end.toISOString());
+        }
 
+        // ถ้ามีการเลือกสถานะ
         if (selectedStatus) {
           query = query.eq("status", selectedStatus);
         }
 
-        const { data: orders, error } = await query;
+        const { data: orders, error } = await query.order("created_at", { ascending: false });
 
         if (error) throw error;
 
         if (orders.length === 0) {
-          content.innerHTML = `<p class="text-gray-500 text-center text-xs sm:text-sm">ไม่มีออเดอร์ในวันที่ ${selectedDate} ${selectedStatus ? 'สถานะ: ' + getStatusText(selectedStatus) : ''}</p>`;
+          content.innerHTML = `<p class="text-gray-500 text-center text-xs sm:text-sm">ไม่มีออเดอร์ตามเงื่อนไขที่เลือก</p>`;
           return;
         }
 
@@ -2415,17 +2394,29 @@
           });
         });
 
+        let filterText = '';
+        if (selectedDate && selectedStatus) {
+          filterText = `วันที่ ${selectedDate} - สถานะ: ${getStatusText(selectedStatus)}`;
+        } else if (selectedDate) {
+          filterText = `วันที่ ${selectedDate}`;
+        } else if (selectedStatus) {
+          filterText = `สถานะ: ${getStatusText(selectedStatus)}`;
+        } else {
+          filterText = 'ออเดอร์ทั้งหมด';
+        }
+
         let html = `
-          <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-3">📅 สรุปวันที่ ${selectedDate} ${selectedStatus ? '- สถานะ: ' + getStatusText(selectedStatus) : ''}</h3>
+          <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-3">📅 สรุป ${filterText}</h3>
           <div class="mb-4">
             <p class="text-xs sm:text-sm">ออเดอร์ทั้งหมด: <b>${totalOrders}</b> รายการ</p>
-            <p class="text-xs sm:text-sm">ยอดขายรวม: <b>${totalRevenue}</b> บาท</p>
+            <p class="text-xs sm:text-sm">ยอดขายรวม: <b>${totalRevenue.toLocaleString()}</b> บาท</p>
           </div>
 
           <div class="border-t pt-4">
             <h4 class="font-semibold text-purple-700 mb-2 text-xs sm:text-sm">🰠รายการรวม (เนื้อ + หน้า)</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               ${Object.entries(comboCounts)
+                .sort((a, b) => b[1] - a[1])
                 .map(([combo, qty]) => `<p class="text-xs sm:text-sm">• ${combo} — <b>${qty}</b> ชิ้น</p>`)
                 .join('')}
             </div>
@@ -2437,12 +2428,12 @@
               <option value="pending">🕓 รอดำเนินการ</option>
               <option value="preparing">👨‍🍳 กำลังทำ</option>
               <option value="ready">🚚 พร้อมส่ง</option>
-              <option value="completed">✅ สำเร็จ</option>
-              <option value="cancelled">❌ ยกเลิก</option>
+              <option value="completed">✅ เสร็จสิ้น</option>
             </select>
-            <button onclick="updateAllOrdersOfDay()" 
+            <p class="text-xs text-gray-500">* ออเดอร์ที่ยกเลิกแล้วจะไม่ถูกเปลี่ยนสถานะ</p>
+            <button onclick="updateAllFilteredOrders()" 
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs sm:text-sm shadow">
-              🔄 อัปเดตสถานะทั้งหมดของวัน
+              🔄 อัปเดตสถานะทั้งหมด
             </button>
           </div>
         `;
@@ -2454,63 +2445,106 @@
       }
     }
 
-    async function updateAllOrdersOfDay() {
+    async function updateAllFilteredOrders() {
       const selectedDate = document.getElementById("summary-date").value;
+      const selectedStatus = document.getElementById("summary-status").value;
       const newStatus = document.getElementById("update-status-select").value;
 
-      if (!selectedDate) return alert("⚠️ กรุณาเลือกวันที่ก่อน");
       if (!newStatus) return alert("⚠️ กรุณาเลือกสถานะที่จะอัปเดต");
 
-      try {
-        const start = new Date(selectedDate);
-        const end = new Date(selectedDate);
-        end.setDate(end.getDate() + 1);
+      if (!confirm(`ต้องการอัปเดตสถานะออเดอร์ทั้งหมดตามเงื่อนไขที่เลือก เป็น "${getStatusText(newStatus)}" หรือไม่?\n\n* ออเดอร์ที่ยกเลิกแล้วจะไม่ถูกเปลี่ยนสถานะ`)) {
+        return;
+      }
 
-        const { data: orders, error: fetchError } = await supabase
-          .from("orders")
-          .select("*, users(line_id, display_name)")
-          .gte("created_at", start.toISOString())
-          .lt("created_at", end.toISOString());
+      try {
+        let query = supabase.from("orders").select("*, users(line_id, display_name)");
+
+        // ถ้ามีการเลือกวันที่
+        if (selectedDate) {
+          const start = new Date(selectedDate);
+          const end = new Date(selectedDate);
+          end.setDate(end.getDate() + 1);
+          query = query.gte("created_at", start.toISOString()).lt("created_at", end.toISOString());
+        }
+
+        // ถ้ามีการเลือกสถานะ
+        if (selectedStatus) {
+          query = query.eq("status", selectedStatus);
+        }
+
+        // ไม่รวมออเดอร์ที่ยกเลิกแล้ว
+        query = query.neq("status", "cancelled");
+
+        const { data: orders, error: fetchError } = await query;
 
         if (fetchError) throw fetchError;
         if (!orders || orders.length === 0) {
-          showMessage("❌ ไม่มีออเดอร์ในวันนั้น");
+          showMessage("❌ ไม่มีออเดอร์ตามเงื่อนไขที่เลือก");
           return;
         }
 
+        let successCount = 0;
+        let errorCount = 0;
+
         for (const order of orders) {
-          const { error: updateError } = await supabase
-            .from("orders")
-            .update({ status: newStatus })
-            .eq("id", order.id);
-
-          if (updateError) console.error(`❌ อัปเดตออเดอร์ ${order.id} ล้มเหลว:`, updateError);
-
           try {
-            await supabase.functions.invoke("send-line-notification", {
-              body: {
-                lineId: order.users.line_id,
-                orderId: order.id,
-                status: newStatus,
-                orderData: {
-                  items: order.items,
-                  total_price: order.total_price,
-                  subtotal: order.subtotal,
-                  discount: order.discount,
+            const { error: updateError } = await supabase
+              .from("orders")
+              .update({ status: newStatus })
+              .eq("id", order.id);
+
+            if (updateError) {
+              console.error(`❌ อัปเดตออเดอร์ ${order.id} ล้มเหลว:`, updateError);
+              errorCount++;
+              continue;
+            }
+
+            // ส่งการแจ้งเตือน LINE
+            try {
+              await supabase.functions.invoke("send-line-notification", {
+                body: {
+                  lineId: order.users.line_id,
+                  orderId: order.id,
+                  status: newStatus,
+                  orderData: {
+                    items: order.items,
+                    total_price: order.total_price,
+                    subtotal: order.subtotal,
+                    discount: order.discount,
+                  },
                 },
-              },
-            });
-          } catch (notifyError) {
-            console.error(`⚠️ แจ้งเตือน LINE ของออเดอร์ ${order.id} ไม่สำเร็จ`, notifyError);
+              });
+            } catch (notifyError) {
+              console.error(`⚠️ แจ้งเตือน LINE ของออเดอร์ ${order.id} ไม่สำเร็จ`, notifyError);
+            }
+
+            // ถ้าเป็นสถานะ completed ให้แต้ม
+            if (newStatus === 'completed' && order.status !== 'completed') {
+              const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('points')
+                .eq('id', order.user_id)
+                .single();
+
+              if (!userError && user) {
+                const newPoints = (user.points || 0) + (order.earned_points || 0);
+                await supabase.from('users').update({ points: newPoints }).eq('id', order.user_id);
+              }
+            }
+
+            successCount++;
+          } catch (orderError) {
+            console.error(`❌ Error processing order ${order.id}:`, orderError);
+            errorCount++;
           }
         }
 
         showMessage(
-          `✅ อัปเดตสถานะทั้งหมด ${orders.length} ออเดอร์ในวันที่ ${selectedDate} เป็น "${getStatusText(newStatus)}" สำเร็จ`
+          `✅ อัปเดตสำเร็จ ${successCount} ออเดอร์ เป็น "${getStatusText(newStatus)}"${errorCount > 0 ? ` (ล้มเหลว ${errorCount} ออเดอร์)` : ''}`
         );
         loadOrderSummary();
       } catch (err) {
-        console.error("❌ Error in updateAllOrdersOfDay:", err);
+        console.error("❌ Error in updateAllFilteredOrders:", err);
         showMessage("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ");
       }
     }
