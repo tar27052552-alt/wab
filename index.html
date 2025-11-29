@@ -459,6 +459,16 @@
         <div id="coupon-message" class="text-xs sm:text-sm mt-2 hidden"></div>
       </div>
 
+      <!-- เลือกวันจัดส่ง -->
+      <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-xl">
+        <h4 class="font-semibold text-gray-900 text-sm sm:text-base mb-3">🚚 เลือกวันจัดส่ง</h4>
+        <p class="text-xs text-gray-600 mb-3">*จัดส่งทุกวันจันทร์ พุธ ศุกร์ (ตั้งค่าเริ่มต้นเป็นวันที่ใกล้ที่สุด)</p>
+        <select id="delivery-date" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm">
+          <option value="">กำลังโหลด...</option>
+        </select>
+        <div id="delivery-message" class="text-xs sm:text-sm mt-2 hidden"></div>
+      </div>
+
       <div class="border-t pt-4">
         <div class="space-y-2 mb-4">
           <div class="flex justify-between text-gray-700 text-sm sm:text-base">
@@ -804,6 +814,7 @@
     let allItems = [];
     let shopIsOpen = true;
     let allOrders = [];
+    let isCheckingOut = false; // ป้องกันการกดซ้ำ
     
     async function init() {
       try {
@@ -1355,8 +1366,47 @@
         content.innerHTML = html;
       }
 
+      // โหลดวันจัดส่งที่เป็นไปได้
+      loadDeliveryDates();
+
       updateCartTotal();
       modal.classList.remove("hidden");
+    }
+
+    function loadDeliveryDates() {
+      const deliverySelect = document.getElementById("delivery-date");
+      const today = new Date();
+      const deliveryDays = [1, 3, 5]; // จันทร์=1, พุธ=3, ศุกร์=5
+      const dates = [];
+
+      // หาวันจัดส่งถัดไป 4 รอบ (ประมาณ 2 สัปดาห์)
+      for (let i = 0; i < 30 && dates.length < 8; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() + i);
+        
+        const dayOfWeek = checkDate.getDay();
+        
+        if (deliveryDays.includes(dayOfWeek)) {
+          dates.push(checkDate);
+        }
+      }
+
+      // สร้าง options
+      let optionsHTML = '';
+      dates.forEach((date, index) => {
+        const dateStr = date.toISOString().split('T')[0];
+        const displayDate = date.toLocaleDateString('th-TH', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        // ตั้งค่าเริ่มต้นเป็นวันแรก (วันที่ใกล้ที่สุด)
+        const selected = index === 0 ? 'selected' : '';
+        optionsHTML += `<option value="${dateStr}" ${selected}>${displayDate}</option>`;
+      });
+
+      deliverySelect.innerHTML = optionsHTML;
     }
 
     function updateCartQuantity(index, change) {
@@ -1530,6 +1580,32 @@
         return;
       }
 
+      // ตรวจสอบวันจัดส่ง
+      const deliveryDate = document.getElementById("delivery-date").value;
+      if (!deliveryDate) {
+        const deliveryMessage = document.getElementById("delivery-message");
+        deliveryMessage.textContent = "⚠️ กรุณาเลือกวันจัดส่ง";
+        deliveryMessage.className = "text-xs sm:text-sm mt-2 text-red-600";
+        deliveryMessage.classList.remove("hidden");
+        
+        // เลื่อนไปที่ส่วนเลือกวันจัดส่ง
+        document.getElementById("delivery-date").scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById("delivery-date").focus();
+        return;
+      }
+
+      // ป้องกันการกดซ้ำ
+      if (isCheckingOut) {
+        showMessage("⏳ กำลังดำเนินการ กรุณารอสักครู่...");
+        return;
+      }
+
+      isCheckingOut = true;
+      const checkoutButton = document.querySelector('#cart-modal button[onclick="checkout()"]');
+      const originalButtonText = checkoutButton.innerHTML;
+      checkoutButton.disabled = true;
+      checkoutButton.innerHTML = '⏳ กำลังดำเนินการ...';
+
       try {
         const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
         let discount = 0;
@@ -1566,6 +1642,15 @@
         const total = Math.max(0, subtotal - discount);
         const earnedPoints = total;
 
+        // แปลงวันที่เป็นข้อความที่อ่านง่าย
+        const deliveryDateObj = new Date(deliveryDate);
+        const deliveryDateDisplay = deliveryDateObj.toLocaleDateString('th-TH', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
         const { data: orderData, error: orderError } = await supabase
           .from("orders")
           .insert([{
@@ -1577,6 +1662,7 @@
             total_price: total,
             earned_points: earnedPoints,
             coupon_code: selectedCoupon ? selectedCoupon.code : null,
+            delivery_date: deliveryDate,
             status: "pending",
           }])
           .select()
@@ -1584,31 +1670,43 @@
 
         if (orderError) throw orderError;
 
-        await supabase.functions.invoke("send-line-notification", {
-          body: {
-            lineId: currentUser.line_id,
-            orderId: orderData.id,
-            status: "pending",
-            orderData: {
-              items: cart,
-              total_price: total,
-              subtotal: subtotal,
-              discount: discount,
+        // ส่งการแจ้งเตือน LINE (ไม่บล็อกถ้าล้มเหลว)
+        try {
+          await supabase.functions.invoke("send-line-notification", {
+            body: {
+              lineId: currentUser.line_id,
+              orderId: orderData.id,
+              status: "pending",
+              orderData: {
+                items: cart,
+                total_price: total,
+                subtotal: subtotal,
+                discount: discount,
+                delivery_date: deliveryDateDisplay,
+              },
             },
-          },
-        });
+          });
+        } catch (notifyError) {
+          console.warn("⚠️ การแจ้งเตือน LINE ล้มเหลว:", notifyError);
+        }
 
         cart = [];
         selectedCoupon = null;
+        document.getElementById("delivery-date").value = "";
         updateCartBadge();
         closeCart();
         await loadUserCoupons();
         await loadCoupons();
 
-        showMessage(`สั่งซื้อสำเร็จ! คุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
+        showMessage(`สั่งซื้อสำเร็จ! 📦\nวันจัดส่ง: ${deliveryDateDisplay}\nคุณจะได้รับแต้ม +${earnedPoints} แต้ม หลังจากได้รับสินค้า 🎉`);
       } catch (error) {
         console.error("❌ Checkout error:", error);
-        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ");
+        showMessage("เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองอีกครั้ง");
+      } finally {
+        // รีเซ็ตสถานะ
+        isCheckingOut = false;
+        checkoutButton.disabled = false;
+        checkoutButton.innerHTML = originalButtonText;
       }
     }
 
@@ -1669,12 +1767,25 @@
           const canCancel = order.status === "pending";
           const statusBadge = getStatusBadge(order.status);
 
+          // แสดงวันจัดส่ง
+          let deliveryDateDisplay = '';
+          if (order.delivery_date) {
+            const deliveryDate = new Date(order.delivery_date);
+            deliveryDateDisplay = deliveryDate.toLocaleDateString('th-TH', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          }
+
           html += `
             <div class="p-3 sm:p-4 bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition">
               <div class="flex justify-between items-start flex-wrap gap-2">
                 <div>
                   <p class="font-semibold text-purple-900 text-xs sm:text-sm lg:text-base">Order #${order.id}</p>
                   <p class="text-xs text-gray-500">${new Date(order.created_at).toLocaleString("th-TH")}</p>
+                  ${deliveryDateDisplay ? `<p class="text-xs text-blue-600 font-medium mt-1">📦 วันจัดส่ง: ${deliveryDateDisplay}</p>` : ''}
                 </div>
                 <span class="text-xs font-medium ${statusBadge.class} px-2 sm:px-3 py-1 rounded-full">${statusBadge.label}</span>
               </div>
