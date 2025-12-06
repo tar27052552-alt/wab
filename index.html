@@ -128,19 +128,6 @@
     transform: none;
   }
 
-  .btn-secondary {
-    background: white;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    font-weight: 500;
-  }
-  
-  .btn-secondary:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-  }
-
   /* Quantity Buttons */
   .quantity-btn {
     width: 2.5rem;
@@ -153,15 +140,6 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-
-  /* Toggle Switch */
-  .toggle-checkbox:checked {
-    right: 0;
-    border-color: #68D391;
-  }
-  .toggle-checkbox:checked + .toggle-label {
-    background-color: #68D391;
   }
 
   /* Animations */
@@ -202,23 +180,12 @@
     100% { transform: rotate(360deg); }
   }
 
-  /* Scrollbar - Custom Styling */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  /* Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-  /* Hide scrollbar for horizontal scroll areas on mobile */
-  .no-scrollbar::-webkit-scrollbar {
-      display: none;
-  }
-  .no-scrollbar {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
   /* Logo Image */
   .logo-image {
@@ -238,27 +205,13 @@
   /* Responsive Grid */
   .custom-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Mobile: 2 columns */
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
-  @media (min-width: 640px) { /* SM */
-    .custom-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
-  }
-  @media (min-width: 1024px) { /* LG */
-    .custom-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-    }
-  }
+  @media (min-width: 640px) { .custom-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; } }
+  @media (min-width: 1024px) { .custom-grid { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; } }
 
-  /* Overlay */
-  .shop-closed-overlay {
-    backdrop-filter: blur(8px);
-    background: rgba(15, 23, 42, 0.8);
-  }
+  .shop-closed-overlay { backdrop-filter: blur(8px); background: rgba(15, 23, 42, 0.8); }
 </style>
 
 </head>
@@ -300,30 +253,23 @@
 
       <!-- Right: Actions -->
       <div class="flex items-center gap-2">
-        <!-- Rewards -->
-        <button onclick="showRewards()" class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center hover:bg-purple-200 transition" title="แลกรางวัล">
+        <button onclick="showRewards()" class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center hover:bg-purple-200 transition">
           <i class="fa-solid fa-gift text-lg"></i>
         </button>
-
-        <!-- History -->
-        <button onclick="openOrderHistory()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition" title="ประวัติการสั่งซื้อ">
+        <button onclick="openOrderHistory()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition">
           <i class="fa-solid fa-clock-rotate-left text-lg"></i>
         </button>
-
-        <!-- Cart -->
-        <button onclick="showCart()" class="relative w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-200 transition" title="ตะกร้าสินค้า">
+        <button onclick="showCart()" class="relative w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-200 transition">
           <i class="fa-solid fa-cart-shopping text-lg"></i>
           <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white hidden transform scale-100 transition-transform">0</span>
         </button>
-
-        <!-- Profile Pic (Hidden on very small screens if needed, but good to keep) -->
         <div class="pl-2 border-l border-slate-200 ml-1 hidden sm:block">
           <img id="userPic" src="" alt="Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover bg-slate-200" />
         </div>
       </div>
     </div>
     
-    <!-- Admin Button (Hidden by default, shown if admin) -->
+    <!-- Admin Button -->
     <div id="admin-container" class="mt-2 text-right hidden">
        <button id="admin-btn" onclick="showAdmin()" class="text-xs bg-slate-800 text-white px-3 py-1 rounded-full hover:bg-slate-700 transition-all shadow-lg transform hover:scale-105">
          <i class="fa-solid fa-user-gear mr-1"></i> Admin Panel
@@ -364,7 +310,7 @@
 
     <div class="grid md:grid-cols-2 gap-6 sm:gap-8 mb-8">
       <!-- Base Selection -->
-      <div class="bg-white/60 p-4 rounded-3xl border border-white shadow-sm">
+      <div id="base-section" class="bg-white/60 p-4 rounded-3xl border border-white shadow-sm transition-all">
         <h3 class="text-base sm:text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
           <i class="fa-solid fa-layer-group text-indigo-500"></i> เลือกเนื้อ (Base)
         </h3>
@@ -372,7 +318,7 @@
       </div>
 
       <!-- Topping Selection -->
-      <div class="bg-white/60 p-4 rounded-3xl border border-white shadow-sm">
+      <div id="topping-section" class="bg-white/60 p-4 rounded-3xl border border-white shadow-sm transition-all">
         <h3 class="text-base sm:text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
           <i class="fa-solid fa-ice-cream text-pink-500"></i> เลือกหน้า (Topping)
         </h3>
@@ -381,25 +327,23 @@
     </div>
   </section>
   
-  <!-- Floating Bottom Bar for Action (Mobile First) -->
+  <!-- Floating Bottom Bar for Action -->
   <div id="action-bar" class="fixed bottom-0 left-0 right-0 p-3 sm:p-4 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 translate-y-full pb-safe">
     <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
       
-      <!-- Quantity Control -->
       <div class="flex items-center gap-4 sm:gap-6 bg-slate-50 rounded-2xl p-1.5 sm:p-2 border border-slate-100 w-full sm:w-auto justify-center">
-        <button onclick="changeQuantity(-1)" class="quantity-btn bg-white text-red-500 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-transform border border-slate-200 shadow-sm">
+        <button onclick="changeQuantity(-1)" class="quantity-btn bg-white text-red-500 hover:bg-red-50 hover:text-red-600 border border-slate-200 shadow-sm">
           <i class="fa-solid fa-minus"></i>
         </button>
         <div class="text-center min-w-[3rem]">
           <div class="text-xl sm:text-2xl font-bold text-slate-800" id="quantity">1</div>
           <div class="text-[10px] text-slate-400 font-medium">ชิ้น</div>
         </div>
-        <button onclick="changeQuantity(1)" class="quantity-btn bg-white text-green-500 hover:bg-green-50 hover:text-green-600 active:scale-95 transition-transform border border-slate-200 shadow-sm">
+        <button onclick="changeQuantity(1)" class="quantity-btn bg-white text-green-500 hover:bg-green-50 hover:text-green-600 border border-slate-200 shadow-sm">
           <i class="fa-solid fa-plus"></i>
         </button>
       </div>
 
-      <!-- Total & Add Button -->
       <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
         <div class="text-right hidden sm:block min-w-[100px]">
           <div class="text-xs text-slate-400 font-medium">ราคารวม</div>
@@ -437,7 +381,6 @@
   <div id="rewards-modal" class="fixed inset-0 z-[51] hidden flex items-end sm:items-center justify-center pointer-events-none">
     <div class="bg-white w-full max-w-lg h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform translate-y-full transition-transform duration-300">
       
-      <!-- Modal Header -->
       <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
         <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
           <i class="fa-solid fa-gift text-purple-500"></i> แลกของรางวัล
@@ -447,9 +390,7 @@
         </button>
       </div>
       
-      <!-- Modal Content -->
       <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar">
-        <!-- Points Card -->
         <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-5 sm:p-6 text-white mb-6 shadow-lg relative overflow-hidden">
           <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
           <div class="relative z-10">
@@ -499,7 +440,6 @@
       <div class="flex-1 overflow-y-auto p-5 custom-scrollbar">
         <div id="cart-content" class="space-y-4 mb-6"></div>
         
-        <!-- Coupon Section -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-4">
           <div class="flex justify-between items-center mb-3">
             <span class="text-sm font-semibold text-slate-700"><i class="fa-solid fa-tag mr-1"></i> ส่วนลด / คูปอง</span>
@@ -526,7 +466,6 @@
           <div id="coupon-message" class="hidden mt-2 text-xs font-medium"></div>
         </div>
 
-        <!-- Delivery Date -->
         <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
           <h4 class="text-sm font-semibold text-blue-900 mb-2"><i class="fa-solid fa-truck-fast mr-1"></i> รอบจัดส่ง</h4>
           <select id="delivery-date" class="w-full p-2.5 rounded-xl border-blue-200 text-sm text-slate-700 focus:ring-2 focus:ring-blue-300 outline-none bg-white">
@@ -536,7 +475,6 @@
         </div>
       </div>
 
-      <!-- Footer Summary -->
       <div class="p-5 border-t border-slate-100 bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-10">
         <div class="space-y-2 mb-4">
           <div class="flex justify-between text-slate-500 text-sm">
@@ -569,9 +507,7 @@
       <div class="mb-2">
           <span class="text-xs text-slate-500">คูปอง:</span> <span id="history-coupon-code" class="font-bold text-indigo-600"></span>
       </div>
-      <div id="coupon-history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-         <!-- User list -->
-      </div>
+      <div id="coupon-history-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
     </div>
   </div>
 
@@ -585,9 +521,8 @@
     </div>
     
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-      <!-- Sidebar (Responsive: Side on MD+, Top Horizontal on Mobile) -->
+      <!-- Sidebar -->
       <nav class="w-full md:w-64 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex-shrink-0 overflow-x-auto md:overflow-y-auto flex md:flex-col p-2 md:p-4 gap-2 no-scrollbar h-auto md:h-full">
-          <!-- Shop status tab restored -->
           <button onclick="showAdminTab('shop-status')" class="admin-nav-btn w-auto md:w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-xl text-xs md:text-sm font-medium text-slate-600 hover:bg-white hover:shadow-sm transition flex items-center gap-2 md:gap-3 whitespace-nowrap flex-shrink-0" data-tab="shop-status">
             <i class="fa-solid fa-store w-5 text-center"></i> <span>สถานะร้าน</span>
           </button>
@@ -624,7 +559,7 @@
 
       <!-- Main Admin Content -->
       <main class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50 custom-scrollbar">
-        <!-- Shop status content restored -->
+        <!-- Shop status content -->
         <section id="admin-shop-status-tab" class="admin-tab-content h-full flex flex-col items-center justify-center text-center">
             <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-100">
                <div class="text-7xl mb-6 transition-transform hover:scale-110 duration-300 cursor-default" id="shop-status-icon"></div>
@@ -643,7 +578,6 @@
               <p class="text-sm text-slate-500 mb-6">เลือกปิด/เปิดวันที่ต้องการจัดส่ง (ค่าเริ่มต้น: จันทร์, พุธ, ศุกร์)</p>
               
               <div id="delivery-rounds-list" class="space-y-3">
-                 <!-- Generated rounds will be here -->
                  <div class="animate-pulse flex space-x-4">
                     <div class="flex-1 space-y-4 py-1">
                       <div class="h-4 bg-slate-200 rounded w-3/4"></div>
@@ -676,9 +610,7 @@
                  <input type="text" id="admin-user-search" placeholder="ค้นหาชื่อลูกค้า..." class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full max-w-sm focus:ring-2 focus:ring-blue-500 outline-none">
                  <button onclick="filterAdminUsers()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">ค้นหา</button>
               </div>
-              <div id="admin-users-list" class="grid gap-4 grid-cols-1 lg:grid-cols-2">
-                 <!-- User list here -->
-              </div>
+              <div id="admin-users-list" class="grid gap-4 grid-cols-1 lg:grid-cols-2"></div>
            </div>
         </div>
 
@@ -761,7 +693,7 @@
     </div>
   </div>
 
-  <!-- Forms Modals (Reused structure with better styling) -->
+  <!-- Forms Modals -->
   <div id="create-reward-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
     <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all scale-100">
       <div class="flex justify-between items-center mb-4">
@@ -784,7 +716,6 @@
           <input type="number" id="reward-min" value="0" min="0" placeholder="ขั้นต่ำ (บาท)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition">
         </div>
         
-        <!-- Checkbox for is_active -->
         <div class="flex items-center gap-2 mt-2">
              <input type="checkbox" id="reward-active" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" checked />
              <label for="reward-active" class="text-sm font-medium text-gray-700">เปิดใช้งานของรางวัลนี้</label>
@@ -798,16 +729,39 @@
   <!-- Add Points Modal -->
   <div id="add-points-modal" class="fixed inset-0 z-[85] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
      <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-        <h3 class="text-lg font-bold mb-2">เพิ่ม/ลด แต้มให้ลูกค้า</h3>
+        <h3 class="text-lg font-bold mb-2">จัดการแต้มลูกค้า</h3>
         <p id="add-points-user-name" class="text-sm text-slate-500 mb-4"></p>
         <input type="hidden" id="add-points-user-id">
-        <div class="mb-4">
-           <label class="block text-sm font-medium text-slate-700 mb-1">จำนวนแต้ม (ใส่ลบเพื่อลด)</label>
-           <input type="number" id="points-amount" class="w-full p-3 border rounded-xl text-center text-xl font-bold text-indigo-600" placeholder="0">
+        
+        <div class="mb-4 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+           <label class="block text-xs font-medium text-indigo-800 mb-1 flex justify-between">
+              <span>👛 แต้มแลกของ (Wallet)</span>
+              <span>ปัจจุบัน: <span id="current-wallet-points" class="font-bold">...</span></span>
+           </label>
+           <input type="number" id="wallet-points-adj" class="w-full p-2 border border-indigo-200 rounded-lg text-center font-medium outline-none focus:ring-2 focus:ring-indigo-500 bg-white" placeholder="ใส่จำนวน (+/-)">
         </div>
+
+        <div class="mb-4 bg-purple-50 p-3 rounded-xl border border-purple-100">
+           <label class="block text-xs font-medium text-purple-800 mb-1 flex justify-between">
+              <span>🏆 แต้มสะสมยศ (Rank)</span>
+              <span>ปัจจุบัน: <span id="current-rank-points" class="font-bold">...</span></span>
+           </label>
+           <input type="number" id="rank-points-adj" class="w-full p-2 border border-purple-200 rounded-lg text-center font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-white" placeholder="ใส่จำนวน (+/-)">
+           
+           <div class="mt-2">
+              <p class="text-[10px] text-purple-400 mb-1 text-center">ทางลัดปรับยศ (จะคำนวณแต้มให้อัตโนมัติ)</p>
+              <div class="flex flex-wrap gap-1 justify-center">
+                 <button onclick="setRankTarget(0)" class="text-[10px] px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50">🌱 รีเซ็ต (0)</button>
+                 <button onclick="setRankTarget(100)" class="text-[10px] px-2 py-1 bg-white border border-blue-200 text-blue-600 rounded-md hover:bg-blue-50">🎖️ ประจำ (100)</button>
+                 <button onclick="setRankTarget(500)" class="text-[10px] px-2 py-1 bg-white border border-pink-200 text-pink-600 rounded-md hover:bg-pink-50">🌟 ตัวยง (500)</button>
+                 <button onclick="setRankTarget(1000)" class="text-[10px] px-2 py-1 bg-white border border-purple-200 text-purple-600 rounded-md hover:bg-purple-50">💎 VIP (1000)</button>
+              </div>
+           </div>
+        </div>
+
         <div class="flex gap-3">
            <button onclick="toggleModal('add-points-modal', false)" class="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600">ยกเลิก</button>
-           <button onclick="submitAddPoints()" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold">บันทึก</button>
+           <button onclick="submitAddPoints()" class="flex-1 py-2 rounded-lg bg-slate-800 text-white font-bold">บันทึก</button>
         </div>
      </div>
   </div>
@@ -833,6 +787,39 @@
      </div>
   </div>
 
+  <!-- New: Adjust Level Modal -->
+  <div id="adjust-level-modal" class="fixed inset-0 z-[85] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+     <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+        <h3 class="text-lg font-bold mb-2">ปรับระดับสมาชิก</h3>
+        <p id="adjust-level-user-name" class="text-sm text-slate-500 mb-6"></p>
+        <input type="hidden" id="adjust-level-user-id">
+        <input type="hidden" id="adjust-level-line-id">
+        
+        <div class="space-y-3 mb-6">
+           <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition" onclick="selectLevel('user')">
+              <input type="radio" name="user_level" value="user" id="level-user" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+              <div class="ml-3">
+                 <span class="block text-sm font-medium text-slate-900">สมาชิกทั่วไป (Member)</span>
+                 <span class="block text-xs text-slate-500">ซื้อสินค้าและสะสมแต้มได้ปกติ</span>
+              </div>
+           </label>
+           
+           <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition" onclick="selectLevel('admin')">
+              <input type="radio" name="user_level" value="admin" id="level-admin" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+              <div class="ml-3">
+                 <span class="block text-sm font-medium text-slate-900">ผู้ดูแลระบบ (Admin)</span>
+                 <span class="block text-xs text-slate-500">เข้าถึงหลังบ้านและจัดการออเดอร์ได้</span>
+              </div>
+           </label>
+        </div>
+        
+        <div class="flex gap-3">
+           <button onclick="toggleModal('adjust-level-modal', false)" class="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600">ยกเลิก</button>
+           <button onclick="submitAdjustLevel()" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold">บันทึก</button>
+        </div>
+     </div>
+  </div>
+
   <!-- View User Details Modal -->
   <div id="user-details-modal" class="fixed inset-0 z-[85] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
      <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl flex flex-col max-h-[90vh]">
@@ -845,25 +832,34 @@
              <div class="flex flex-col items-center mb-6">
                 <img id="ud-pic" src="" class="w-24 h-24 rounded-full border-4 border-indigo-50 shadow-md mb-3 object-cover">
                 <h4 id="ud-name" class="text-xl font-bold text-slate-800"></h4>
+                <div id="ud-rank-badge" class="mb-1"></div>
                 <p id="ud-line-id" class="text-sm text-slate-500 cursor-pointer hover:text-indigo-600 transition" onclick="copyToClipboard(this.innerText.replace('Line ID: ', ''))" title="คลิกเพื่อคัดลอก"></p>
              </div>
              
-             <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-indigo-50 p-4 rounded-xl text-center">
-                   <div class="text-xs text-slate-500 mb-1">แต้มสะสม</div>
-                   <div id="ud-points" class="text-2xl font-bold text-indigo-600">0</div>
+             <div class="grid grid-cols-3 gap-2 mb-6">
+                <div class="bg-indigo-50 p-2 sm:p-3 rounded-xl text-center">
+                   <div class="text-[10px] text-slate-500 mb-1">แต้มแลกของ</div>
+                   <div id="ud-points" class="text-lg sm:text-xl font-bold text-indigo-600">0</div>
                 </div>
-                <div class="bg-orange-50 p-4 rounded-xl text-center">
-                   <div class="text-xs text-slate-500 mb-1">ออเดอร์ทั้งหมด</div>
-                   <div id="ud-total-orders" class="text-2xl font-bold text-orange-600">0</div>
+                <div class="bg-purple-50 p-2 sm:p-3 rounded-xl text-center">
+                   <div class="text-[10px] text-slate-500 mb-1">แต้มสะสมยศ</div>
+                   <div id="ud-total-points" class="text-lg sm:text-xl font-bold text-purple-600">0</div>
                 </div>
+                <div class="bg-orange-50 p-2 sm:p-3 rounded-xl text-center">
+                   <div class="text-[10px] text-slate-500 mb-1">ออเดอร์</div>
+                   <div id="ud-total-orders" class="text-lg sm:text-xl font-bold text-orange-600">0</div>
+                </div>
+             </div>
+             
+             <!-- Admin Actions inside Details -->
+             <div id="ud-admin-actions" class="mb-6 grid grid-cols-2 gap-3 border-b border-slate-100 pb-6 hidden">
+                 <button id="ud-btn-admin-toggle" class="py-2 rounded-lg border text-sm font-medium transition"></button>
+                 <button onclick="deleteUserFromDetails()" class="py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition">ลบผู้ใช้</button>
              </div>
 
              <div class="space-y-2">
                 <h5 class="font-semibold text-slate-700 text-sm border-b pb-1 mb-2">ประวัติการสั่งซื้อล่าสุด</h5>
-                <div id="ud-order-history" class="space-y-2">
-                   <!-- Orders will be injected here -->
-                </div>
+                <div id="ud-order-history" class="space-y-2"></div>
              </div>
         </div>
      </div>
@@ -975,7 +971,8 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
     // Default Admins (Hardcoded + Persistent)
     const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"];
-    let adminList = []; // Will be populated on init
+    const SUPER_ADMIN_ID = "Ud21a04a5d66c9de0b4c6f1aaf8f050e2"; 
+    let adminList = []; 
 
     // State Variables
     let supabase;
@@ -983,9 +980,12 @@
     let currentUser = null;
     let selectedBase = null;
     let selectedTopping = null;
+    let hasBases = false;
+    let hasToppings = false;
     let quantity = 1;
     let cart = [];
     let userPoints = 0;
+    let userTotalPoints = 0;
     let selectedCoupon = null;
     let availableRewards = [];
     let userCoupons = [];
@@ -993,10 +993,15 @@
     let selectedDessert = null;
     let currentAdminDessertId = null;
     let shopIsOpen = true;
-    let blockedDates = []; // Store blocked dates
+    let blockedDates = [];
     let allOrders = [];
-    let allUsers = []; // Store all users for admin
-    let dbColumnExists = true; // Flag to check if DB column exists
+    let allUsers = []; 
+    let dbColumnExists = true;
+    let selectedUserForDetails = null;
+    let currentEditingUser = null;
+    
+    // Cache for brownie items
+    let brownieItemsCache = {};
 
     // --- Core UI Functions ---
 
@@ -1022,7 +1027,6 @@
         }
     }
 
-    // Wrappers for specific modals
     function showRewards() { 
         renderRewards();
         toggleModal('rewards-modal', true); 
@@ -1031,7 +1035,7 @@
     
     function showMyCoupons() { 
         renderMyCoupons();
-        closeRewards(); // Close previous if open
+        closeRewards(); 
         toggleModal('my-coupons-modal', true); 
     }
     function closeMyCoupons() { toggleModal('my-coupons-modal', false); }
@@ -1047,17 +1051,15 @@
         showMyCoupons();
     }
 
-    // Admin UI Toggles
     function showAdmin() {
         const modal = document.getElementById('admin-modal');
         modal.classList.remove('hidden');
-        showAdminTab('shop-status'); // Default to shop status
+        showAdminTab('shop-status');
     }
     function closeAdmin() {
         document.getElementById('admin-modal').classList.add('hidden');
     }
     function showAdminTab(tabId) {
-        // Desktop Nav (Actually now used for mobile too since topbar is gone)
         document.querySelectorAll('.admin-nav-btn').forEach(btn => {
             if (btn.dataset.tab === tabId) {
                 btn.classList.add('bg-indigo-50', 'text-indigo-600', 'shadow-sm');
@@ -1071,7 +1073,6 @@
         document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
         document.getElementById('admin-' + tabId + '-tab').classList.remove('hidden');
 
-        // Load data on switch
         if (tabId === 'shop-status') updateShopStatusUI();
         if (tabId === 'orders') loadAdminOrders();
         if (tabId === 'rewards') loadAdminRewards();
@@ -1090,24 +1091,24 @@
       try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // Load Admins from LocalStorage & Merge
         const storedAdmins = JSON.parse(localStorage.getItem('suan_khanom_admins') || '[]');
         adminList = [...new Set([...ADMIN_IDS, ...storedAdmins])];
-
-        // --- RESTORE LOGIN ---
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
+        
+        if (!adminList.includes(SUPER_ADMIN_ID)) {
+            adminList.push(SUPER_ADMIN_ID);
         }
-        userProfile = await liff.getProfile();
 
-        // Auto-add current mock user to admin list for access (if needed)
-        // if (!adminList.includes(userProfile.userId)) {
-        //      adminList.push(userProfile.userId);
-        // }
+        // Mock User for Dev Mode
+        userProfile = {
+            userId: "mock_user_001",
+            displayName: "Dev User",
+            pictureUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+        };
+        
+        if (!adminList.includes(userProfile.userId)) {
+             adminList.push(userProfile.userId);
+        }
 
-        // Init cart from local storage
         loadCartFromStorage();
         
         await saveUserToSupabase(userProfile);
@@ -1120,7 +1121,6 @@
            loadShopStatus()
         ]);
 
-        // Check against adminList instead of static array
         if (adminList.includes(userProfile.userId)) {
            document.getElementById("admin-container").classList.remove("hidden");
         }
@@ -1134,7 +1134,6 @@
       }
     }
 
-    // Local Storage Cart Functions
     function saveCartToStorage() {
         localStorage.setItem("suan_khanom_cart", JSON.stringify(cart));
     }
@@ -1146,7 +1145,6 @@
                 cart = JSON.parse(stored);
                 updateCartBadge();
             } catch (e) {
-                console.error("Error parsing cart from storage", e);
                 cart = [];
             }
         }
@@ -1159,7 +1157,8 @@
           line_id: profile.userId,
           display_name: profile.displayName,
           picture_url: profile.pictureUrl,
-          points: 0
+          points: 0,
+          total_points: 0
         }]);
       }
     }
@@ -1168,7 +1167,8 @@
       const { data } = await supabase.from("users").select("*").eq("line_id", lineId).single();
       if (data) {
         currentUser = data;
-        userPoints = data.points;
+        userPoints = data.points || 0;
+        userTotalPoints = data.total_points || 0;
         document.getElementById("userPoints").innerText = userPoints;
         document.getElementById("modal-user-points").innerText = userPoints;
         document.getElementById("userPic").src = data.picture_url;
@@ -1197,44 +1197,67 @@
        selectedDessert = dessert;
        document.querySelectorAll('#dessert-list .menu-card').forEach(c => c.classList.remove('selected'));
        el.classList.add('selected');
-       document.getElementById("menu-selection").classList.remove("hidden");
+       
+       selectedBase = null;
+       selectedTopping = null;
+       quantity = 1;
+       document.getElementById("quantity").innerText = 1;
+
+       loadBrownieItems(dessert.id);
+       
        document.getElementById("action-bar").classList.remove("hidden");
        setTimeout(() => document.getElementById("action-bar").classList.remove("translate-y-full"), 100);
-       document.getElementById("menu-selection").scrollIntoView({behavior: "smooth", block: "start"});
-       loadBrownieItems(dessert.id);
     }
 
     async function loadBrownieItems(dessertId) {
        const { data } = await supabase.from("brownie_items").select("*").eq("dessert_id", dessertId).eq("is_active", true).order("price");
        const bases = data.filter(i => i.type === 'base');
        const toppings = data.filter(i => i.type === 'topping');
+       
+       hasBases = bases.length > 0;
+       hasToppings = toppings.length > 0;
+
        renderItems('base', bases);
        renderItems('topping', toppings);
-       selectedBase = null; 
-       selectedTopping = null;
+       
+       const menuSection = document.getElementById("menu-selection");
+       if (!hasBases && !hasToppings) {
+           menuSection.classList.add("hidden");
+       } else {
+           menuSection.classList.remove("hidden");
+           menuSection.scrollIntoView({behavior: "smooth", block: "start"});
+       }
+       
        updateTotal();
     }
 
     function renderItems(type, items) {
        const container = document.getElementById(type + '-list');
+       const section = document.getElementById(type + '-section');
+       
        if (items.length === 0) {
-           container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-4 text-sm">ไม่มีรายการ</div>`;
+           if (section) section.classList.add("hidden");
+           container.innerHTML = '';
            return;
        }
+       
+       if (section) section.classList.remove("hidden");
+       
        container.innerHTML = items.map(item => `
-          <div class="menu-card item-card-${type}" onclick="selectItem('${type}', ${item.id}, '${item.name}', ${item.price}, this)">
+          <div class="menu-card item-card-${type}" onclick="selectItem('${type}', ${item.id}, '${item.name}', ${item.price}, ${item.points || 0}, this)">
              <div class="check-icon"><i class="fa-solid fa-check"></i></div>
              <div class="font-bold text-slate-700 text-sm">${item.name}</div>
              <div class="text-xs text-indigo-500 font-semibold mt-1">+${item.price}฿</div>
+             ${item.points ? `<div class="text-[10px] text-orange-400 font-medium">+${item.points} แต้ม</div>` : ''}
           </div>
        `).join('');
     }
 
-    function selectItem(type, id, name, price, el) {
+    function selectItem(type, id, name, price, points, el) {
        document.querySelectorAll(`.item-card-${type}`).forEach(c => c.classList.remove('selected'));
        el.classList.add('selected');
-       if (type === 'base') selectedBase = { id, name, price };
-       else selectedTopping = { id, name, price };
+       if (type === 'base') selectedBase = { id, name, price, points };
+       else selectedTopping = { id, name, price, points };
        updateTotal();
     }
 
@@ -1250,22 +1273,41 @@
         const baseP = selectedBase ? selectedBase.price : 0;
         const topP = selectedTopping ? selectedTopping.price : 0;
         const total = (baseP + topP) * quantity;
+        
         document.getElementById("total-price").innerText = total.toLocaleString();
         document.getElementById("mobile-total-price").innerText = total.toLocaleString();
+        
         const btn = document.getElementById("add-to-cart");
-        btn.disabled = !(selectedBase && selectedTopping);
+        
+        const isBaseValid = !hasBases || selectedBase;
+        const isToppingValid = !hasToppings || selectedTopping;
+        
+        btn.disabled = !(isBaseValid && isToppingValid);
     }
 
     function addToCart() {
-       if (!selectedBase || !selectedTopping) return;
-       const unitPrice = selectedBase.price + selectedTopping.price;
+       if (hasBases && !selectedBase) return;
+       if (hasToppings && !selectedTopping) return;
+       
+       const baseName = selectedBase ? selectedBase.name : (hasBases ? "?" : "-"); 
+       const toppingName = selectedTopping ? selectedTopping.name : (hasToppings ? "?" : "-");
+       
+       const baseP = selectedBase ? selectedBase.price : 0;
+       const topP = selectedTopping ? selectedTopping.price : 0;
+       const unitPrice = baseP + topP;
+       
+       const basePts = selectedBase ? (selectedBase.points || 0) : 0;
+       const topPts = selectedTopping ? (selectedTopping.points || 0) : 0;
+       const earnedPoints = (basePts + topPts) * quantity;
+       
        cart.push({
           dessertId: selectedDessert.id, dessertName: selectedDessert.name,
-          baseName: selectedBase.name, toppingName: selectedTopping.name,
-          quantity: quantity, unitPrice: unitPrice, totalPrice: unitPrice * quantity
+          baseName: baseName, toppingName: toppingName,
+          quantity: quantity, unitPrice: unitPrice, totalPrice: unitPrice * quantity,
+          earnedPoints: earnedPoints
        });
        
-       saveCartToStorage(); // Save cart
+       saveCartToStorage(); 
 
        quantity = 1; 
        document.getElementById("quantity").innerText = 1;
@@ -1273,6 +1315,7 @@
        document.querySelectorAll('.menu-card.selected').forEach(c => c.classList.remove('selected'));
        updateCartBadge();
        showSuccessToast("เพิ่มลงตะกร้าแล้ว");
+       
        window.scrollTo({ top: 0, behavior: 'smooth' });
        document.getElementById("menu-selection").classList.add("hidden");
        document.getElementById("action-bar").classList.add("translate-y-full");
@@ -1327,10 +1370,12 @@
         if (cart[idx].quantity + delta < 1) {
             if (confirm("ลบสินค้านี้?")) cart.splice(idx, 1);
         } else {
+            const unitPoints = cart[idx].earnedPoints / cart[idx].quantity;
             cart[idx].quantity += delta;
             cart[idx].totalPrice = cart[idx].unitPrice * cart[idx].quantity;
+            cart[idx].earnedPoints = unitPoints * cart[idx].quantity;
         }
-        saveCartToStorage(); // Save updates
+        saveCartToStorage(); 
         renderCart();
         updateCartBadge();
     }
@@ -1339,16 +1384,14 @@
         const sel = document.getElementById("delivery-date");
         sel.innerHTML = '';
         const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"];
-        const deliveryDays = [1, 3, 5]; // Mon, Wed, Fri
+        const deliveryDays = [1, 3, 5]; 
         let d = new Date();
         let count = 0;
         
-        // Loop to find next 5 available delivery dates
-        while(count < 8) {
+        while (count < 8) {
             d.setDate(d.getDate() + 1);
             if (deliveryDays.includes(d.getDay())) {
                  const dateStr = d.toISOString().split('T')[0];
-                 // Check if this date is blocked
                  if (!blockedDates.includes(dateStr)) {
                      const opt = document.createElement("option");
                      const label = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}`;
@@ -1380,8 +1423,6 @@
         if (discount > 0) document.getElementById("discount-row").classList.remove("hidden");
         else document.getElementById("discount-row").classList.add("hidden");
     }
-
-    // --- Rewards & Coupons ---
 
     async function loadRewards() {
         const { data } = await supabase.from("rewards").select("*").eq("is_active", true);
@@ -1493,12 +1534,9 @@
         applyCouponCode();
     }
 
-    // --- Checkout & Status ---
-
     async function loadShopStatus() {
         const { data } = await supabase.from("shop_settings").select("is_open, blocked_dates").eq("id", 1).maybeSingle();
         shopIsOpen = data ? data.is_open : true;
-        // Parse blocked dates from DB
         if (data && data.blocked_dates) {
             try {
                 blockedDates = typeof data.blocked_dates === 'string' ? JSON.parse(data.blocked_dates) : data.blocked_dates;
@@ -1537,7 +1575,10 @@
         if (!shopIsOpen) return alert("ร้านปิดอยู่ครับ");
         const date = document.getElementById("delivery-date").value;
         if (!date) return alert("เลือกวันส่งด้วยครับ");
+        
         const subtotal = cart.reduce((a,b) => a+b.totalPrice, 0);
+        const totalEarnedPoints = cart.reduce((a,b) => a + (b.earnedPoints || 0), 0);
+        
         let discount = 0;
         if (selectedCoupon) {
             if (selectedCoupon.discount_type === 'percent') discount = Math.floor(subtotal * selectedCoupon.discount_value / 100);
@@ -1545,10 +1586,12 @@
             discount = Math.min(discount, subtotal);
         }
         const total = subtotal - discount;
+        
         const { data, error } = await supabase.from("orders").insert([{
             user_id: currentUser.id, line_id: currentUser.line_id, items: cart,
-            subtotal, discount, total_price: total, earned_points: Math.floor(total / 10),
-            delivery_date: date, status: "pending", coupon_code: selectedCoupon ? selectedCoupon.code : null // Save coupon code
+            subtotal, discount, total_price: total, 
+            earned_points: totalEarnedPoints,
+            delivery_date: date, status: "pending", coupon_code: selectedCoupon ? selectedCoupon.code : null
         }]);
 
         if (!error) {
@@ -1556,7 +1599,7 @@
                  await supabase.from("user_coupons").update({is_used: true}).eq("id", selectedCoupon.id);
             }
             cart = []; 
-            saveCartToStorage(); // Clear storage cart
+            saveCartToStorage(); 
             selectedCoupon = null;
             updateCartBadge();
             closeCart();
@@ -1567,12 +1610,10 @@
         }
     }
 
-    // --- Admin Delivery Management ---
     async function renderDeliveryRoundsManagement() {
         const container = document.getElementById("delivery-rounds-list");
         container.innerHTML = '';
         
-        // Generate next 14 possible delivery dates
         const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"];
         const deliveryDays = [1, 3, 5]; 
         let d = new Date();
@@ -1610,14 +1651,11 @@
 
     async function toggleDeliveryDate(dateStr) {
         if (blockedDates.includes(dateStr)) {
-            // Remove (Open)
             blockedDates = blockedDates.filter(d => d !== dateStr);
         } else {
-            // Add (Close)
             blockedDates.push(dateStr);
         }
         
-        // Save directly to DB
         const { error } = await supabase.from("shop_settings").update({ blocked_dates: blockedDates }).eq("id", 1);
         
         if (error) {
@@ -1628,7 +1666,6 @@
         }
     }
     
-    // --- Admin Summary with Auto-Generated Rounds ---
     async function loadSummaryDeliveryRounds() {
         const sel = document.getElementById("summary-delivery-round");
         sel.innerHTML = '';
@@ -1641,9 +1678,6 @@
             d.setDate(d.getDate() + 1);
             if (deliveryDays.includes(d.getDay())) {
                  const dateStr = d.toISOString().split('T')[0];
-                 // We show ALL future rounds here, even blocked ones, maybe admins want to see pre-orders?
-                 // Or filter blocked. Let's filter blocked to be safe, or show marked.
-                 // For summary, usually we want active rounds.
                  if (!blockedDates.includes(dateStr)) {
                      const opt = document.createElement("option");
                      const label = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
@@ -1656,8 +1690,8 @@
         }
         
         if(sel.options.length > 0) {
-            sel.selectedIndex = 0; // Select first available
-            loadOrderSummary(); // Load data for it
+            sel.selectedIndex = 0; 
+            loadOrderSummary(); 
         } else {
              const opt = document.createElement("option");
              opt.text = "ไม่มีรอบส่งเร็วๆ นี้";
@@ -1665,9 +1699,6 @@
         }
     }
 
-    // --- Admin Functions (Restored Logic) ---
-
-    // New unified function to render admin order list
 function renderAdminOrderList(orders) {
   const container = document.getElementById("admin-orders-content");
   if (orders.length === 0) {
@@ -1675,19 +1706,18 @@ function renderAdminOrderList(orders) {
     return;
   }
   
+  const viewerIsAdmin = adminList.includes(currentUser?.line_id);
+  
   container.innerHTML = orders.map(o => {
     let items = [];
     try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch(e) {}
     const totalQty = Array.isArray(items) ? items.reduce((s, i) => s + (parseInt(i.quantity)||1), 0) : 0;
     
-    // Format Date
     const createdDate = new Date(o.created_at).toLocaleString('th-TH');
     const deliveryDate = o.delivery_date ? new Date(o.delivery_date).toLocaleDateString('th-TH', {weekday:'short', day:'numeric', month:'short'}) : '-';
 
-    // User Pic
     const userPic = o.users?.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
-    // Items HTML
     const itemsHtml = items.map(i => `
         <div class="text-xs text-slate-600 ml-4 border-l-2 border-slate-200 pl-2 mt-1">
             ${i.baseName} + ${i.toppingName} <span class="font-bold">x${i.quantity}</span>
@@ -1704,20 +1734,24 @@ function renderAdminOrderList(orders) {
                     <div class="text-xs text-slate-500">${o.users?.display_name || 'ลูกค้าทั่วไป'}</div>
                 </div>
              </div>
-             <select onchange="updateOrderStatus(${o.id}, this.value)" 
-                class="text-xs border rounded px-2 py-1 outline-none ${
-                    o.status==='pending'?'bg-yellow-50 text-yellow-700 border-yellow-200':
-                    o.status==='preparing'?'bg-blue-50 text-blue-700 border-blue-200':
-                    o.status==='ready'?'bg-green-50 text-green-700 border-green-200':
-                    o.status==='completed'?'bg-purple-50 text-purple-700 border-purple-200':
-                    'bg-red-50 text-red-700 border-red-200'
-                }">
-                <option value="pending" ${o.status==='pending'?'selected':''}>รอดำเนินการ</option>
-                <option value="preparing" ${o.status==='preparing'?'selected':''}>กำลังทำ</option>
-                <option value="ready" ${o.status==='ready'?'selected':''}>พร้อมส่ง</option>
-                <option value="completed" ${o.status==='completed'?'selected':''}>เสร็จสิ้น</option>
-                <option value="cancelled" ${o.status==='cancelled'?'selected':''}>ยกเลิก</option>
-             </select>
+             <div class="flex flex-col items-end gap-1">
+                <select onchange="updateOrderStatus('${o.id}', this.value)" 
+                    class="text-xs border rounded px-2 py-1 outline-none ${
+                        o.status==='pending'?'bg-yellow-50 text-yellow-700 border-yellow-200':
+                        o.status==='preparing'?'bg-blue-50 text-blue-700 border-blue-200':
+                        o.status==='ready'?'bg-green-50 text-green-700 border-green-200':
+                        o.status==='completed'?'bg-purple-50 text-purple-700 border-purple-200':
+                        'bg-red-50 text-red-700 border-red-200'
+                    }">
+                    <option value="pending" ${o.status==='pending'?'selected':''}>รอดำเนินการ</option>
+                    <option value="preparing" ${o.status==='preparing'?'selected':''}>กำลังทำ</option>
+                    <option value="ready" ${o.status==='ready'?'selected':''}>พร้อมส่ง</option>
+                    <option value="completed" ${o.status==='completed'?'selected':''}>เสร็จสิ้น</option>
+                    <option value="cancelled" ${o.status==='cancelled'?'selected':''}>ยกเลิก</option>
+                </select>
+                <!-- Allow all admins to delete orders (Added Quotes to ID) -->
+                ${viewerIsAdmin ? `<button onclick="deleteOrder('${o.id}')" class="text-[10px] text-red-400 hover:text-red-600 underline">ลบออเดอร์</button>` : ''}
+             </div>
           </div>
           
           <div class="grid grid-cols-2 gap-2 text-xs text-slate-500 mb-3">
@@ -1737,6 +1771,7 @@ function renderAdminOrderList(orders) {
              <div class="text-right">
                 <div class="text-xs text-slate-400">ยอดรวม</div>
                 <div class="font-bold text-lg text-indigo-600">${o.total_price.toLocaleString()} ฿</div>
+                <div class="text-[10px] text-green-500">+${o.earned_points} แต้ม</div>
              </div>
           </div>
        </div>
@@ -1745,7 +1780,6 @@ function renderAdminOrderList(orders) {
 }
 
 async function loadAdminOrders() {
-    // Note: Added picture_url to query
     const { data } = await supabase.from("orders").select("*, users(display_name, picture_url)").order("created_at", {ascending: false});
     allOrders = data;
     renderAdminOrderList(allOrders);
@@ -1758,8 +1792,42 @@ function filterAdminOrders() {
 }
     
     async function updateOrderStatus(id, status) {
+        const { data: order } = await supabase.from("orders").select("*").eq("id", id).single();
+        if (!order) return;
+
         await supabase.from("orders").update({status}).eq("id", id);
+        
+        if (status === 'completed' && order.status !== 'completed') {
+             const { data: user } = await supabase.from("users").select("points, total_points").eq("id", order.user_id).single();
+             if (user) {
+                 const earned = order.earned_points || 0;
+                 const newPoints = (user.points || 0) + earned;
+                 const newTotal = (user.total_points || 0) + earned;
+                 
+                 await supabase.from("users").update({
+                     points: newPoints,
+                     total_points: newTotal
+                 }).eq("id", order.user_id);
+                 
+                 showSuccessToast(`มอบ ${earned} แต้มให้ลูกค้าแล้ว`);
+             }
+        }
+
         showSuccessToast("สถานะอัปเดตแล้ว");
+        loadAdminOrders(); 
+    }
+    
+    async function deleteOrder(id) {
+        if (!adminList.includes(currentUser?.line_id)) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Admin เท่านั้น");
+        
+        if (!confirm("ต้องการลบออเดอร์นี้ถาวรหรือไม่?")) return;
+        const { error } = await supabase.from("orders").delete().eq("id", id);
+        if (!error) {
+            showSuccessToast("ลบออเดอร์เรียบร้อย");
+            loadAdminOrders();
+        } else {
+            alert("Error: " + error.message);
+        }
     }
 
     async function createReward(event) {
@@ -1838,7 +1906,6 @@ function filterAdminOrders() {
 
         let error;
         if(id) {
-             // Exclude usage_count on update usually, but here we just update basic fields
              delete payload.usage_count; 
              const res = await supabase.from("coupons").update(payload).eq("id", id);
              error = res.error;
@@ -1873,7 +1940,6 @@ function filterAdminOrders() {
         `).join('');
     }
     
-    // New: Open Coupon History Modal
     async function openCouponHistoryModal(code, name) {
         const modal = document.getElementById("coupon-history-modal");
         const listContainer = document.getElementById("coupon-history-list");
@@ -1885,7 +1951,6 @@ function filterAdminOrders() {
         toggleModal("coupon-history-modal", true);
         
         try {
-             // Find orders with this coupon code
              const { data: orders, error } = await supabase
                  .from("orders")
                  .select("created_at, total_price, users(display_name, picture_url)")
@@ -1926,7 +1991,6 @@ function filterAdminOrders() {
         }
     }
     
-    // -- Admin Desserts & Brownie Logic --
     async function loadAdminDesserts() {
       const { data } = await supabase.from("desserts").select("*").order("id");
       const container = document.getElementById("admin-dessert-list");
@@ -1970,40 +2034,76 @@ function filterAdminOrders() {
     function renderBrownieList(items) {
       if (!items || items.length === 0)
         return `<p class="text-gray-500 italic text-xs sm:text-sm text-center py-4">ยังไม่มีข้อมูล</p>`;
-
-      return items.map(i => `
+      
+      brownieItemsCache = {};
+      
+      return items.map(i => {
+        brownieItemsCache[i.id] = i;
+        
+        return `
         <div class="flex justify-between items-center border border-slate-200 p-3 rounded-xl mb-2 bg-white shadow-sm hover:shadow-md transition-all group">
           <div class="flex-1 min-w-0 mr-3">
             <div class="font-semibold text-slate-800 text-sm">${i.name}</div>
              <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
               <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">${i.price} ฿</span>
+              <span class="bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded text-xs">+${i.points || 0} แต้ม</span>
               ${i.is_active ? "<span class='text-green-600 flex items-center gap-1'><i class='fa-solid fa-circle text-[6px]'></i> ขาย</span>" : "<span class='text-red-400 flex items-center gap-1'><i class='fa-solid fa-circle text-[6px]'></i> ปิด</span>"}
             </div>
           </div>
           <div class="flex gap-1">
-            <button class="w-8 h-8 flex items-center justify-center bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition" onclick="openBrownieModal('${i.type}', ${i.id})">
+            <button class="w-8 h-8 flex items-center justify-center bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition" onclick="prepareEditBrownie('${i.id}')">
                 <i class="fa-solid fa-pen text-xs"></i>
             </button>
-            <button class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition" onclick="deleteBrownieItem(${i.id})">
+            <button class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition" onclick="deleteBrownieItem('${i.id}')">
                 <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
         </div>
-      `).join("");
+      `;
+      }).join("");
+    }
+    
+    function prepareEditBrownie(id) {
+        const item = brownieItemsCache[id];
+        if (item) {
+            openBrownieModal(item.type, item);
+        } else {
+            console.error("Item not found in cache:", id);
+            alert("เกิดข้อผิดพลาด: ไม่พบข้อมูลรายการนี้ (ลองรีเฟรชหน้าจอ)");
+        }
     }
     
     async function deleteBrownieItem(id) {
-        if(confirm("ลบรายการนี้?")) {
-            await supabase.from("brownie_items").delete().eq("id", id);
+        if(!confirm("ยืนยันลบรายการนี้?")) return;
+        
+        const { error } = await supabase.from("brownie_items").delete().eq("id", id);
+        
+        if (!error) {
+            showSuccessToast("ลบรายการเรียบร้อย");
             loadBrownieMenus(currentAdminDessertId);
+        } else {
+            console.error("Delete Error:", error);
+            alert("ลบไม่สำเร็จ: " + error.message);
         }
     }
 
-    // --- Admin User Management Logic ---
     async function loadAdminUsers() {
         const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
         allUsers = data || [];
         renderAdminUsers(allUsers);
+    }
+
+    function getUserRankBadge(points) {
+        points = points || 0;
+        if (points >= 1000) {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-medium whitespace-nowrap">💎 VIP</span>`;
+        } else if (points >= 500) {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-pink-100 text-pink-700 border border-pink-200 text-[10px] font-medium whitespace-nowrap">🌟 ตัวยง</span>`;
+        } else if (points >= 100) {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-medium whitespace-nowrap">🎖️ ประจำ</span>`;
+        } else {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-green-100 text-green-700 border border-green-200 text-[10px] font-medium whitespace-nowrap">🌱 ใหม่</span>`;
+        }
     }
 
     function renderAdminUsers(users) {
@@ -2013,42 +2113,59 @@ function filterAdminOrders() {
             return;
         }
         
+        const viewerIsSuperAdmin = currentUser?.line_id === SUPER_ADMIN_ID;
+
         container.innerHTML = users.map(u => {
             const isAdmin = adminList.includes(u.line_id);
-            const adminBadge = isAdmin ? '<span class="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full ml-1 border border-yellow-200">👑 Admin</span>' : '';
+            const isSuperAdmin = u.line_id === SUPER_ADMIN_ID;
+            
+            let adminBadge = '';
+            if (isSuperAdmin) adminBadge = '<span class="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full ml-1 border border-red-200 whitespace-nowrap shadow-sm">👑 Super Admin</span>';
+            else if (isAdmin) adminBadge = '<span class="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full ml-1 border border-yellow-200 whitespace-nowrap">🤴 Admin</span>';
+            
+            const rankBadge = getUserRankBadge(u.total_points || 0);
+
+            let adminActionBtn = '';
+            if (viewerIsSuperAdmin) {
+                if (isSuperAdmin) {
+                    adminActionBtn = `<button disabled class="col-span-2 bg-slate-100 text-slate-400 text-xs py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 border border-slate-200 cursor-not-allowed"><i class="fa-solid fa-lock"></i> Super Admin</button>`;
+                } else {
+                    adminActionBtn = `<button onclick="openAdjustLevelModal('${u.line_id}', '${u.display_name}')" class="bg-slate-800 text-white text-xs py-1.5 rounded-lg hover:bg-slate-700 font-medium transition flex items-center justify-center gap-1 border border-slate-900 shadow-sm"><i class="fa-solid fa-user-gear"></i> ปรับระดับ</button>`;
+                }
+            } else {
+                adminActionBtn = '';
+            }
+
+            const gridClass = adminActionBtn ? "grid grid-cols-2 gap-2" : "grid grid-cols-3 gap-2";
+            
+            let actionButtons = `
+               <button onclick="openAddPointsModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-blue-50 text-blue-600 text-xs py-1.5 rounded-lg hover:bg-blue-100 font-medium transition flex items-center justify-center gap-1 border border-blue-100"><i class="fa-solid fa-plus-circle"></i> ปรับแต้ม</button>
+               <button onclick="openGiveCouponModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-purple-50 text-purple-600 text-xs py-1.5 rounded-lg hover:bg-purple-100 font-medium transition flex items-center justify-center gap-1 border border-purple-100"><i class="fa-solid fa-ticket"></i> แจกคูปอง</button>
+               <button onclick='openUserDetailsModal(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="bg-slate-50 text-slate-600 text-xs py-1.5 rounded-lg hover:bg-slate-100 font-medium transition flex items-center justify-center gap-1 border border-slate-200"><i class="fa-solid fa-address-card"></i> ดูข้อมูล</button>
+               ${adminActionBtn}
+            `;
             
             return `
            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3 relative hover:shadow-md transition-all">
                <div class="flex items-center gap-3">
                    <img src="${u.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'}" class="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm">
                    <div class="flex-1 min-w-0">
-                       <div class="font-bold text-slate-800 flex items-center text-sm truncate">
-                            ${u.display_name || 'Guest'} ${adminBadge}
+                       <div class="font-bold text-slate-800 flex flex-wrap items-center gap-1 text-sm">
+                            <span class="truncate max-w-[120px]">${u.display_name || 'Guest'}</span>
+                            ${adminBadge || rankBadge}
                        </div>
                        <div class="text-xs text-slate-500 truncate cursor-pointer hover:text-blue-600 flex items-center gap-1" onclick="copyToClipboard('${u.line_id}')" title="คลิกเพื่อคัดลอก ID">
                           ID: ${u.line_id.substring(0, 8)}... <i class="fa-regular fa-copy text-[10px]"></i>
                        </div>
                    </div>
                    <div class="text-right">
-                      <div class="text-[10px] text-slate-400">แต้มสะสม</div>
-                      <div class="text-lg font-bold text-orange-500 leading-none">${u.points || 0}</div>
+                      <div class="text-[10px] text-slate-400">แลกของ</div>
+                      <div class="text-lg font-bold text-indigo-500 leading-none">${u.points || 0}</div>
                    </div>
                </div>
                
                <div class="grid grid-cols-2 gap-2">
-                   <button onclick="openAddPointsModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-blue-50 text-blue-600 text-xs py-1.5 rounded-lg hover:bg-blue-100 font-medium transition flex items-center justify-center gap-1 border border-blue-100">
-                      <i class="fa-solid fa-plus-circle"></i> ปรับแต้ม
-                   </button>
-                   <button onclick="openGiveCouponModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-purple-50 text-purple-600 text-xs py-1.5 rounded-lg hover:bg-purple-100 font-medium transition flex items-center justify-center gap-1 border border-purple-100">
-                      <i class="fa-solid fa-ticket"></i> แจกคูปอง
-                   </button>
-                   <button onclick='openUserDetailsModal(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="bg-slate-50 text-slate-600 text-xs py-1.5 rounded-lg hover:bg-slate-100 font-medium transition flex items-center justify-center gap-1 border border-slate-200">
-                       <i class="fa-solid fa-address-card"></i> ดูข้อมูล
-                   </button>
-                   ${isAdmin ? 
-                       `<button onclick="toggleAdmin('${u.line_id}', '${u.display_name}')" class="bg-red-50 text-red-600 text-xs py-1.5 rounded-lg hover:bg-red-100 font-medium transition flex items-center justify-center gap-1 border border-red-100"><i class="fa-solid fa-user-minus"></i> ปลดแอดมิน</button>` : 
-                       `<button onclick="toggleAdmin('${u.line_id}', '${u.display_name}')" class="bg-yellow-50 text-yellow-700 text-xs py-1.5 rounded-lg hover:bg-yellow-100 font-medium transition flex items-center justify-center gap-1 border border-yellow-200"><i class="fa-solid fa-user-plus"></i> ตั้งแอดมิน</button>`
-                   }
+                   ${actionButtons}
                </div>
            </div>
         `;
@@ -2065,21 +2182,54 @@ function filterAdminOrders() {
         showSuccessToast("คัดลอก ID เรียบร้อยแล้ว");
     }
     
-    function toggleAdmin(lineId, name) {
-        if (adminList.includes(lineId)) {
-            if (confirm(`ต้องการปลดสิทธิ์แอดมินของ "${name}" หรือไม่?`)) {
-                adminList = adminList.filter(id => id !== lineId);
-                localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
-                showSuccessToast(`ปลดสิทธิ์แอดมินแล้ว`);
+    function openAdjustLevelModal(lineId, name) {
+        if (currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
+        if (lineId === SUPER_ADMIN_ID) return alert("ไม่สามารถแก้ไข Super Admin ได้");
+        
+        document.getElementById("adjust-level-line-id").value = lineId;
+        document.getElementById("adjust-level-user-name").innerText = "ผู้ใช้: " + name;
+        
+        const isAdmin = adminList.includes(lineId);
+        document.getElementById("level-admin").checked = isAdmin;
+        document.getElementById("level-user").checked = !isAdmin;
+        
+        selectLevel(isAdmin ? 'admin' : 'user');
+        
+        toggleModal("adjust-level-modal", true);
+    }
+    
+    function selectLevel(level) {
+        document.getElementById("level-" + level).checked = true;
+    }
+    
+    function submitAdjustLevel() {
+        const lineId = document.getElementById("adjust-level-line-id").value;
+        const isSetAdmin = document.getElementById("level-admin").checked;
+        
+        if (lineId === SUPER_ADMIN_ID) return;
+
+        let changed = false;
+        if (isSetAdmin && !adminList.includes(lineId)) {
+            adminList.push(lineId);
+            changed = true;
+        } else if (!isSetAdmin && adminList.includes(lineId)) {
+            adminList = adminList.filter(id => id !== lineId);
+            changed = true;
+        }
+        
+        if (changed) {
+            localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
+            showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย");
+            loadAdminUsers();
+            
+            if(selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
+                openUserDetailsModal(selectedUserForDetails);
             }
         } else {
-            if (confirm(`ต้องการตั้ง "${name}" เป็นแอดมินหรือไม่?`)) {
-                adminList.push(lineId);
-                localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
-                showSuccessToast(`ตั้งแอดมินเรียบร้อย`);
-            }
+            showSuccessToast("ไม่มีการเปลี่ยนแปลง");
         }
-        loadAdminUsers(); // Refresh UI
+        
+        toggleModal("adjust-level-modal", false);
     }
 
     function filterAdminUsers() {
@@ -2091,22 +2241,67 @@ function filterAdminOrders() {
         renderAdminUsers(filtered);
     }
     
-    // User Details Logic
     async function openUserDetailsModal(user) {
+        selectedUserForDetails = user;
         const modal = document.getElementById("user-details-modal");
         
-        // Fill basic info
         document.getElementById("ud-pic").src = user.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
         document.getElementById("ud-name").innerText = user.display_name || 'ไม่ระบุชื่อ';
         document.getElementById("ud-line-id").innerText = 'Line ID: ' + user.line_id;
         document.getElementById("ud-points").innerText = user.points || 0;
+        document.getElementById("ud-total-points").innerText = user.total_points || 0; 
         
-        // Fetch stats
+        const rankEl = document.getElementById("ud-rank-badge");
+        const isAdmin = adminList.includes(user.line_id);
+        const isSuperAdmin = user.line_id === SUPER_ADMIN_ID;
+
+        if (isSuperAdmin) rankEl.innerHTML = '<span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-lg border border-red-200 font-bold">👑 Super Admin</span>';
+        else if(isAdmin) rankEl.innerHTML = '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-lg border border-yellow-200 font-bold">🤴 Administrator</span>';
+        else rankEl.innerHTML = getUserRankBadge(user.total_points);
+
+        const actionsDiv = document.getElementById("ud-admin-actions");
+        const toggleBtn = document.getElementById("ud-btn-admin-toggle");
+        
+        const viewerIsSuperAdmin = currentUser?.line_id === SUPER_ADMIN_ID;
+        const viewerIsAdmin = adminList.includes(currentUser?.line_id);
+        
+        if (viewerIsAdmin) {
+            actionsDiv.classList.remove("hidden");
+            
+            if (viewerIsSuperAdmin) {
+                if (isSuperAdmin) {
+                    toggleBtn.innerText = "Super Admin (Locked)";
+                    toggleBtn.className = "py-2 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 text-sm font-medium cursor-not-allowed";
+                    toggleBtn.onclick = null;
+                } else {
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-user-gear"></i> ปรับระดับ';
+                    toggleBtn.className = "py-2 rounded-lg border border-slate-800 text-slate-800 hover:bg-slate-100 text-sm font-medium transition";
+                    toggleBtn.onclick = () => openAdjustLevelModal(user.line_id, user.display_name);
+                }
+            } else {
+                toggleBtn.style.display = 'none'; 
+            }
+
+            const deleteBtn = actionsDiv.children[1]; 
+            if (viewerIsSuperAdmin) {
+                deleteBtn.style.display = 'block';
+                if(isSuperAdmin) deleteBtn.style.display = 'none'; 
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+            
+            if (toggleBtn.style.display === 'none' && deleteBtn.style.display === 'none') {
+                actionsDiv.classList.add("hidden");
+            }
+
+        } else {
+            actionsDiv.classList.add("hidden");
+        }
+        
         const { count } = await supabase.from("orders").select('*', { count: 'exact', head: true }).eq('user_id', user.id);
         document.getElementById("ud-total-orders").innerText = count || 0;
         
-        // Fetch recent history
-        const { data: orders } = await supabase.from("orders").select('*').eq('user_id', user.id).order('created_at', {ascending: false}).limit(5);
+        const { data: orders } = await supabase.from("orders").select('*').eq('user_id', user.id).order("created_at", {ascending: false}).limit(10);
         const historyContainer = document.getElementById("ud-order-history");
         
         if (!orders || orders.length === 0) {
@@ -2120,7 +2315,7 @@ function filterAdminOrders() {
                     </div>
                     <div class="text-right">
                         <div class="text-xs font-bold text-indigo-600">${o.total_price} ฿</div>
-                        <div class="text-[10px] ${o.status === 'completed' ? 'text-green-500' : 'text-yellow-500'}">${o.status}</div>
+                        <div class="text-[10px] ${o.status === 'completed' ? 'text-green-500' : o.status === 'cancelled' ? 'text-red-500' : 'text-yellow-500'}">${o.status}</div>
                     </div>
                 </div>
             `).join('');
@@ -2128,43 +2323,97 @@ function filterAdminOrders() {
         
         toggleModal("user-details-modal", true);
     }
+    
+    async function deleteUserFromDetails() {
+        if(currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
+        if(!selectedUserForDetails) return;
+        
+        if(selectedUserForDetails.line_id === SUPER_ADMIN_ID) return alert("ไม่สามารถลบ Super Admin ได้");
 
-    // --- Points Logic ---
-    function openAddPointsModal(userId, userName) {
+        if(confirm(`ต้องการลบผู้ใช้ "${selectedUserForDetails.display_name}" ถาวรหรือไม่? ข้อมูลทั้งหมดจะหายไป`)) {
+             const { error } = await supabase.from("users").delete().eq("id", selectedUserForDetails.id);
+             if(!error) {
+                 showSuccessToast("ลบผู้ใช้เรียบร้อย");
+                 toggleModal("user-details-modal", false);
+                 loadAdminUsers();
+             } else {
+                 alert("Error: " + error.message);
+             }
+        }
+    }
+
+    async function openAddPointsModal(userId, userName) {
         document.getElementById("add-points-user-id").value = userId;
         document.getElementById("add-points-user-name").innerText = "ลูกค้า: " + userName;
-        document.getElementById("points-amount").value = "";
+        
+        document.getElementById("wallet-points-adj").value = "";
+        document.getElementById("rank-points-adj").value = "";
+        document.getElementById("current-wallet-points").innerText = "...";
+        document.getElementById("current-rank-points").innerText = "...";
+        
         toggleModal("add-points-modal", true);
+        
+        const { data: user } = await supabase.from('users').select('points, total_points').eq('id', userId).single();
+        if (user) {
+            currentEditingUser = user;
+            document.getElementById("current-wallet-points").innerText = (user.points || 0).toLocaleString();
+            document.getElementById("current-rank-points").innerText = (user.total_points || 0).toLocaleString();
+        }
+    }
+    
+    function setRankTarget(target) {
+        if (!currentEditingUser) return;
+        const currentTotal = currentEditingUser.total_points || 0;
+        const diff = target - currentTotal;
+        document.getElementById("rank-points-adj").value = diff;
+        const adjInput = document.getElementById("rank-points-adj");
+        adjInput.classList.add("ring-2", "ring-purple-500");
+        setTimeout(() => adjInput.classList.remove("ring-2", "ring-purple-500"), 300);
     }
 
     async function submitAddPoints() {
         const userId = document.getElementById("add-points-user-id").value;
-        const amount = parseInt(document.getElementById("points-amount").value);
+        const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
+        const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
         
-        if (!userId || isNaN(amount) || amount === 0) return alert("กรุณาระบุจำนวนแต้ม");
+        if (walletAdj === 0 && rankAdj === 0) return alert("กรุณาระบุจำนวนแต้มที่ต้องการปรับ");
 
-        // Fetch current points
-        const { data: user } = await supabase.from('users').select('points').eq('id', userId).single();
-        const currentPoints = user ? user.points : 0;
-        const newPoints = Math.max(0, currentPoints + amount);
+        const { data: user } = await supabase.from('users').select('points, total_points').eq('id', userId).single();
+        if (!user) return alert("ไม่พบข้อมูลผู้ใช้");
+        
+        const currentPoints = user.points || 0;
+        const currentTotal = user.total_points || 0;
+        
+        const newPoints = Math.max(0, currentPoints + walletAdj);
+        const newTotal = Math.max(0, currentTotal + rankAdj);
 
-        const { error } = await supabase.from('users').update({ points: newPoints }).eq('id', userId);
+        const { error } = await supabase.from('users').update({ 
+            points: newPoints,
+            total_points: newTotal 
+        }).eq('id', userId);
         
         if (!error) {
-            showSuccessToast(amount > 0 ? `เพิ่ม ${amount} แต้มสำเร็จ` : `ลด ${Math.abs(amount)} แต้มสำเร็จ`);
+            let msg = "บันทึกข้อมูลสำเร็จ";
+            if (rankAdj !== 0) msg += " (ปรับยศเรียบร้อย)";
+            showSuccessToast(msg);
+            
             toggleModal("add-points-modal", false);
-            loadAdminUsers(); // Refresh list
+            loadAdminUsers(); 
+            
+            if(selectedUserForDetails && selectedUserForDetails.id == userId) {
+                 selectedUserForDetails.points = newPoints;
+                 selectedUserForDetails.total_points = newTotal;
+                 openUserDetailsModal(selectedUserForDetails);
+            }
         } else {
             alert("Error: " + error.message);
         }
     }
 
-    // --- Give Coupon Logic ---
     async function openGiveCouponModal(userId, userName) {
         document.getElementById("give-coupon-user-id").value = userId;
         document.getElementById("give-coupon-user-name").innerText = "ลูกค้า: " + userName;
         
-        // Load rewards for selection
         const rewardSelect = document.getElementById("reward-select");
         rewardSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
         
@@ -2203,7 +2452,6 @@ function filterAdminOrders() {
         }
     }
 
-    // Forms Handlers
     document.getElementById("dessert-form").onsubmit = async (e) => {
         e.preventDefault();
         const id = document.getElementById("dessert-id").value;
@@ -2233,6 +2481,7 @@ function filterAdminOrders() {
         e.preventDefault();
         if(!currentAdminDessertId) return alert("Error: No Dessert Selected");
         
+        const id = document.getElementById("brownie-id").value; 
         const type = document.getElementById("brownie-type").value;
         const name = document.getElementById("brownie-name").value;
         const desc = document.getElementById("brownie-desc").value;
@@ -2245,15 +2494,24 @@ function filterAdminOrders() {
             type, name, description: desc, price, points, is_active: active 
         };
         
-        const { error } = await supabase.from("brownie_items").insert([payload]);
+        let error;
+        if (id) {
+            const res = await supabase.from("brownie_items").update(payload).eq("id", id);
+            error = res.error;
+        } else {
+            const res = await supabase.from("brownie_items").insert([payload]);
+            error = res.error;
+        }
+
         if(!error) {
             showSuccessToast("บันทึกสำเร็จ");
             closeBrownieModal();
             loadBrownieMenus(currentAdminDessertId);
+        } else {
+            alert("Error: " + error.message);
         }
     };
     
-    // Admin Stats & Summary
     async function loadAdminStats() {
        const { data: orders } = await supabase.from("orders").select("total_price, status");
        const { count } = await supabase.from("users").select("*", {count:'exact', head:true});
@@ -2277,26 +2535,21 @@ function filterAdminOrders() {
     }
     
     async function loadOrderSummary() {
-        const date = document.getElementById("summary-delivery-round").value; // Changed ID here
+        const date = document.getElementById("summary-delivery-round").value; 
         const status = document.getElementById("summary-status").value;
         let q = supabase.from("orders").select("*");
         
         if(date) {
-             // IMPORTANT: Filter by delivery_date, not created_at
              q = q.eq("delivery_date", date);
-        } else {
-             // If no date selected, don't load anything or show all?
-             // Better to require date for clarity, or default to "upcoming"
         }
         
         if(status) q = q.eq("status", status);
-        else q = q.neq("status", "cancelled"); // Default exclude cancelled
+        else q = q.neq("status", "cancelled"); 
         
         const { data } = await q;
         const content = document.getElementById("summary-content");
         if(!data || data.length === 0) { content.innerHTML = "<p class='text-center text-slate-400 mt-4'>ไม่มีออเดอร์ในรอบนี้</p>"; return; }
         
-        // Count items
         const counts = {};
         data.forEach(o => {
             let items = [];
@@ -2329,12 +2582,12 @@ function filterAdminOrders() {
         if(!newStatus) return alert("เลือกสถานะก่อนครับ");
         if(!confirm("ยืนยันอัปเดตสถานะทั้งหมดในรอบนี้?")) return;
         
-        const date = document.getElementById("summary-delivery-round").value; // Changed ID here
+        const date = document.getElementById("summary-delivery-round").value; 
         const status = document.getElementById("summary-status").value;
         let q = supabase.from("orders").update({status: newStatus});
         
         if(date) {
-             q = q.eq("delivery_date", date); // Filter by delivery_date
+             q = q.eq("delivery_date", date); 
         }
         if(status) q = q.eq("status", status);
         else q = q.neq("status", "cancelled");
@@ -2348,7 +2601,6 @@ function filterAdminOrders() {
         }
     }
 
-    // --- History View ---
     async function openOrderHistory() {
         document.getElementById("main-app").classList.add("hidden");
         document.getElementById("order-history").classList.remove("hidden");
@@ -2358,29 +2610,41 @@ function filterAdminOrders() {
         if (data.length === 0) list.innerHTML = "<p class='text-center text-slate-400 mt-10'>ไม่มีประวัติ</p>";
         else {
             list.innerHTML = data.map(o => {
-                // Parse items safely
                 let items = [];
                 try { 
                     items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; 
                 } catch(e) { items = []; }
                 
-                // Calculate total quantity (sum of all item quantities)
                 const totalQty = Array.isArray(items) ? items.reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0) : 0;
                 
-                // Format Delivery Date
                 const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
                 const deliveryDateDisplay = o.delivery_date 
                     ? new Date(o.delivery_date).toLocaleDateString('th-TH', dateOptions) 
                     : 'ไม่ระบุวันส่ง';
 
-                // Status Badge Color
                 let statusClass = 'bg-gray-100 text-gray-600';
                 let statusText = o.status;
-                if(o.status === 'pending') { statusClass = 'bg-yellow-100 text-yellow-700'; statusText = 'รอดำเนินการ'; }
+                let cancelBtn = '';
+
+                if(o.status === 'pending') { 
+                    statusClass = 'bg-yellow-100 text-yellow-700'; 
+                    statusText = 'รอดำเนินการ';
+                    cancelBtn = `<button onclick="cancelOrder('${o.id}')" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded hover:bg-red-50 mt-2 w-full text-center">ยกเลิกออเดอร์</button>`;
+                }
                 else if(o.status === 'preparing') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังทำ'; }
                 else if(o.status === 'ready') { statusClass = 'bg-green-100 text-green-700'; statusText = 'พร้อมส่ง'; }
                 else if(o.status === 'completed') { statusClass = 'bg-green-100 text-green-700'; statusText = 'สำเร็จ'; }
                 else if(o.status === 'cancelled') { statusClass = 'bg-red-100 text-red-700'; statusText = 'ยกเลิก'; }
+
+                const itemsHtml = items.map(i => `
+                    <div class="flex justify-between items-start text-xs text-slate-600 mt-1.5 pl-3 border-l-2 border-slate-200">
+                        <div class="flex-1 pr-2">
+                            <div class="font-medium text-slate-700">${i.dessertName}</div>
+                            <div class="text-[10px] text-slate-400">${i.baseName} + ${i.toppingName}</div>
+                        </div>
+                        <div class="font-bold text-slate-500 whitespace-nowrap">x${i.quantity}</div>
+                    </div>
+                `).join('');
 
                 return `
               <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
@@ -2394,9 +2658,12 @@ function filterAdminOrders() {
                         <div class="w-6 text-center"><i class="fa-solid fa-truck-fast text-indigo-500"></i></div>
                         <div>รอบส่ง: <span class="font-semibold text-slate-800">${deliveryDateDisplay}</span></div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 text-center"><i class="fa-solid fa-cubes-stacked text-orange-500"></i></div>
-                        <div>จำนวนรวม: <span class="font-semibold text-slate-800">${totalQty} ชิ้น</span> <span class="text-xs text-slate-400">(${items.length} รายการ)</span></div>
+                    
+                    <div class="mt-3 pt-3 border-t border-slate-100">
+                        <div class="text-xs text-slate-400 font-medium mb-1">รายการสินค้า (${totalQty} ชิ้น)</div>
+                        <div class="space-y-1">
+                            ${itemsHtml}
+                        </div>
                     </div>
                  </div>
 
@@ -2405,11 +2672,27 @@ function filterAdminOrders() {
                     <div class="text-right">
                         <div class="text-xs text-slate-400">ยอดสุทธิ</div>
                         <div class="font-bold text-xl text-indigo-600">${o.total_price.toLocaleString()} ฿</div>
+                        ${o.status === 'completed' ? `<div class="text-[10px] text-green-500">+${o.earned_points || 0} แต้ม</div>` : ''}
                     </div>
                  </div>
+                 ${cancelBtn}
               </div>
             `;
             }).join('');
+        }
+    }
+    
+    async function cancelOrder(id) {
+        if(!confirm("ยืนยันการยกเลิกออเดอร์?")) return;
+        
+        const { error } = await supabase.from("orders").update({status: 'cancelled'}).eq("id", id);
+        
+        if (!error) {
+            showSuccessToast("ยกเลิกออเดอร์แล้ว");
+            openOrderHistory();
+        } else {
+            console.error("Cancel Error:", error);
+            alert("ไม่สามารถยกเลิกได้: " + error.message);
         }
     }
     
@@ -2436,13 +2719,10 @@ function filterAdminOrders() {
         loadAdminOrders();
     }
 
-    // Initial Load
     window.addEventListener("load", init);
 
-    // Helpers for modal closing
     window.closeCreateReward = () => toggleModal('create-reward-modal', false);
     window.showCreateRewardForm = () => {
-        // Reset form for Create
         document.getElementById('reward-id').value = '';
         document.getElementById('reward-name').value = '';
         document.getElementById('reward-description').value = '';
@@ -2455,7 +2735,6 @@ function filterAdminOrders() {
     
     window.closeCreateCoupon = () => toggleModal('create-coupon-modal', false);
     window.showCreateCouponForm = () => {
-        // Reset form for Create
         document.getElementById('coupon-id').value = '';
         document.getElementById('coupon-code').value = '';
         document.getElementById('coupon-title').value = '';
@@ -2516,10 +2795,9 @@ function filterAdminOrders() {
         document.getElementById("brownie-modal-title").innerText = "เพิ่มส่วนประกอบ (" + type + ")";
         document.getElementById("brownie-type").value = type;
         document.getElementById("brownie-active").checked = true;
+        document.getElementById("brownie-id").value = ""; 
         
-        // If editing, preload data (need separate logic or pass data)
-        // Here simplified for new only, edit handled inside renderBrownieList call
-        if (typeof data === 'object') { // If full object passed
+        if (data && typeof data === 'object') {
              document.getElementById("brownie-id").value = data.id;
              document.getElementById("brownie-modal-title").innerText = "แก้ไขส่วนประกอบ";
              document.getElementById("brownie-name").value = data.name;
