@@ -1658,15 +1658,47 @@
     }
     
     function updateShopStatusUI() {
-        if (!shopIsOpen) document.getElementById("shop-closed-overlay").classList.remove("hidden");
+        // Update Overlay for Customers
+        const closedOverlay = document.getElementById("shop-closed-overlay");
+        if (closedOverlay) { // Add check
+            if (shopStatus === 'closed') {
+                closedOverlay.classList.remove("hidden");
+            } else {
+                closedOverlay.classList.add("hidden");
+            }
+        }
+        
+        // Re-check maintenance overlay explicitly
+        checkMaintenanceMode();
+
+        // Update Admin UI Buttons
         const icon = document.getElementById("shop-status-icon");
-        const txt = document.getElementById("shop-status-text");
-        const btn = document.getElementById("toggle-shop-btn");
-        if (icon) {
-            icon.innerText = shopIsOpen ? "🏠" : "🔒";
-            txt.innerText = shopIsOpen ? "ร้านเปิดอยู่" : "ร้านปิดแล้ว";
-            btn.innerText = shopIsOpen ? "ปิดร้าน" : "เปิดร้าน";
-            btn.className = shopIsOpen ? "w-full py-3 rounded-xl font-bold text-lg shadow-lg bg-red-500 text-white hover:bg-red-600" : "w-full py-3 rounded-xl font-bold text-lg shadow-lg bg-green-500 text-white hover:bg-green-600";
+        const text = document.getElementById("shop-status-text");
+        
+        const btnOpen = document.getElementById("btn-status-open");
+        const btnClosed = document.getElementById("btn-status-closed");
+        const btnMaint = document.getElementById("btn-status-maintenance");
+        
+        // Helper to safe set class
+        const setClass = (el, cls) => { if(el) el.className = cls; };
+
+        // Reset Styles
+        [btnOpen, btnClosed, btnMaint].forEach(btn => {
+             setClass(btn, "w-full py-3 rounded-xl font-bold text-lg shadow-sm border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-2");
+        });
+
+        if (shopStatus === 'open') {
+            if(icon) icon.innerText = "🏠";
+            if(text) { text.innerText = "ร้านเปิดอยู่"; text.className = "text-2xl font-bold text-green-600 mb-2"; }
+            if(btnOpen) setClass(btnOpen, "w-full py-3 rounded-xl font-bold text-lg shadow-md border border-green-200 text-white bg-green-500 flex items-center justify-center gap-2 transform scale-105");
+        } else if (shopStatus === 'closed') {
+            if(icon) icon.innerText = "😴";
+            if(text) { text.innerText = "ร้านปิดรับออเดอร์"; text.className = "text-2xl font-bold text-red-500 mb-2"; }
+            if(btnClosed) setClass(btnClosed, "w-full py-3 rounded-xl font-bold text-lg shadow-md border border-red-200 text-white bg-red-500 flex items-center justify-center gap-2 transform scale-105");
+        } else if (shopStatus === 'maintenance') {
+            if(icon) icon.innerText = "🚧";
+            if(text) { text.innerText = "ปิดปรับปรุงเว็บไซต์"; text.className = "text-2xl font-bold text-orange-500 mb-2"; }
+            if(btnMaint) setClass(btnMaint, "w-full py-3 rounded-xl font-bold text-lg shadow-md border border-orange-200 text-white bg-orange-500 flex items-center justify-center gap-2 transform scale-105");
         }
     }
     
@@ -2362,11 +2394,6 @@ function filterAdminOrders() {
         document.getElementById("ud-points").innerText = user.points || 0;
         document.getElementById("ud-total-points").innerText = user.total_points || 0; 
         
-        // Show ban status inside modal
-        const banStatusEl = document.getElementById("ud-ban-status");
-        if(user.is_banned) banStatusEl.classList.remove("hidden");
-        else banStatusEl.classList.add("hidden");
-        
         const rankEl = document.getElementById("ud-rank-badge");
         const isAdmin = adminList.includes(user.line_id);
         const isSuperAdmin = user.line_id === SUPER_ADMIN_ID;
@@ -2398,7 +2425,7 @@ function filterAdminOrders() {
                 toggleBtn.style.display = 'none'; 
             }
 
-            const deleteBtn = actionsDiv.children[0].children[1]; // Corrected selector for delete button
+            const deleteBtn = actionsDiv.children[0].children[1]; 
             if (viewerIsSuperAdmin) {
                 deleteBtn.style.display = 'block';
                 if(isSuperAdmin) deleteBtn.style.display = 'none'; 
@@ -2406,10 +2433,9 @@ function filterAdminOrders() {
                 deleteBtn.style.display = 'none';
             }
             
-            // Ban Button Logic
             const banBtn = document.getElementById("ud-btn-ban");
             if (isSuperAdmin) {
-                banBtn.style.display = 'none'; // Cannot ban super admin
+                banBtn.style.display = 'none'; 
             } else {
                 banBtn.style.display = 'flex';
                 if(user.is_banned) {
@@ -2453,13 +2479,12 @@ function filterAdminOrders() {
         toggleModal("user-details-modal", true);
     }
     
-    // --- Ban User Logic ---
     function openBanUserModal(userId, name) {
         document.getElementById("ban-user-id").value = userId;
         document.getElementById("ban-user-name").innerText = "ผู้ใช้: " + name;
         document.getElementById("ban-reason").value = "";
-        toggleModal("user-details-modal", false); // Close details
-        toggleModal("ban-user-modal", true); // Open ban form
+        toggleModal("user-details-modal", false); 
+        toggleModal("ban-user-modal", true); 
     }
     
     async function submitBanUser() {
