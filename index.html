@@ -1645,14 +1645,24 @@
     }
 
     async function loadShopStatus() {
-        const { data } = await supabase.from("shop_settings").select("is_open, blocked_dates").eq("id", 1).maybeSingle();
-        shopIsOpen = data ? data.is_open : true;
-        if (data && data.blocked_dates) {
-            try {
-                blockedDates = typeof data.blocked_dates === 'string' ? JSON.parse(data.blocked_dates) : data.blocked_dates;
-            } catch(e) { blockedDates = []; }
-        } else {
-            blockedDates = [];
+        // Try to select 'status' column, fall back to 'is_open' logic
+        const { data, error } = await supabase.from("shop_settings").select("*").eq("id", 1).maybeSingle();
+        
+        if (data) {
+            if (data.status) {
+                shopStatus = data.status;
+            } else {
+                // Backward compatibility
+                shopStatus = data.is_open ? 'open' : 'closed';
+            }
+            
+            if (data.blocked_dates) {
+                try {
+                    blockedDates = typeof data.blocked_dates === 'string' ? JSON.parse(data.blocked_dates) : data.blocked_dates;
+                } catch(e) { blockedDates = []; }
+            } else {
+                blockedDates = [];
+            }
         }
         updateShopStatusUI();
     }
@@ -1660,7 +1670,7 @@
     function updateShopStatusUI() {
         // Update Overlay for Customers
         const closedOverlay = document.getElementById("shop-closed-overlay");
-        if (closedOverlay) { // Add check
+        if (closedOverlay) { 
             if (shopStatus === 'closed') {
                 closedOverlay.classList.remove("hidden");
             } else {
@@ -1701,11 +1711,36 @@
             if(btnMaint) setClass(btnMaint, "w-full py-3 rounded-xl font-bold text-lg shadow-md border border-orange-200 text-white bg-orange-500 flex items-center justify-center gap-2 transform scale-105");
         }
     }
-    
-    async function toggleShopStatus() {
-        shopIsOpen = !shopIsOpen;
-        await supabase.from("shop_settings").upsert({id:1, is_open: shopIsOpen});
+
+    // ✅ เพิ่มฟังก์ชันนี้กลับมาเพื่อให้ปุ่มทำงานได้
+    async function setShopStatus(newStatus) {
+        shopStatus = newStatus;
+        
+        // Map to DB fields
+        let isOpen = (newStatus === 'open');
+        
+        // Save both 'status' (new) and 'is_open' (legacy)
+        const { error } = await supabase.from("shop_settings").upsert({
+            id: 1, 
+            status: newStatus, 
+            is_open: isOpen 
+        });
+        
+        if (error) {
+            console.error("Error setting shop status:", error);
+            alert("บันทึกสถานะไม่สำเร็จ (คุณอาจยังไม่ได้เพิ่มคอลัมน์ status ใน Database): " + error.message);
+            return;
+        }
+        
         updateShopStatusUI();
+        showSuccessToast("บันทึกสถานะร้านเรียบร้อย");
+    }
+
+    // Legacy function support (optional)
+    async function toggleShopStatus() {
+        // Default toggle logic: Open <-> Closed
+        const newStatus = (shopStatus === 'open') ? 'closed' : 'open';
+        setShopStatus(newStatus);
     }
 
     function closeShopClosedOverlay() {
