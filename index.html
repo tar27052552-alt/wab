@@ -222,7 +222,7 @@
     <p class="text-slate-500 font-medium animate-pulse">กำลังเข้าสู่ร้าน...</p>
   </div>
 
-  <!-- Shop Closed Overlay -->
+  <!-- Shop Closed Overlay (For Closed Order Status) -->
   <div id="shop-closed-overlay" class="shop-closed-overlay fixed inset-0 flex items-center justify-center z-[60] hidden p-4">
     <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl animate-[fadeIn_0.3s_ease-out]">
       <div class="text-6xl mb-4 animate-bounce">😴</div>
@@ -232,6 +232,32 @@
         รับทราบ
       </button>
     </div>
+  </div>
+
+  <!-- Maintenance Overlay (Blocks Non-Admins) -->
+  <div id="maintenance-overlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center bg-slate-900 text-white text-center p-6 transition-opacity duration-300">
+      <div class="animate-bounce text-8xl mb-6">🚧</div>
+      <h1 class="text-3xl font-bold mb-4">ปิดปรับปรุงเว็บไซต์</h1>
+      <p class="text-slate-300 max-w-md mx-auto text-lg">
+          ระบบกำลังทำการอัปเดตเพื่อให้บริการที่ดียิ่งขึ้น<br>
+          กรุณากลับมาใหม่ในภายหลังนะครับ
+      </p>
+      <div class="mt-8 text-xs text-slate-500 font-mono">System Maintenance Mode</div>
+  </div>
+
+  <!-- 🚫 BANNED USER OVERLAY -->
+  <div id="ban-overlay" class="fixed inset-0 z-[110] hidden flex-col items-center justify-center bg-red-950/95 backdrop-blur-md text-white text-center p-6">
+      <div class="text-8xl mb-6 animate-pulse">🚫</div>
+      <h1 class="text-3xl font-bold mb-2">บัญชีของคุณถูกระงับ</h1>
+      <p class="text-red-200 text-sm mb-6">ไม่สามารถเข้าใช้งานได้ในขณะนี้</p>
+      
+      <div class="bg-red-900/50 border border-red-700 p-6 rounded-2xl max-w-sm w-full relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+          <h3 class="text-red-300 text-xs uppercase tracking-wider font-bold mb-2">ข้อความจากผู้ดูแลระบบ:</h3>
+          <p id="ban-message-display" class="text-xl font-medium text-white break-words leading-relaxed"></p>
+      </div>
+      
+      <div class="mt-8 text-xs text-red-400/60">User ID: <span id="banned-user-id-display"></span></div>
   </div>
 
 <header id="main-header" class="glass sticky top-0 z-40 hidden transition-all duration-300">
@@ -562,10 +588,21 @@
         <!-- Shop status content -->
         <section id="admin-shop-status-tab" class="admin-tab-content h-full flex flex-col items-center justify-center text-center">
             <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-100">
-               <div class="text-7xl mb-6 transition-transform hover:scale-110 duration-300 cursor-default" id="shop-status-icon"></div>
-               <h3 class="text-2xl font-bold text-slate-800 mb-2" id="shop-status-text">...</h3>
-               <p class="text-slate-500 mb-8 text-sm">ควบคุมการเปิด/ปิดรับออเดอร์ของร้านค้า</p>
-               <button id="toggle-shop-btn" onclick="toggleShopStatus()" class="w-full py-3 rounded-xl font-bold text-lg shadow-lg transition-all"></button>
+               <div class="text-7xl mb-6 transition-transform duration-300 cursor-default" id="shop-status-icon">🏠</div>
+               <h3 class="text-2xl font-bold text-slate-800 mb-2" id="shop-status-text">สถานะร้าน</h3>
+               <p class="text-slate-500 mb-8 text-sm">เลือกสถานะของร้านค้า</p>
+               
+               <div class="space-y-3 w-full">
+                   <button onclick="setShopStatus('open')" id="btn-status-open" class="w-full py-3 rounded-xl font-bold text-lg shadow-sm border transition-all flex items-center justify-center gap-2 hover:scale-105">
+                       <i class="fa-solid fa-store"></i> เปิดร้าน (ปกติ)
+                   </button>
+                   <button onclick="setShopStatus('closed')" id="btn-status-closed" class="w-full py-3 rounded-xl font-bold text-lg shadow-sm border transition-all flex items-center justify-center gap-2 hover:scale-105">
+                       <i class="fa-solid fa-door-closed"></i> ปิดรับออเดอร์
+                   </button>
+                   <button onclick="setShopStatus('maintenance')" id="btn-status-maintenance" class="w-full py-3 rounded-xl font-bold text-lg shadow-sm border transition-all flex items-center justify-center gap-2 hover:scale-105">
+                       <i class="fa-solid fa-screwdriver-wrench"></i> ปิดปรับปรุง
+                   </button>
+               </div>
             </div>
         </section>
 
@@ -820,6 +857,25 @@
      </div>
   </div>
 
+  <!-- NEW: Ban User Modal -->
+  <div id="ban-user-modal" class="fixed inset-0 z-[90] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <h3 class="text-lg font-bold mb-2 text-red-600"><i class="fa-solid fa-ban"></i> ระงับการใช้งานผู้ใช้</h3>
+            <p id="ban-user-name" class="text-sm text-slate-500 mb-4"></p>
+            <input type="hidden" id="ban-user-id">
+            
+            <div class="mb-4">
+               <label class="block text-sm font-medium text-slate-700 mb-1">ระบุสาเหตุ (ลูกค้าจะเห็นข้อความนี้)</label>
+               <textarea id="ban-reason" class="w-full p-3 border border-red-200 rounded-xl h-32 text-sm bg-red-50 focus:ring-2 focus:ring-red-500 outline-none resize-none" placeholder="เช่น ทำผิดกฎการใช้งาน..."></textarea>
+            </div>
+            
+            <div class="flex gap-3">
+               <button onclick="toggleModal('ban-user-modal', false)" class="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600">ยกเลิก</button>
+               <button onclick="submitBanUser()" class="flex-1 py-2 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition">ยืนยันการแบน</button>
+            </div>
+        </div>
+  </div>
+
   <!-- View User Details Modal -->
   <div id="user-details-modal" class="fixed inset-0 z-[85] hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
      <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl flex flex-col max-h-[90vh]">
@@ -834,6 +890,7 @@
                 <h4 id="ud-name" class="text-xl font-bold text-slate-800"></h4>
                 <div id="ud-rank-badge" class="mb-1"></div>
                 <p id="ud-line-id" class="text-sm text-slate-500 cursor-pointer hover:text-indigo-600 transition" onclick="copyToClipboard(this.innerText.replace('Line ID: ', ''))" title="คลิกเพื่อคัดลอก"></p>
+                <div id="ud-ban-status" class="mt-2 hidden"><span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold">⛔ ถูกระงับการใช้งาน</span></div>
              </div>
              
              <div class="grid grid-cols-3 gap-2 mb-6">
@@ -852,9 +909,14 @@
              </div>
              
              <!-- Admin Actions inside Details -->
-             <div id="ud-admin-actions" class="mb-6 grid grid-cols-2 gap-3 border-b border-slate-100 pb-6 hidden">
-                 <button id="ud-btn-admin-toggle" class="py-2 rounded-lg border text-sm font-medium transition"></button>
-                 <button onclick="deleteUserFromDetails()" class="py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition">ลบผู้ใช้</button>
+             <div id="ud-admin-actions" class="mb-6 hidden">
+                 <div class="grid grid-cols-2 gap-3 mb-3">
+                     <button id="ud-btn-admin-toggle" class="py-2 rounded-lg border text-sm font-medium transition"></button>
+                     <button onclick="deleteUserFromDetails()" class="py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium transition">ลบผู้ใช้</button>
+                 </div>
+                 <button id="ud-btn-ban" class="w-full py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>
+                 </button>
              </div>
 
              <div class="space-y-2">
@@ -970,7 +1032,7 @@
     const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5b3J3YmphZ2psa3FwYnJkandrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNjk2NjgsImV4cCI6MjA3Njk0NTY2OH0.bZJRcaM3u9NUBrux5AbPXOXVtcSnJHDdK15gCQ-9Zc4";
     // Default Admins (Hardcoded + Persistent)
-    const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2","U5301bd5962323787574d82f86f3d954e"];
+    const ADMIN_IDS = ["Ud21a04a5d66c9de0b4c6f1aaf8f050e2"];
     const SUPER_ADMIN_ID = "Ud21a04a5d66c9de0b4c6f1aaf8f050e2"; 
     let adminList = []; 
 
@@ -992,7 +1054,10 @@
     let allDesserts = [];
     let selectedDessert = null;
     let currentAdminDessertId = null;
-    let shopIsOpen = true;
+    
+    // Status Variables
+    let shopStatus = 'open'; // open, closed, maintenance
+    
     let blockedDates = [];
     let allOrders = [];
     let allUsers = []; 
@@ -1098,16 +1163,26 @@
             adminList.push(SUPER_ADMIN_ID);
         }
 
-        // Mock User for Dev Mode
+        // --- PRODUCTION: Enable LIFF ---
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        userProfile = await liff.getProfile();
+        // -------------------------------
+
+        // --- DEV MODE (Disabled) ---
+        /*
         userProfile = {
             userId: "mock_user_001",
             displayName: "Dev User",
             pictureUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
         };
-        
         if (!adminList.includes(userProfile.userId)) {
              adminList.push(userProfile.userId);
         }
+        */
 
         loadCartFromStorage();
         
@@ -1124,14 +1199,40 @@
         if (adminList.includes(userProfile.userId)) {
            document.getElementById("admin-container").classList.remove("hidden");
         }
+        
+        // Check Maintenance Mode
+        checkMaintenanceMode();
 
         document.getElementById("loading-screen").classList.add("hidden");
-        document.getElementById("main-header").classList.remove("hidden");
-        document.getElementById("main-app").classList.remove("hidden");
+        // Main header/app visibility is handled in checkMaintenanceMode
       } catch (error) {
         console.error("Init Error:", error);
         alert("Connection Error. Please refresh.");
       }
+    }
+    
+    function checkMaintenanceMode() {
+        const isAdmin = adminList.includes(userProfile?.userId);
+        const maintOverlay = document.getElementById("maintenance-overlay");
+        const mainHeader = document.getElementById("main-header");
+        const mainApp = document.getElementById("main-app");
+
+        if (shopStatus === 'maintenance' && !isAdmin) {
+            // Block Access
+            maintOverlay.classList.remove("hidden");
+            mainHeader.classList.add("hidden");
+            mainApp.classList.add("hidden");
+        } else {
+            // Allow Access
+            maintOverlay.classList.add("hidden");
+            mainHeader.classList.remove("hidden");
+            mainApp.classList.remove("hidden");
+            
+            // If admin is viewing during maintenance, maybe show a small indicator
+            if (shopStatus === 'maintenance' && isAdmin) {
+                showSuccessToast("⚠️ คุณกำลังใช้งานในโหมด Admin (เว็บปิดปรับปรุงอยู่)");
+            }
+        }
     }
 
     function saveCartToStorage() {
@@ -1167,6 +1268,20 @@
       const { data } = await supabase.from("users").select("*").eq("line_id", lineId).single();
       if (data) {
         currentUser = data;
+        
+        // --- CHECK IF BANNED ---
+        if (data.is_banned) {
+            document.getElementById("ban-overlay").classList.remove("hidden");
+            document.getElementById("ban-message-display").innerText = data.ban_reason || "ไม่ระบุสาเหตุ";
+            document.getElementById("banned-user-id-display").innerText = data.line_id;
+            
+            // Hide Main App
+            document.getElementById("main-header").classList.add("hidden");
+            document.getElementById("main-app").classList.add("hidden");
+            document.getElementById("loading-screen").classList.add("hidden");
+            return; // Stop further loading
+        }
+        
         userPoints = data.points || 0;
         userTotalPoints = data.total_points || 0;
         document.getElementById("userPoints").innerText = userPoints;
@@ -1572,7 +1687,7 @@
 
     async function checkout() {
         if (cart.length === 0) return;
-        if (!shopIsOpen) return alert("ร้านปิดอยู่ครับ");
+        if (shopStatus !== 'open') return alert("ร้านปิดอยู่ครับ");
         const date = document.getElementById("delivery-date").value;
         if (!date) return alert("เลือกวันส่งด้วยครับ");
         
@@ -2153,6 +2268,7 @@ function filterAdminOrders() {
                        <div class="font-bold text-slate-800 flex flex-wrap items-center gap-1 text-sm">
                             <span class="truncate max-w-[120px]">${u.display_name || 'Guest'}</span>
                             ${adminBadge || rankBadge}
+                            ${u.is_banned ? '<span class="text-[10px] bg-red-100 text-red-600 px-1 rounded ml-1">🚫 Banned</span>' : ''}
                        </div>
                        <div class="text-xs text-slate-500 truncate cursor-pointer hover:text-blue-600 flex items-center gap-1" onclick="copyToClipboard('${u.line_id}')" title="คลิกเพื่อคัดลอก ID">
                           ID: ${u.line_id.substring(0, 8)}... <i class="fa-regular fa-copy text-[10px]"></i>
@@ -2251,6 +2367,11 @@ function filterAdminOrders() {
         document.getElementById("ud-points").innerText = user.points || 0;
         document.getElementById("ud-total-points").innerText = user.total_points || 0; 
         
+        // Show ban status inside modal
+        const banStatusEl = document.getElementById("ud-ban-status");
+        if(user.is_banned) banStatusEl.classList.remove("hidden");
+        else banStatusEl.classList.add("hidden");
+        
         const rankEl = document.getElementById("ud-rank-badge");
         const isAdmin = adminList.includes(user.line_id);
         const isSuperAdmin = user.line_id === SUPER_ADMIN_ID;
@@ -2282,7 +2403,7 @@ function filterAdminOrders() {
                 toggleBtn.style.display = 'none'; 
             }
 
-            const deleteBtn = actionsDiv.children[1]; 
+            const deleteBtn = actionsDiv.children[0].children[1]; // Corrected selector for delete button
             if (viewerIsSuperAdmin) {
                 deleteBtn.style.display = 'block';
                 if(isSuperAdmin) deleteBtn.style.display = 'none'; 
@@ -2290,8 +2411,21 @@ function filterAdminOrders() {
                 deleteBtn.style.display = 'none';
             }
             
-            if (toggleBtn.style.display === 'none' && deleteBtn.style.display === 'none') {
-                actionsDiv.classList.add("hidden");
+            // Ban Button Logic
+            const banBtn = document.getElementById("ud-btn-ban");
+            if (isSuperAdmin) {
+                banBtn.style.display = 'none'; // Cannot ban super admin
+            } else {
+                banBtn.style.display = 'flex';
+                if(user.is_banned) {
+                    banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน (Unban)</span>';
+                    banBtn.className = "w-full py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                    banBtn.onclick = () => unbanUser(user.id);
+                } else {
+                    banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>';
+                    banBtn.className = "w-full py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                    banBtn.onclick = () => openBanUserModal(user.id, user.display_name);
+                }
             }
 
         } else {
@@ -2322,6 +2456,52 @@ function filterAdminOrders() {
         }
         
         toggleModal("user-details-modal", true);
+    }
+    
+    // --- Ban User Logic ---
+    function openBanUserModal(userId, name) {
+        document.getElementById("ban-user-id").value = userId;
+        document.getElementById("ban-user-name").innerText = "ผู้ใช้: " + name;
+        document.getElementById("ban-reason").value = "";
+        toggleModal("user-details-modal", false); // Close details
+        toggleModal("ban-user-modal", true); // Open ban form
+    }
+    
+    async function submitBanUser() {
+        const userId = document.getElementById("ban-user-id").value;
+        const reason = document.getElementById("ban-reason").value;
+        
+        if(!reason) return alert("กรุณาระบุสาเหตุ");
+        
+        const { error } = await supabase.from("users").update({
+            is_banned: true,
+            ban_reason: reason
+        }).eq("id", userId);
+        
+        if(!error) {
+            showSuccessToast("ระงับการใช้งานเรียบร้อย");
+            toggleModal("ban-user-modal", false);
+            loadAdminUsers();
+        } else {
+            alert("Error: " + error.message);
+        }
+    }
+    
+    async function unbanUser(userId) {
+        if(!confirm("ต้องการปลดแบนผู้ใช้นี้หรือไม่?")) return;
+        
+        const { error } = await supabase.from("users").update({
+            is_banned: false,
+            ban_reason: null
+        }).eq("id", userId);
+        
+        if(!error) {
+            showSuccessToast("ปลดแบนเรียบร้อย");
+            toggleModal("user-details-modal", false);
+            loadAdminUsers();
+        } else {
+            alert("Error: " + error.message);
+        }
     }
     
     async function deleteUserFromDetails() {
