@@ -1207,7 +1207,7 @@
         // Main header/app visibility is handled in checkMaintenanceMode
       } catch (error) {
         console.error("Init Error:", error);
-        alert("Connection Error. Please refresh.");
+        alert("เกิดข้อผิดพลาด: " + (error.message || JSON.stringify(error)));
       }
     }
     
@@ -1227,11 +1227,6 @@
             maintOverlay.classList.add("hidden");
             mainHeader.classList.remove("hidden");
             mainApp.classList.remove("hidden");
-            
-            // If admin is viewing during maintenance, maybe show a small indicator
-            if (shopStatus === 'maintenance' && isAdmin) {
-                showSuccessToast("⚠️ คุณกำลังใช้งานในโหมด Admin (เว็บปิดปรับปรุงอยู่)");
-            }
         }
     }
 
