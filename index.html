@@ -222,27 +222,29 @@
     <p class="text-slate-500 font-medium animate-pulse">กำลังเข้าสู่ร้าน...</p>
   </div>
 
-  <!-- Shop Closed Overlay (For Closed Order Status) -->
+  <!-- Shop Closed Overlay (For Closed Order Status - Triggered manually now) -->
   <div id="shop-closed-overlay" class="shop-closed-overlay fixed inset-0 flex items-center justify-center z-[60] hidden p-4">
     <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl animate-[fadeIn_0.3s_ease-out]">
       <div class="text-6xl mb-4 animate-bounce">😴</div>
       <h3 class="text-2xl font-bold text-slate-800 mb-2">ร้านปิดรับออเดอร์</h3>
-      <p class="text-slate-500 mb-6">ขออภัยครับ ตอนนี้ร้านปิดชั่วคราว<br>ไว้มาอุดหนุนใหม่นะครับ</p>
+      <p class="text-slate-500 mb-6">ตอนนี้ร้านปิดชั่วคราว แต่คุณยังสามารถดูเมนูได้ครับ</p>
       <button onclick="closeShopClosedOverlay()" class="w-full btn-primary py-3 rounded-xl font-medium">
         รับทราบ
       </button>
     </div>
   </div>
 
-  <!-- Maintenance Overlay (Blocks Non-Admins) -->
-  <div id="maintenance-overlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center bg-slate-900 text-white text-center p-6 transition-opacity duration-300">
+  <!-- Maintenance Overlay (Blocks Non-Admins) - Similar to Ban Screen -->
+  <div id="maintenance-overlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md text-white text-center p-6 transition-opacity duration-300">
       <div class="animate-bounce text-8xl mb-6">🚧</div>
       <h1 class="text-3xl font-bold mb-4">ปิดปรับปรุงเว็บไซต์</h1>
-      <p class="text-slate-300 max-w-md mx-auto text-lg">
+      <p class="text-slate-300 max-w-md mx-auto text-lg mb-8">
           ระบบกำลังทำการอัปเดตเพื่อให้บริการที่ดียิ่งขึ้น<br>
           กรุณากลับมาใหม่ในภายหลังนะครับ
       </p>
-      <div class="mt-8 text-xs text-slate-500 font-mono">System Maintenance Mode</div>
+      <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+          <div class="text-xs text-slate-400 font-mono">Status: System Maintenance</div>
+      </div>
   </div>
 
   <!-- 🚫 BANNED USER OVERLAY -->
@@ -277,7 +279,7 @@
          </div>
       </div>
 
-      <!-- Right: Actions -->
+      <!-- Right: Actions & Profile -->
       <div class="flex items-center gap-2">
         <button onclick="showRewards()" class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center hover:bg-purple-200 transition">
           <i class="fa-solid fa-gift text-lg"></i>
@@ -289,8 +291,14 @@
           <i class="fa-solid fa-cart-shopping text-lg"></i>
           <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white hidden transform scale-100 transition-transform">0</span>
         </button>
-        <div class="pl-2 border-l border-slate-200 ml-1 hidden sm:block">
-          <img id="userPic" src="" alt="Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover bg-slate-200" />
+        
+        <!-- Profile with Name & Rank (Clickable) -->
+        <div class="pl-2 border-l border-slate-200 ml-1 flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition" onclick="openSelfProfile()">
+           <div class="hidden sm:block text-right">
+              <div id="header-user-name" class="text-xs font-bold text-slate-700 truncate max-w-[80px]">User</div>
+              <div id="header-user-rank" class="text-[10px] text-slate-500">Rank</div>
+           </div>
+           <img id="userPic" src="" alt="Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover bg-slate-200" />
         </div>
       </div>
     </div>
@@ -305,6 +313,7 @@
 </header>
 
 <main id="main-app" class="max-w-5xl w-full mx-auto px-4 py-6 hidden fade-in">
+  <!-- ... (Content remains same) ... -->
   
   <!-- Hero Section -->
   <div class="text-center mb-8 sm:mb-10 relative">
@@ -387,6 +396,7 @@
 
 </main>
 
+<!-- ... (Order History, Modals etc. remain the same) ... -->
   <!-- Order History View -->
   <section id="order-history" class="hidden min-h-screen bg-slate-50 px-4 py-8 pb-20">
     <div class="max-w-4xl mx-auto">
@@ -1116,6 +1126,13 @@
         showMyCoupons();
     }
 
+    // NEW: Function to open self profile using the same modal
+    function openSelfProfile() {
+        if(currentUser) {
+            openUserDetailsModal(currentUser);
+        }
+    }
+
     function showAdmin() {
         const modal = document.getElementById('admin-modal');
         modal.classList.remove('hidden');
@@ -1217,6 +1234,7 @@
         const mainHeader = document.getElementById("main-header");
         const mainApp = document.getElementById("main-app");
 
+        // Maintenance Mode Logic: Block everyone except admin
         if (shopStatus === 'maintenance' && !isAdmin) {
             // Block Access
             maintOverlay.classList.remove("hidden");
@@ -1228,6 +1246,8 @@
             mainHeader.classList.remove("hidden");
             mainApp.classList.remove("hidden");
         }
+        
+        // Note: 'closed' status logic is handled in addToCart/checkout, not here.
     }
 
     function saveCartToStorage() {
@@ -1282,6 +1302,19 @@
         document.getElementById("userPoints").innerText = userPoints;
         document.getElementById("modal-user-points").innerText = userPoints;
         document.getElementById("userPic").src = data.picture_url;
+        
+        // NEW: Update Header Profile
+        document.getElementById("header-user-name").innerText = data.display_name || "Guest";
+        
+        // Determine Rank Name for Header (Simplified)
+        let rankName = "ใหม่";
+        if (userTotalPoints >= 1000) rankName = "VIP";
+        else if (userTotalPoints >= 500) rankName = "ตัวยง";
+        else if (userTotalPoints >= 100) rankName = "ประจำ";
+        
+        if(adminList.includes(data.line_id)) rankName = "Admin";
+        
+        document.getElementById("header-user-rank").innerText = rankName;
       }
     }
 
@@ -1396,6 +1429,12 @@
     }
 
     function addToCart() {
+       // NEW: Check Shop Status here
+       if (shopStatus === 'closed') {
+           document.getElementById("shop-closed-overlay").classList.remove("hidden");
+           return;
+       }
+       
        if (hasBases && !selectedBase) return;
        if (hasToppings && !selectedTopping) return;
        
@@ -1669,13 +1708,12 @@
     
     function updateShopStatusUI() {
         // Update Overlay for Customers
+        // NEW LOGIC: We don't auto-show closed overlay anymore (unless maintenance)
+        // We only show it if maintenance mode
+        
         const closedOverlay = document.getElementById("shop-closed-overlay");
-        if (closedOverlay) { 
-            if (shopStatus === 'closed') {
-                closedOverlay.classList.remove("hidden");
-            } else {
-                closedOverlay.classList.add("hidden");
-            }
+        if (closedOverlay) {
+            closedOverlay.classList.add("hidden"); // Default hide, show only on action
         }
         
         // Re-check maintenance overlay explicitly
@@ -1728,7 +1766,7 @@
         
         if (error) {
             console.error("Error setting shop status:", error);
-            alert("บันทึกสถานะไม่สำเร็จ (คุณอาจยังไม่ได้เพิ่มคอลัมน์ status ใน Database): " + error.message);
+            alert("บันทึกสถานะไม่สำเร็จ: " + error.message);
             return;
         }
         
@@ -1749,7 +1787,18 @@
 
     async function checkout() {
         if (cart.length === 0) return;
-        if (shopStatus !== 'open') return alert("ร้านปิดอยู่ครับ");
+        
+        // NEW: Check Shop Status here
+        if (shopStatus === 'closed') {
+            document.getElementById("shop-closed-overlay").classList.remove("hidden");
+            return;
+        }
+        if (shopStatus === 'maintenance') {
+             // Actually main app shouldn't be visible, but double check
+             alert("เว็บไซต์ปิดปรับปรุง");
+             return;
+        }
+
         const date = document.getElementById("delivery-date").value;
         if (!date) return alert("เลือกวันส่งด้วยครับ");
         
@@ -1786,7 +1835,10 @@
             alert("Order Failed: " + error.message);
         }
     }
-
+    
+    // ... (Rest of the code remains same: DeliveryRounds, AdminOrders, etc.)
+    // Ensure openSelfProfile is defined and used
+    
     async function renderDeliveryRoundsManagement() {
         const container = document.getElementById("delivery-rounds-list");
         container.innerHTML = '';
@@ -2429,6 +2481,10 @@ function filterAdminOrders() {
         document.getElementById("ud-points").innerText = user.points || 0;
         document.getElementById("ud-total-points").innerText = user.total_points || 0; 
         
+        const banStatusEl = document.getElementById("ud-ban-status");
+        if(user.is_banned) banStatusEl.classList.remove("hidden");
+        else banStatusEl.classList.add("hidden");
+        
         const rankEl = document.getElementById("ud-rank-badge");
         const isAdmin = adminList.includes(user.line_id);
         const isSuperAdmin = user.line_id === SUPER_ADMIN_ID;
@@ -2512,51 +2568,6 @@ function filterAdminOrders() {
         }
         
         toggleModal("user-details-modal", true);
-    }
-    
-    function openBanUserModal(userId, name) {
-        document.getElementById("ban-user-id").value = userId;
-        document.getElementById("ban-user-name").innerText = "ผู้ใช้: " + name;
-        document.getElementById("ban-reason").value = "";
-        toggleModal("user-details-modal", false); 
-        toggleModal("ban-user-modal", true); 
-    }
-    
-    async function submitBanUser() {
-        const userId = document.getElementById("ban-user-id").value;
-        const reason = document.getElementById("ban-reason").value;
-        
-        if(!reason) return alert("กรุณาระบุสาเหตุ");
-        
-        const { error } = await supabase.from("users").update({
-            is_banned: true,
-            ban_reason: reason
-        }).eq("id", userId);
-        
-        if(!error) {
-            showSuccessToast("ระงับการใช้งานเรียบร้อย");
-            toggleModal("ban-user-modal", false);
-            loadAdminUsers();
-        } else {
-            alert("Error: " + error.message);
-        }
-    }
-    
-    async function unbanUser(userId) {
-        if(!confirm("ต้องการปลดแบนผู้ใช้นี้หรือไม่?")) return;
-        
-        const { error } = await supabase.from("users").update({
-            is_banned: false,
-            ban_reason: null
-        }).eq("id", userId);
-        
-        if(!error) {
-            showSuccessToast("ปลดแบนเรียบร้อย");
-            toggleModal("user-details-modal", false);
-            loadAdminUsers();
-        } else {
-            alert("Error: " + error.message);
-        }
     }
     
     async function deleteUserFromDetails() {
