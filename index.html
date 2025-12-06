@@ -2475,11 +2475,21 @@ function filterAdminOrders() {
         selectedUserForDetails = user;
         const modal = document.getElementById("user-details-modal");
         
+        // 1. แสดงข้อมูลพื้นฐานทันที (ไม่ต้องรอโหลด)
         document.getElementById("ud-pic").src = user.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
         document.getElementById("ud-name").innerText = user.display_name || 'ไม่ระบุชื่อ';
         document.getElementById("ud-line-id").innerText = 'Line ID: ' + user.line_id;
-        document.getElementById("ud-points").innerText = user.points || 0;
-        document.getElementById("ud-total-points").innerText = user.total_points || 0; 
+        document.getElementById("ud-points").innerText = (user.points || 0).toLocaleString();
+        document.getElementById("ud-total-points").innerText = (user.total_points || 0).toLocaleString(); 
+        
+        // ตั้งค่า Loading สำหรับส่วนที่ต้องดึงข้อมูลเพิ่ม
+        document.getElementById("ud-total-orders").innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs text-slate-400"></i>';
+        document.getElementById("ud-order-history").innerHTML = `
+            <div class="flex flex-col items-center justify-center py-6 text-slate-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-indigo-200"></i>
+                <span class="text-xs">กำลังโหลดประวัติ...</span>
+            </div>
+        `;
         
         const banStatusEl = document.getElementById("ud-ban-status");
         if(user.is_banned) banStatusEl.classList.remove("hidden");
@@ -2512,6 +2522,7 @@ function filterAdminOrders() {
                     toggleBtn.className = "py-2 rounded-lg border border-slate-800 text-slate-800 hover:bg-slate-100 text-sm font-medium transition";
                     toggleBtn.onclick = () => openAdjustLevelModal(user.line_id, user.display_name);
                 }
+                toggleBtn.style.display = 'block'; 
             } else {
                 toggleBtn.style.display = 'none'; 
             }
@@ -2544,30 +2555,43 @@ function filterAdminOrders() {
             actionsDiv.classList.add("hidden");
         }
         
-        const { count } = await supabase.from("orders").select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-        document.getElementById("ud-total-orders").innerText = count || 0;
-        
-        const { data: orders } = await supabase.from("orders").select('*').eq('user_id', user.id).order("created_at", {ascending: false}).limit(10);
-        const historyContainer = document.getElementById("ud-order-history");
-        
-        if (!orders || orders.length === 0) {
-            historyContainer.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่มีประวัติการสั่งซื้อ</p>';
-        } else {
-            historyContainer.innerHTML = orders.map(o => `
-                <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                    <div>
-                        <div class="text-xs font-bold text-slate-700">#${o.id}</div>
-                        <div class="text-[10px] text-slate-400">${new Date(o.created_at).toLocaleDateString('th-TH')}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-xs font-bold text-indigo-600">${o.total_price} ฿</div>
-                        <div class="text-[10px] ${o.status === 'completed' ? 'text-green-500' : o.status === 'cancelled' ? 'text-red-500' : 'text-yellow-500'}">${o.status}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
+        // 2. เปิด Modal ทันที (ไม่รอ)
         toggleModal("user-details-modal", true);
+        
+        // 3. ดึงข้อมูลเบื้องหลัง (Async Fetch)
+        try {
+            const [countRes, ordersRes] = await Promise.all([
+                supabase.from("orders").select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+                supabase.from("orders").select('*').eq('user_id', user.id).order("created_at", {ascending: false}).limit(10)
+            ]);
+            
+            // อัปเดตข้อมูลเมื่อโหลดเสร็จ
+            document.getElementById("ud-total-orders").innerText = countRes.count || 0;
+            
+            const orders = ordersRes.data;
+            const historyContainer = document.getElementById("ud-order-history");
+            
+            if (!orders || orders.length === 0) {
+                historyContainer.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่มีประวัติการสั่งซื้อ</p>';
+            } else {
+                historyContainer.innerHTML = orders.map(o => `
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 hover:shadow-sm transition">
+                        <div>
+                            <div class="text-xs font-bold text-slate-700">#${o.id}</div>
+                            <div class="text-[10px] text-slate-400">${new Date(o.created_at).toLocaleDateString('th-TH')}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold text-indigo-600">${o.total_price.toLocaleString()} ฿</div>
+                            <div class="text-[10px] ${o.status === 'completed' ? 'text-green-500' : o.status === 'cancelled' ? 'text-red-500' : 'text-yellow-500'}">${o.status}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (err) {
+            console.error("Error loading user details:", err);
+            document.getElementById("ud-total-orders").innerText = "-";
+            document.getElementById("ud-order-history").innerHTML = '<p class="text-center text-red-400 text-xs py-4">โหลดข้อมูลไม่สำเร็จ</p>';
+        }
     }
     
     async function deleteUserFromDetails() {
