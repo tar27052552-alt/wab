@@ -313,7 +313,6 @@
 </header>
 
 <main id="main-app" class="max-w-5xl w-full mx-auto px-4 py-6 hidden fade-in">
-  <!-- ... (Content remains same) ... -->
   
   <!-- Hero Section -->
   <div class="text-center mb-8 sm:mb-10 relative">
@@ -1129,7 +1128,7 @@
     // NEW: Function to open self profile using the same modal
     function openSelfProfile() {
         if(currentUser) {
-            openUserDetailsModal(currentUser);
+            openUserDetailsModal(currentUser.id);
         }
     }
 
@@ -1785,6 +1784,40 @@
         document.getElementById("shop-closed-overlay").classList.add("hidden");
     }
 
+    // 🌟 ADDED: Helper to send message to LINE (Client-side)
+    // Note: This only works if opened in LINE App context
+    async function sendToLine(orderData) {
+        if (!liff.isInClient()) {
+            console.log("Not in LINE client, skipping sendMessages");
+            return; 
+        }
+        
+        // Format message
+        let msg = `🛒 สั่งซื้อเรียบร้อย!\n`;
+        msg += `เลขที่: #${orderData.id || 'New'}\n`;
+        msg += `----------------\n`;
+        
+        // Parse items if needed (orderData.items is array)
+        orderData.items.forEach(item => {
+            msg += `• ${item.dessertName} (${item.baseName} + ${item.toppingName}) x${item.quantity}\n`;
+        });
+        
+        msg += `----------------\n`;
+        msg += `ยอดสุทธิ: ${orderData.total_price.toLocaleString()} บาท\n`;
+        if (orderData.delivery_date) msg += `รอบส่ง: ${orderData.delivery_date}\n`;
+        
+        try {
+            await liff.sendMessages([{
+                type: 'text',
+                text: msg
+            }]);
+            console.log("Message sent to LINE chat");
+        } catch (err) {
+            console.error("Error sending LINE message", err);
+            // Non-blocking error
+        }
+    }
+
     async function checkout() {
         if (cart.length === 0) return;
         
@@ -1813,17 +1846,26 @@
         }
         const total = subtotal - discount;
         
+        // Save to DB
         const { data, error } = await supabase.from("orders").insert([{
             user_id: currentUser.id, line_id: currentUser.line_id, items: cart,
             subtotal, discount, total_price: total, 
             earned_points: totalEarnedPoints,
             delivery_date: date, status: "pending", coupon_code: selectedCoupon ? selectedCoupon.code : null
-        }]);
+        }]).select(); // Add .select() to get returned data for ID
 
         if (!error) {
             if (selectedCoupon && selectedCoupon.coupon_type === 'reward') {
                  await supabase.from("user_coupons").update({is_used: true}).eq("id", selectedCoupon.id);
             }
+            
+            // 🌟 Try send notification to LINE
+            if (data && data.length > 0) {
+                 // Prepare order object for message
+                 const orderInfo = { ...data[0], items: cart };
+                 await sendToLine(orderInfo); 
+            }
+            
             cart = []; 
             saveCartToStorage(); 
             selectedCoupon = null;
@@ -1948,8 +1990,14 @@ function renderAdminOrderList(orders) {
     const userPic = o.users?.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
     const itemsHtml = items.map(i => `
-        <div class="text-xs text-slate-600 ml-4 border-l-2 border-slate-200 pl-2 mt-1">
-            ${i.baseName} + ${i.toppingName} <span class="font-bold">x${i.quantity}</span>
+        <div class="ml-4 border-l-2 border-slate-200 pl-2 mt-1.5 pb-1">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-sm font-bold text-slate-700">${i.dessertName}</div>
+                    <div class="text-xs text-slate-500">${i.baseName} + ${i.toppingName}</div>
+                </div>
+                <div class="font-bold text-slate-800 text-sm">x${i.quantity}</div>
+            </div>
         </div>
     `).join('');
 
@@ -1989,7 +2037,7 @@ function renderAdminOrderList(orders) {
           </div>
 
           <div class="bg-slate-50 rounded-lg p-2 mb-3">
-             <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+             <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1 border-b border-slate-200 pb-1">
                 <span>รายการสินค้า (${totalQty} ชิ้น)</span>
              </div>
              ${itemsHtml}
@@ -2370,7 +2418,7 @@ function filterAdminOrders() {
             let actionButtons = `
                <button onclick="openAddPointsModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-blue-50 text-blue-600 text-xs py-1.5 rounded-lg hover:bg-blue-100 font-medium transition flex items-center justify-center gap-1 border border-blue-100"><i class="fa-solid fa-plus-circle"></i> ปรับแต้ม</button>
                <button onclick="openGiveCouponModal('${u.id}', '${u.display_name || 'Guest'}')" class="bg-purple-50 text-purple-600 text-xs py-1.5 rounded-lg hover:bg-purple-100 font-medium transition flex items-center justify-center gap-1 border border-purple-100"><i class="fa-solid fa-ticket"></i> แจกคูปอง</button>
-               <button onclick='openUserDetailsModal(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="bg-slate-50 text-slate-600 text-xs py-1.5 rounded-lg hover:bg-slate-100 font-medium transition flex items-center justify-center gap-1 border border-slate-200"><i class="fa-solid fa-address-card"></i> ดูข้อมูล</button>
+               <button onclick='openUserDetailsModal("${u.id}")' class="bg-slate-50 text-slate-600 text-xs py-1.5 rounded-lg hover:bg-slate-100 font-medium transition flex items-center justify-center gap-1 border border-slate-200"><i class="fa-solid fa-address-card"></i> ดูข้อมูล</button>
                ${adminActionBtn}
             `;
             
@@ -2453,7 +2501,7 @@ function filterAdminOrders() {
             loadAdminUsers();
             
             if(selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
-                openUserDetailsModal(selectedUserForDetails);
+                openUserDetailsModal(selectedUserForDetails.id);
             }
         } else {
             showSuccessToast("ไม่มีการเปลี่ยนแปลง");
@@ -2471,7 +2519,18 @@ function filterAdminOrders() {
         renderAdminUsers(filtered);
     }
     
-    async function openUserDetailsModal(user) {
+    async function openUserDetailsModal(userId) {
+        // Find user from allUsers or fetch freshly if needed. 
+        // Here, we try to find it first for speed
+        let user = allUsers.find(u => u.id === userId);
+        
+        // If not found (e.g. self profile open), fetch it
+        if (!user) {
+             const { data } = await supabase.from('users').select('*').eq('id', userId).single();
+             if (data) user = data;
+             else return alert("ไม่พบข้อมูลผู้ใช้");
+        }
+
         selectedUserForDetails = user;
         const modal = document.getElementById("user-details-modal");
         
