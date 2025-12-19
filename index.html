@@ -1290,7 +1290,7 @@
         let adminList = [];
 
         // State Variables
-        let supabase;
+        let db; // Supabase client instance (renamed from 'supabase' to avoid conflict with global)
         let userProfile = null;
         let currentUser = null;
         let selectedBase = null;
