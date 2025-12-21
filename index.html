@@ -2630,6 +2630,15 @@
             }
         }
 
+        // Helper function to get rank name for database storage
+        function getRankNameByPoints(totalPoints) {
+            totalPoints = totalPoints || 0;
+            if (totalPoints >= 1000) return "VIP";
+            if (totalPoints >= 500) return "ตัวยง";
+            if (totalPoints >= 100) return "ประจำ";
+            return "ลูกค้าใหม่";
+        }
+
         function renderAdminUsers(users) {
             const container = document.getElementById("admin-users-list");
             if (users.length === 0) {
@@ -2721,28 +2730,42 @@
             toggleModal("adjust-level-modal", true);
         }
 
-        function submitAdjustLevel() {
+        async function submitAdjustLevel() {
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
 
             if (lineId === SUPER_ADMIN_ID) return;
 
             let changed = false;
+            let newRank = "";
+
             if (isSetAdmin && !adminList.includes(lineId)) {
                 adminList.push(lineId);
+                newRank = "admin";
                 changed = true;
             } else if (!isSetAdmin && adminList.includes(lineId)) {
                 adminList = adminList.filter(id => id !== lineId);
+                newRank = "ลูกค้าใหม่";
                 changed = true;
             }
 
             if (changed) {
+                // Save to localStorage
                 localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
-                showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย");
-                loadAdminUsers();
 
-                if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
-                    openUserDetailsModal(selectedUserForDetails.id);
+                // Save to Supabase database
+                const { error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
+
+                if (error) {
+                    console.error("Error updating rank:", error);
+                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                } else {
+                    showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย");
+                    loadAdminUsers();
+
+                    if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
+                        openUserDetailsModal(selectedUserForDetails.id);
+                    }
                 }
             } else {
                 showSuccessToast("ไม่มีการเปลี่ยนแปลง");
@@ -2957,14 +2980,20 @@
             const newPoints = Math.max(0, currentPoints + walletAdj);
             const newTotal = Math.max(0, currentTotal + rankAdj);
 
+            // Calculate new rank based on total points (only for non-admin users)
+            const userLineId = selectedUserForDetails?.line_id;
+            const isAdmin = adminList.includes(userLineId);
+            const newRank = isAdmin ? "admin" : getRankNameByPoints(newTotal);
+
             const { error } = await supabase.from('users').update({
                 points: newPoints,
-                total_points: newTotal
+                total_points: newTotal,
+                rank: newRank
             }).eq('id', userId);
 
             if (!error) {
                 let msg = "บันทึกข้อมูลสำเร็จ";
-                if (rankAdj !== 0) msg += " (ปรับยศเรียบร้อย)";
+                if (rankAdj !== 0) msg += ` (ยศใหม่: ${newRank})`;
                 showSuccessToast(msg);
 
                 toggleModal("add-points-modal", false);
@@ -2973,6 +3002,7 @@
                 if (selectedUserForDetails && selectedUserForDetails.id == userId) {
                     selectedUserForDetails.points = newPoints;
                     selectedUserForDetails.total_points = newTotal;
+                    selectedUserForDetails.rank = newRank;
                     openUserDetailsModal(selectedUserForDetails);
                 }
             } else {
