@@ -2859,18 +2859,27 @@
             showSuccessToast("คัดลอก ID เรียบร้อยแล้ว");
         }
 
-        function openAdjustLevelModal(lineId, name) {
+        async function openAdjustLevelModal(lineId, name) {
             if (currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
             if (lineId === SUPER_ADMIN_ID) return alert("ไม่สามารถแก้ไข Super Admin ได้");
 
             document.getElementById("adjust-level-line-id").value = lineId;
             document.getElementById("adjust-level-user-name").innerText = "ผู้ใช้: " + name;
 
-            const isAdmin = adminList.includes(lineId);
-            document.getElementById("level-admin").checked = isAdmin;
-            document.getElementById("level-user").checked = !isAdmin;
+            // Pre-select based on Assumption (Visual feedback first)
+            const isLocalAdmin = adminList.includes(lineId);
+            document.getElementById("level-admin").checked = isLocalAdmin;
+            document.getElementById("level-user").checked = !isLocalAdmin;
 
             toggleModal("adjust-level-modal", true);
+
+            // Fetch REAL status from DB to confirm
+            const { data: user } = await supabase.from("users").select("rank").eq("line_id", lineId).single();
+            if (user) {
+                const isDbAdmin = user.rank === 'admin';
+                document.getElementById("level-admin").checked = isDbAdmin;
+                document.getElementById("level-user").checked = !isDbAdmin;
+            }
         }
 
         async function submitAdjustLevel() {
