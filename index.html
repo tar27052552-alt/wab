@@ -2843,6 +2843,8 @@
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
 
+            console.log("submitAdjustLevel called:", { lineId, isSetAdmin });
+
             if (lineId === SUPER_ADMIN_ID) return;
 
             let changed = false;
@@ -2852,24 +2854,33 @@
                 adminList.push(lineId);
                 newRank = "admin";
                 changed = true;
+                console.log("Promoting to admin");
             } else if (!isSetAdmin && adminList.includes(lineId)) {
                 adminList = adminList.filter(id => id !== lineId);
-                newRank = "ลูกค้าใหม่";
+                // Get user's total_points to determine correct rank
+                const user = allUsers.find(u => u.line_id === lineId);
+                newRank = getRankNameByPoints(user?.total_points || 0);
                 changed = true;
+                console.log("Demoting to:", newRank);
             }
+
+            console.log("Changed:", changed, "New Rank:", newRank);
 
             if (changed) {
                 // Save to localStorage
                 localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
 
                 // Save to Supabase database
-                const { error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
+                console.log("Updating database with rank:", newRank, "for line_id:", lineId);
+                const { data, error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId).select();
+
+                console.log("Database response:", { data, error });
 
                 if (error) {
                     console.error("Error updating rank:", error);
                     alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
                 } else {
-                    showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย");
+                    showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย (rank: " + newRank + ")");
                     loadAdminUsers();
 
                     if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
