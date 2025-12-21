@@ -2842,48 +2842,52 @@
         async function submitAdjustLevel() {
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
-            const wasAdmin = adminList.includes(lineId);
-
-            // Debug info
-            alert(`Debug:\nlineId: ${lineId}\nisSetAdmin: ${isSetAdmin}\nwasAdmin: ${wasAdmin}\nadminList: ${JSON.stringify(adminList)}`);
 
             if (lineId === SUPER_ADMIN_ID) return;
 
-            let newRank = "";
+            // 1. Fetch fresh user data to calculate correct rank
+            const { data: user, error: fetchError } = await supabase.from("users").select("total_points").eq("line_id", lineId).single();
 
+            if (fetchError) {
+                alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้: " + fetchError.message);
+                return;
+            }
+
+            let newRank = "";
+            let changed = false;
+
+            // 2. Determine new status and rank
             if (isSetAdmin) {
-                // Set as admin
-                if (!wasAdmin) {
+                if (!adminList.includes(lineId)) {
                     adminList.push(lineId);
+                    changed = true;
                 }
                 newRank = "admin";
             } else {
-                // Set as regular user
-                if (wasAdmin) {
+                if (adminList.includes(lineId)) {
                     adminList = adminList.filter(id => id !== lineId);
+                    changed = true;
                 }
-                // Get user's total_points to determine correct rank
-                const user = allUsers.find(u => u.line_id === lineId);
-                newRank = getRankNameByPoints(user?.total_points || 0);
+                // Calculate rank based on FRESH total_points
+                newRank = getRankNameByPoints(user.total_points || 0);
             }
 
-            // Always save to localStorage
+            // 3. Update Storage & Database
+            // Always update localStorage to keep admin list in sync
             localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
 
-            // Always save to Supabase database
-            alert(`Saving to database:\nrank: ${newRank}\nline_id: ${lineId}`);
+            // always update rank in DB to be sure
+            const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
 
-            const { data, error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId).select();
-
-            alert(`Database response:\ndata: ${JSON.stringify(data)}\nerror: ${error ? error.message : 'none'}`);
-
-            if (error) {
-                alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+            if (updateError) {
+                console.error("Update Error:", updateError);
+                alert("บันทึกฐานข้อมูลล้มเหลว: " + updateError.message);
             } else {
-                showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย (rank: " + newRank + ")");
+                showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
                 loadAdminUsers();
 
                 if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
+                    selectedUserForDetails.rank = newRank; // Update local object
                     openUserDetailsModal(selectedUserForDetails.id);
                 }
             }
