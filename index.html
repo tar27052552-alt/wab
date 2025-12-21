@@ -3926,247 +3926,248 @@
                 </div>
             `;
             }
+        }
 
-            async function updateAllFilteredOrders() {
-                const date = document.getElementById("summary-delivery-round").value;
-                const newStatus = document.getElementById("update-status-select").value;
+        async function updateAllFilteredOrders() {
+            const date = document.getElementById("summary-delivery-round").value;
+            const newStatus = document.getElementById("update-status-select").value;
 
-                if (!date || !newStatus) {
-                    alert("กรุณาเลือกรอบส่งและสถานะใหม่");
-                    return;
-                }
-
-                if (!confirm(`อัปเดตออเดอร์ทั้งหมดในรอบนี้เป็น "${newStatus}"?`)) return;
-
-                const { error } = await supabase.from("orders").update({ status: newStatus }).eq("delivery_date", date).neq("status", "cancelled");
-
-                if (!error) {
-                    showSuccessToast("อัปเดตสถานะทั้งหมดแล้ว");
-                    loadOrderSummary();
-                } else {
-                    alert("Error: " + error.message);
-                }
+            if (!date || !newStatus) {
+                alert("กรุณาเลือกรอบส่งและสถานะใหม่");
+                return;
             }
 
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showSuccessToast("คัดลอกแล้ว: " + text);
-                });
-            }
+            if (!confirm(`อัปเดตออเดอร์ทั้งหมดในรอบนี้เป็น "${newStatus}"?`)) return;
 
-            function setRankTarget(targetPoints) {
-                const currentRank = parseInt(document.getElementById("current-rank-points").innerText) || 0;
-                const diff = targetPoints - currentRank;
-                document.getElementById("rank-points-adj").value = diff;
-            }
+            const { error } = await supabase.from("orders").update({ status: newStatus }).eq("delivery_date", date).neq("status", "cancelled");
 
-            function selectLevel(level) {
-                document.getElementById("level-" + level).checked = true;
-            }
-
-            async function submitAddPoints() {
-                const userId = document.getElementById("add-points-user-id").value;
-                const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
-                const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
-
-                const { data: user } = await supabase.from("users").select("points, total_points").eq("id", userId).single();
-                if (!user) return;
-
-                const newPoints = Math.max(0, (user.points || 0) + walletAdj);
-                const newTotal = Math.max(0, (user.total_points || 0) + rankAdj);
-
-                await supabase.from("users").update({ points: newPoints, total_points: newTotal }).eq("id", userId);
-
-                toggleModal('add-points-modal', false);
-                showSuccessToast("อัปเดตแต้มเรียบร้อย");
-                loadAdminUsers();
-            }
-
-            async function submitGiveCoupon() {
-                const userId = document.getElementById("give-coupon-user-id").value;
-                const rewardId = document.getElementById("reward-select").value;
-
-                if (!rewardId) {
-                    alert("กรุณาเลือกรางวัล");
-                    return;
-                }
-
-                const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-                await supabase.from("user_coupons").insert([{ user_id: userId, reward_id: rewardId, coupon_code: code }]);
-
-                toggleModal('give-coupon-modal', false);
-                showSuccessToast("มอบรางวัลสำเร็จ");
-            }
-
-
-
-            // Form submissions for dessert and brownie
-            document.getElementById("dessert-form").addEventListener("submit", async function (e) {
-                e.preventDefault();
-                const id = document.getElementById("dessert-id").value;
-                const payload = {
-                    name: document.getElementById("dessert-name").value,
-                    emoji: document.getElementById("dessert-emoji").value || '🍪',
-                    description: document.getElementById("dessert-desc").value,
-                    is_active: document.getElementById("dessert-active").checked
-                };
-
-                if (id) {
-                    await supabase.from("desserts").update(payload).eq("id", id);
-                } else {
-                    await supabase.from("desserts").insert([payload]);
-                }
-                closeDessertModal();
-                showSuccessToast("บันทึกเมนูแล้ว");
-                loadAdminDesserts();
-                loadDesserts();
-            });
-
-            document.getElementById("brownie-form").addEventListener("submit", async function (e) {
-                e.preventDefault();
-                const id = document.getElementById("brownie-id").value;
-                const payload = {
-                    dessert_id: currentAdminDessertId || 1,
-                    type: document.getElementById("brownie-type").value,
-                    name: document.getElementById("brownie-name").value,
-                    description: document.getElementById("brownie-desc").value,
-                    price: parseFloat(document.getElementById("brownie-price").value),
-                    points: parseInt(document.getElementById("brownie-points").value),
-                    is_active: document.getElementById("brownie-active").checked
-                };
-
-                if (id) {
-                    await supabase.from("brownie_items").update(payload).eq("id", id);
-                } else {
-                    await supabase.from("brownie_items").insert([payload]);
-                }
-                closeBrownieModal();
-                showSuccessToast("บันทึกแล้ว");
-                if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
-            });
-
-            function openAddPointsModal(user) {
-                document.getElementById("add-points-user-id").value = user.id;
-                document.getElementById("add-points-user-name").innerText = user.display_name || 'Guest';
-                document.getElementById("current-wallet-points").innerText = user.points || 0;
-                document.getElementById("current-rank-points").innerText = user.total_points || 0;
-                document.getElementById("wallet-points-adj").value = "";
-                document.getElementById("rank-points-adj").value = "";
-                toggleModal('add-points-modal', true);
-            }
-
-            async function openGiveCouponModal(user) {
-                document.getElementById("give-coupon-user-id").value = user.id;
-                document.getElementById("give-coupon-user-name").innerText = user.display_name || 'Guest';
-
-                const select = document.getElementById("reward-select");
-                select.innerHTML = '<option value="">-- เลือกรางวัล --</option>';
-                availableRewards.forEach(r => {
-                    select.innerHTML += `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`;
-                });
-
-                toggleModal('give-coupon-modal', true);
-            }
-
-
-
-
-            console.log("Registering Init Listener...");
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", init);
+            if (!error) {
+                showSuccessToast("อัปเดตสถานะทั้งหมดแล้ว");
+                loadOrderSummary();
             } else {
-                init();
+                alert("Error: " + error.message);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccessToast("คัดลอกแล้ว: " + text);
+            });
+        }
+
+        function setRankTarget(targetPoints) {
+            const currentRank = parseInt(document.getElementById("current-rank-points").innerText) || 0;
+            const diff = targetPoints - currentRank;
+            document.getElementById("rank-points-adj").value = diff;
+        }
+
+        function selectLevel(level) {
+            document.getElementById("level-" + level).checked = true;
+        }
+
+        async function submitAddPoints() {
+            const userId = document.getElementById("add-points-user-id").value;
+            const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
+            const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
+
+            const { data: user } = await supabase.from("users").select("points, total_points").eq("id", userId).single();
+            if (!user) return;
+
+            const newPoints = Math.max(0, (user.points || 0) + walletAdj);
+            const newTotal = Math.max(0, (user.total_points || 0) + rankAdj);
+
+            await supabase.from("users").update({ points: newPoints, total_points: newTotal }).eq("id", userId);
+
+            toggleModal('add-points-modal', false);
+            showSuccessToast("อัปเดตแต้มเรียบร้อย");
+            loadAdminUsers();
+        }
+
+        async function submitGiveCoupon() {
+            const userId = document.getElementById("give-coupon-user-id").value;
+            const rewardId = document.getElementById("reward-select").value;
+
+            if (!rewardId) {
+                alert("กรุณาเลือกรางวัล");
+                return;
             }
 
-            window.closeCreateReward = () => toggleModal('create-reward-modal', false);
-            window.showCreateRewardForm = () => {
-                document.getElementById('reward-id').value = '';
-                document.getElementById('reward-name').value = '';
-                document.getElementById('reward-description').value = '';
-                document.getElementById('reward-points').value = '';
-                document.getElementById('reward-value').value = '';
-                document.getElementById('reward-min').value = 0;
-                document.getElementById('reward-modal-title').innerText = 'สร้างของรางวัล';
-                toggleModal('create-reward-modal', true);
+            const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            await supabase.from("user_coupons").insert([{ user_id: userId, reward_id: rewardId, coupon_code: code }]);
+
+            toggleModal('give-coupon-modal', false);
+            showSuccessToast("มอบรางวัลสำเร็จ");
+        }
+
+
+
+        // Form submissions for dessert and brownie
+        document.getElementById("dessert-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const id = document.getElementById("dessert-id").value;
+            const payload = {
+                name: document.getElementById("dessert-name").value,
+                emoji: document.getElementById("dessert-emoji").value || '🍪',
+                description: document.getElementById("dessert-desc").value,
+                is_active: document.getElementById("dessert-active").checked
             };
 
-            window.closeCreateCoupon = () => toggleModal('create-coupon-modal', false);
-            window.showCreateCouponForm = () => {
-                document.getElementById('coupon-id').value = '';
-                document.getElementById('coupon-code').value = '';
-                document.getElementById('coupon-title').value = '';
-                document.getElementById('coupon-description').value = '';
-                document.getElementById('coupon-value').value = '';
-                document.getElementById('coupon-min').value = 0;
-                document.getElementById('coupon-usage').value = 100;
-                document.getElementById('coupon-modal-title').innerText = 'สร้างคูปอง';
-                toggleModal('create-coupon-modal', true);
+            if (id) {
+                await supabase.from("desserts").update(payload).eq("id", id);
+            } else {
+                await supabase.from("desserts").insert([payload]);
+            }
+            closeDessertModal();
+            showSuccessToast("บันทึกเมนูแล้ว");
+            loadAdminDesserts();
+            loadDesserts();
+        });
+
+        document.getElementById("brownie-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const id = document.getElementById("brownie-id").value;
+            const payload = {
+                dessert_id: currentAdminDessertId || 1,
+                type: document.getElementById("brownie-type").value,
+                name: document.getElementById("brownie-name").value,
+                description: document.getElementById("brownie-desc").value,
+                price: parseFloat(document.getElementById("brownie-price").value),
+                points: parseInt(document.getElementById("brownie-points").value),
+                is_active: document.getElementById("brownie-active").checked
             };
 
-            window.openEditRewardModal = (data) => {
-                document.getElementById('reward-id').value = data.id;
-                document.getElementById('reward-name').value = data.name;
-                document.getElementById('reward-description').value = data.description;
-                document.getElementById('reward-points').value = data.points_required;
-                document.getElementById('reward-type').value = data.discount_type;
-                document.getElementById('reward-value').value = data.discount_value;
-                document.getElementById('reward-min').value = data.min_purchase;
-                document.getElementById('reward-modal-title').innerText = 'แก้ไขของรางวัล';
-                toggleModal('create-reward-modal', true);
-            };
+            if (id) {
+                await supabase.from("brownie_items").update(payload).eq("id", id);
+            } else {
+                await supabase.from("brownie_items").insert([payload]);
+            }
+            closeBrownieModal();
+            showSuccessToast("บันทึกแล้ว");
+            if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
+        });
 
-            window.openEditCouponModal = (data) => {
-                document.getElementById('coupon-id').value = data.id;
-                document.getElementById('coupon-code').value = data.code;
-                document.getElementById('coupon-title').value = data.name;
-                document.getElementById('coupon-description').value = data.description;
-                document.getElementById('coupon-type').value = data.type;
-                document.getElementById('coupon-value').value = data.value;
-                document.getElementById('coupon-min').value = data.min_purchase;
-                document.getElementById('coupon-usage').value = data.usage_limit;
-                document.getElementById('coupon-active').checked = data.is_active;
-                document.getElementById('coupon-modal-title').innerText = 'แก้ไขคูปอง';
-                toggleModal('create-coupon-modal', true);
-            };
+        function openAddPointsModal(user) {
+            document.getElementById("add-points-user-id").value = user.id;
+            document.getElementById("add-points-user-name").innerText = user.display_name || 'Guest';
+            document.getElementById("current-wallet-points").innerText = user.points || 0;
+            document.getElementById("current-rank-points").innerText = user.total_points || 0;
+            document.getElementById("wallet-points-adj").value = "";
+            document.getElementById("rank-points-adj").value = "";
+            toggleModal('add-points-modal', true);
+        }
 
-            window.openDessertModal = (type, data) => {
-                const form = document.getElementById("dessert-form");
-                form.reset();
-                document.getElementById("dessert-id").value = "";
-                document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนู";
-                if (type === 'edit' && data) {
-                    document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนู";
-                    document.getElementById("dessert-id").value = data.id;
-                    document.getElementById("dessert-name").value = data.name;
-                    document.getElementById("dessert-emoji").value = data.emoji;
-                    document.getElementById("dessert-desc").value = data.description;
-                    document.getElementById("dessert-active").checked = data.is_active;
-                }
-                toggleModal('dessert-modal', true);
-            };
-            window.closeDessertModal = () => toggleModal('dessert-modal', false);
+        async function openGiveCouponModal(user) {
+            document.getElementById("give-coupon-user-id").value = user.id;
+            document.getElementById("give-coupon-user-name").innerText = user.display_name || 'Guest';
 
-            window.openBrownieModal = (type, data) => {
-                const form = document.getElementById("brownie-form");
-                form.reset();
-                document.getElementById("brownie-modal-title").innerText = "เพิ่มส่วนประกอบ (" + type + ")";
-                document.getElementById("brownie-type").value = type;
-                document.getElementById("brownie-active").checked = true;
-                document.getElementById("brownie-id").value = "";
+            const select = document.getElementById("reward-select");
+            select.innerHTML = '<option value="">-- เลือกรางวัล --</option>';
+            availableRewards.forEach(r => {
+                select.innerHTML += `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`;
+            });
 
-                if (data && typeof data === 'object') {
-                    document.getElementById("brownie-id").value = data.id;
-                    document.getElementById("brownie-modal-title").innerText = "แก้ไขส่วนประกอบ";
-                    document.getElementById("brownie-name").value = data.name;
-                    document.getElementById("brownie-desc").value = data.description || '';
-                    document.getElementById("brownie-price").value = data.price;
-                    document.getElementById("brownie-points").value = data.points;
-                    document.getElementById("brownie-active").checked = data.is_active;
-                }
+            toggleModal('give-coupon-modal', true);
+        }
 
-                toggleModal('brownie-modal', true);
-            };
-            window.closeBrownieModal = () => toggleModal('brownie-modal', false);
+
+
+
+        console.log("Registering Init Listener...");
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", init);
+        } else {
+            init();
+        }
+
+        window.closeCreateReward = () => toggleModal('create-reward-modal', false);
+        window.showCreateRewardForm = () => {
+            document.getElementById('reward-id').value = '';
+            document.getElementById('reward-name').value = '';
+            document.getElementById('reward-description').value = '';
+            document.getElementById('reward-points').value = '';
+            document.getElementById('reward-value').value = '';
+            document.getElementById('reward-min').value = 0;
+            document.getElementById('reward-modal-title').innerText = 'สร้างของรางวัล';
+            toggleModal('create-reward-modal', true);
+        };
+
+        window.closeCreateCoupon = () => toggleModal('create-coupon-modal', false);
+        window.showCreateCouponForm = () => {
+            document.getElementById('coupon-id').value = '';
+            document.getElementById('coupon-code').value = '';
+            document.getElementById('coupon-title').value = '';
+            document.getElementById('coupon-description').value = '';
+            document.getElementById('coupon-value').value = '';
+            document.getElementById('coupon-min').value = 0;
+            document.getElementById('coupon-usage').value = 100;
+            document.getElementById('coupon-modal-title').innerText = 'สร้างคูปอง';
+            toggleModal('create-coupon-modal', true);
+        };
+
+        window.openEditRewardModal = (data) => {
+            document.getElementById('reward-id').value = data.id;
+            document.getElementById('reward-name').value = data.name;
+            document.getElementById('reward-description').value = data.description;
+            document.getElementById('reward-points').value = data.points_required;
+            document.getElementById('reward-type').value = data.discount_type;
+            document.getElementById('reward-value').value = data.discount_value;
+            document.getElementById('reward-min').value = data.min_purchase;
+            document.getElementById('reward-modal-title').innerText = 'แก้ไขของรางวัล';
+            toggleModal('create-reward-modal', true);
+        };
+
+        window.openEditCouponModal = (data) => {
+            document.getElementById('coupon-id').value = data.id;
+            document.getElementById('coupon-code').value = data.code;
+            document.getElementById('coupon-title').value = data.name;
+            document.getElementById('coupon-description').value = data.description;
+            document.getElementById('coupon-type').value = data.type;
+            document.getElementById('coupon-value').value = data.value;
+            document.getElementById('coupon-min').value = data.min_purchase;
+            document.getElementById('coupon-usage').value = data.usage_limit;
+            document.getElementById('coupon-active').checked = data.is_active;
+            document.getElementById('coupon-modal-title').innerText = 'แก้ไขคูปอง';
+            toggleModal('create-coupon-modal', true);
+        };
+
+        window.openDessertModal = (type, data) => {
+            const form = document.getElementById("dessert-form");
+            form.reset();
+            document.getElementById("dessert-id").value = "";
+            document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนู";
+            if (type === 'edit' && data) {
+                document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนู";
+                document.getElementById("dessert-id").value = data.id;
+                document.getElementById("dessert-name").value = data.name;
+                document.getElementById("dessert-emoji").value = data.emoji;
+                document.getElementById("dessert-desc").value = data.description;
+                document.getElementById("dessert-active").checked = data.is_active;
+            }
+            toggleModal('dessert-modal', true);
+        };
+        window.closeDessertModal = () => toggleModal('dessert-modal', false);
+
+        window.openBrownieModal = (type, data) => {
+            const form = document.getElementById("brownie-form");
+            form.reset();
+            document.getElementById("brownie-modal-title").innerText = "เพิ่มส่วนประกอบ (" + type + ")";
+            document.getElementById("brownie-type").value = type;
+            document.getElementById("brownie-active").checked = true;
+            document.getElementById("brownie-id").value = "";
+
+            if (data && typeof data === 'object') {
+                document.getElementById("brownie-id").value = data.id;
+                document.getElementById("brownie-modal-title").innerText = "แก้ไขส่วนประกอบ";
+                document.getElementById("brownie-name").value = data.name;
+                document.getElementById("brownie-desc").value = data.description || '';
+                document.getElementById("brownie-price").value = data.price;
+                document.getElementById("brownie-points").value = data.points;
+                document.getElementById("brownie-active").checked = data.is_active;
+            }
+
+            toggleModal('brownie-modal', true);
+        };
+        window.closeBrownieModal = () => toggleModal('brownie-modal', false);
 
         }
     </script>
