@@ -2890,10 +2890,10 @@
 
             if (lineId === SUPER_ADMIN_ID) return;
 
-            // 1. Fetch fresh user data to calculate correct rank (if not admin)
-            const { data: user, error: fetchError } = await supabase.from("users").select("total_points").eq("line_id", lineId).single();
-            if (fetchError) {
-                alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้: " + fetchError.message);
+            // 1. Fetch fresh user data (Get ID and current state)
+            const { data: user, error: fetchError } = await supabase.from("users").select("id, total_points, rank").eq("line_id", lineId).single();
+            if (fetchError || !user) {
+                alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้: " + (fetchError?.message || "User not found"));
                 return;
             }
 
@@ -2902,19 +2902,26 @@
             if (isSetAdmin) {
                 newRank = "admin";
             } else {
-                // If demoting (or setting to generic user), calculate rank based on points
                 newRank = getRankNameByPoints(user.total_points || 0);
             }
 
-            // 3. Update Database (Source of Truth)
-            console.log("Updating Rank:", { lineId, newRank });
-            const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
+            // 3. Update Database using Primary Key (ID)
+            console.log("Updating Rank for ID:", user.id, "to", newRank);
+            const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("id", user.id);
 
             if (updateError) {
-                console.error("Update Error:", updateError);
-                alert("บันทึกฐานข้อมูลล้มเหลว: " + updateError.message);
+                const msg = "บันทึกฐานข้อมูลล้มเหลว: " + updateError.message;
+                console.error(msg);
+                alert(msg);
             } else {
-                console.log("Update Success for", lineId, "to", newRank);
+                // Double Check Persistence
+                const { data: checkUser } = await supabase.from("users").select("rank").eq("id", user.id).single();
+                if (checkUser?.rank !== newRank) {
+                    alert(`แจ้งเตือน: ค่าที่บันทึก (${newRank}) ไม่ตรงกับค่าในฐานข้อมูล (${checkUser?.rank}) โปรดลองอีกครั้ง`);
+                    return;
+                }
+
+                console.log("Update Verified:", checkUser.rank);
                 showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
 
                 // 4. Reload Users & Refresh Admin List
