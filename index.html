@@ -2907,21 +2907,32 @@
 
             // 3. Update Database using Primary Key (ID)
             console.log("Updating Rank for ID:", user.id, "to", newRank);
-            const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("id", user.id);
+
+            // Add .select() to see if the row was actually returned (if RLS allows)
+            const { data: updatedData, error: updateError } = await supabase
+                .from("users")
+                .update({ rank: newRank })
+                .eq("id", user.id)
+                .select(); // Important: Request the updated row back
 
             if (updateError) {
-                const msg = "บันทึกฐานข้อมูลล้มเหลว: " + updateError.message;
+                const msg = "บันทึกฐานข้อมูลล้มเหลว (Error): " + updateError.message;
                 console.error(msg);
                 alert(msg);
+            } else if (!updatedData || updatedData.length === 0) {
+                // RLS BLOCKING or ROW NOT FOUND
+                const msg = "บันทึกไม่สำเร็จ: ฐานข้อมูลไม่อนุญาตให้แก้ไข (อาจเป็นเพราะ Row Level Security)";
+                console.error("Update Success but 0 rows returned. RLS likely blocking update.");
+                alert(msg + "\n\nคำแนะนำ: กรุณาตรวจสอบ Policy ใน Supabase หรือปิด RLS ของตาราง users ชั่วคราว");
             } else {
-                // Double Check Persistence
-                const { data: checkUser } = await supabase.from("users").select("rank").eq("id", user.id).single();
-                if (checkUser?.rank !== newRank) {
-                    alert(`แจ้งเตือน: ค่าที่บันทึก (${newRank}) ไม่ตรงกับค่าในฐานข้อมูล (${checkUser?.rank}) โปรดลองอีกครั้ง`);
+                // Success path
+                const updatedUser = updatedData[0];
+                if (updatedUser.rank !== newRank) {
+                    alert(`แจ้งเตือน: ค่าที่บันทึก (${newRank}) ไม่ตรงกับค่าที่เซิร์ฟเวอร์ตอบกลับ (${updatedUser.rank})`);
                     return;
                 }
 
-                console.log("Update Verified:", checkUser.rank);
+                console.log("Update Verified and Returned:", updatedUser.rank);
                 showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
 
                 // 4. Reload Users & Refresh Admin List
