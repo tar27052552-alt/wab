@@ -1429,6 +1429,7 @@
     </div>
 
     <script>
+        console.log("Main Script Block Started");
         // Configuration
         const LIFF_ID = "2008357926-Ly07A5w2";
         const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
@@ -4064,7 +4065,13 @@
 
 
 
-            window.addEventListener("load", init);
+
+            console.log("Registering Init Listener...");
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", init);
+            } else {
+                init();
+            }
 
             window.closeCreateReward = () => toggleModal('create-reward-modal', false);
             window.showCreateRewardForm = () => {
