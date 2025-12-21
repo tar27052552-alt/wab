@@ -1529,9 +1529,15 @@
                 }
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                const storedAdmins = JSON.parse(localStorage.getItem('suan_khanom_admins') || '[]');
-                adminList = [...new Set([...ADMIN_IDS, ...storedAdmins])];
+                // --- ADMIN SETUP (Migrated to DB-First) ---
+                // Fetch admins from Supabase
+                const { data: dbAdmins } = await supabase.from("users").select("line_id").eq("rank", "admin");
+                const dbAdminIds = dbAdmins ? dbAdmins.map(u => u.line_id) : [];
 
+                // Global adminList Source of Truth
+                adminList = [...new Set([...ADMIN_IDS, ...dbAdminIds])];
+
+                // Ensure Super Admin is always in the list
                 if (!adminList.includes(SUPER_ADMIN_ID)) {
                     adminList.push(SUPER_ADMIN_ID);
                 }
@@ -1662,15 +1668,24 @@
                 // NEW: Update Header Profile
                 document.getElementById("header-user-name").innerText = data.display_name || "Guest";
 
-                // Determine Rank Name for Header (Simplified)
-                let rankName = "ใหม่";
+                // Determine Rank Name (Local Calculation)
+                let rankName = "ลูกค้าใหม่";
                 if (userTotalPoints >= 1000) rankName = "VIP";
                 else if (userTotalPoints >= 500) rankName = "ตัวยง";
                 else if (userTotalPoints >= 100) rankName = "ประจำ";
 
-                if (adminList.includes(data.line_id)) rankName = "Admin";
+                // Admin Override
+                if (adminList.includes(data.line_id)) rankName = "admin";
 
-                document.getElementById("header-user-rank").innerText = rankName;
+                // SELF-HEALING: If DB rank is different from calculated (or missing), update it
+                if (data.rank !== rankName) {
+                    console.log("Self-healing rank for", data.line_id, "from", data.rank, "to", rankName);
+                    await supabase.from("users").update({ rank: rankName }).eq("id", data.id);
+                }
+
+                // Display Logic
+                // If rank is "admin", show "Admin". Else show generic rank name in Header.
+                document.getElementById("header-user-rank").innerText = rankName === 'admin' ? 'Admin' : rankName;
             }
         }
 
@@ -2431,18 +2446,23 @@
             await supabase.from("orders").update({ status }).eq("id", id);
 
             if (status === 'completed' && order.status !== 'completed') {
-                const { data: user } = await supabase.from("users").select("points, total_points").eq("id", order.user_id).single();
+                const { data: user } = await supabase.from("users").select("points, total_points, rank").eq("id", order.user_id).single();
                 if (user) {
                     const earned = order.earned_points || 0;
                     const newPoints = (user.points || 0) + earned;
                     const newTotal = (user.total_points || 0) + earned;
 
+                    // Calculate new rank (preserve Admin status)
+                    const isAdmin = user.rank === 'admin';
+                    const newRank = isAdmin ? 'admin' : getRankNameByPoints(newTotal);
+
                     await supabase.from("users").update({
                         points: newPoints,
-                        total_points: newTotal
+                        total_points: newTotal,
+                        rank: newRank
                     }).eq("id", order.user_id);
 
-                    showSuccessToast(`มอบ ${earned} แต้มให้ลูกค้าแล้ว`);
+                    showSuccessToast(`มอบ ${earned} แต้มให้ลูกค้าแล้ว (Rank: ${newRank})`);
                 }
             }
 
@@ -2723,6 +2743,11 @@
         async function loadAdminUsers() {
             const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
             allUsers = data || [];
+
+            // Refresh Global Admin List from DB Data
+            const dbAdmins = allUsers.filter(u => u.rank === 'admin').map(u => u.line_id);
+            adminList = [...new Set([...ADMIN_IDS, ...dbAdmins, SUPER_ADMIN_ID])];
+
             renderAdminUsers(allUsers);
         }
 
@@ -2845,38 +2870,23 @@
 
             if (lineId === SUPER_ADMIN_ID) return;
 
-            // 1. Fetch fresh user data to calculate correct rank
+            // 1. Fetch fresh user data to calculate correct rank (if not admin)
             const { data: user, error: fetchError } = await supabase.from("users").select("total_points").eq("line_id", lineId).single();
-
             if (fetchError) {
                 alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้: " + fetchError.message);
                 return;
             }
 
+            // 2. Determine new Rank
             let newRank = "";
-            let changed = false;
-
-            // 2. Determine new status and rank
             if (isSetAdmin) {
-                if (!adminList.includes(lineId)) {
-                    adminList.push(lineId);
-                    changed = true;
-                }
                 newRank = "admin";
             } else {
-                if (adminList.includes(lineId)) {
-                    adminList = adminList.filter(id => id !== lineId);
-                    changed = true;
-                }
-                // Calculate rank based on FRESH total_points
+                // If demoting (or setting to generic user), calculate rank based on points
                 newRank = getRankNameByPoints(user.total_points || 0);
             }
 
-            // 3. Update Storage & Database
-            // Always update localStorage to keep admin list in sync
-            localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
-
-            // always update rank in DB to be sure
+            // 3. Update Database (Source of Truth)
             const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
 
             if (updateError) {
@@ -2884,14 +2894,16 @@
                 alert("บันทึกฐานข้อมูลล้มเหลว: " + updateError.message);
             } else {
                 showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
-                loadAdminUsers();
 
+                // 4. Reload Users & Refresh Admin List
+                await loadAdminUsers();
+
+                // Update selected user details modal if open
                 if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
-                    selectedUserForDetails.rank = newRank; // Update local object
+                    selectedUserForDetails.rank = newRank;
                     openUserDetailsModal(selectedUserForDetails.id);
                 }
             }
-
             toggleModal("adjust-level-modal", false);
         }
 
@@ -3092,7 +3104,7 @@
 
             if (walletAdj === 0 && rankAdj === 0) return alert("กรุณาระบุจำนวนแต้มที่ต้องการปรับ");
 
-            const { data: user } = await supabase.from('users').select('points, total_points').eq('id', userId).single();
+            const { data: user } = await supabase.from('users').select('points, total_points, line_id, rank').eq('id', userId).single();
             if (!user) return alert("ไม่พบข้อมูลผู้ใช้");
 
             const currentPoints = user.points || 0;
@@ -3102,8 +3114,7 @@
             const newTotal = Math.max(0, currentTotal + rankAdj);
 
             // Calculate new rank based on total points (only for non-admin users)
-            const userLineId = selectedUserForDetails?.line_id;
-            const isAdmin = adminList.includes(userLineId);
+            const isAdmin = user.rank === 'admin' || adminList.includes(user.line_id);
             const newRank = isAdmin ? "admin" : getRankNameByPoints(newTotal);
 
             const { error } = await supabase.from('users').update({
