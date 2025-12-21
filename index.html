@@ -1674,10 +1674,19 @@
                 else if (userTotalPoints >= 500) rankName = "ตัวยง";
                 else if (userTotalPoints >= 100) rankName = "ประจำ";
 
-                // Admin Override
-                if (adminList.includes(data.line_id)) rankName = "admin";
+                // PRIORITY: Trust Database Rank if it is 'admin'
+                if (data.rank === 'admin') {
+                    rankName = 'admin';
+                    // Update local adminList if missing
+                    if (!adminList.includes(data.line_id)) adminList.push(data.line_id);
+                }
+                // Fallback: Check hardcoded/local admin list
+                else if (adminList.includes(data.line_id)) {
+                    rankName = "admin";
+                }
 
                 // SELF-HEALING: If DB rank is different from calculated (or missing), update it
+                // Only update if we are NOT demoting an admin (double check)
                 if (data.rank !== rankName) {
                     console.log("Self-healing rank for", data.line_id, "from", data.rank, "to", rankName);
                     await supabase.from("users").update({ rank: rankName }).eq("id", data.id);
