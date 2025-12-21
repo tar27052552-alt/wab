@@ -2864,6 +2864,9 @@
         }
 
         async function openAdjustLevelModal(lineId, name) {
+            // Debug alert to see what values are received
+            alert(`[DEBUG Modal Open]\nLine ID: ${lineId}\nName: ${name}`);
+
             if (currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
             if (lineId === SUPER_ADMIN_ID) return alert("ไม่สามารถแก้ไข Super Admin ได้");
 
