@@ -2888,6 +2888,9 @@
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
 
+            // DEBUG ALERT - TO BE REMOVED
+            alert(`[DEBUG] submitAdjustLevel called!\nLine ID: ${lineId}\nisSetAdmin (Admin checked): ${isSetAdmin}`);
+
             if (lineId === SUPER_ADMIN_ID) return;
 
             // 1. Fetch fresh user data (Get ID and current state)
