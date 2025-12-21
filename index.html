@@ -3959,25 +3959,7 @@
             showSuccessToast("มอบรางวัลสำเร็จ");
         }
 
-        async function submitAdjustLevel() {
-            const userId = document.getElementById("adjust-level-user-id").value;
-            const lineId = document.getElementById("adjust-level-line-id").value;
-            const level = document.querySelector('input[name="user_level"]:checked').value;
 
-            if (level === 'admin') {
-                if (!adminList.includes(lineId)) {
-                    adminList.push(lineId);
-                    localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
-                }
-            } else {
-                adminList = adminList.filter(id => id !== lineId);
-                localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
-            }
-
-            toggleModal('adjust-level-modal', false);
-            showSuccessToast("อัปเดตระดับแล้ว");
-            loadAdminUsers();
-        }
 
         // Form submissions for dessert and brownie
         document.getElementById("dessert-form").addEventListener("submit", async function (e) {
@@ -4047,17 +4029,7 @@
             toggleModal('give-coupon-modal', true);
         }
 
-        function openAdjustLevelModal(user) {
-            document.getElementById("adjust-level-user-id").value = user.id;
-            document.getElementById("adjust-level-line-id").value = user.line_id;
-            document.getElementById("adjust-level-user-name").innerText = user.display_name || 'Guest';
 
-            const isAdmin = adminList.includes(user.line_id);
-            document.getElementById("level-user").checked = !isAdmin;
-            document.getElementById("level-admin").checked = isAdmin;
-
-            toggleModal('adjust-level-modal', true);
-        }
 
         window.addEventListener("load", init);
 
