@@ -278,6 +278,114 @@
             backdrop-filter: blur(8px);
             background: rgba(15, 23, 42, 0.8);
         }
+
+        /* Safe Area for notch and home indicator (iPhone X+) */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Mobile-first responsive utilities */
+        @media (max-width: 374px) {
+
+            /* Very small phones */
+            .menu-card {
+                padding: 0.75rem;
+            }
+
+            .menu-card .text-4xl {
+                font-size: 1.75rem;
+            }
+
+            .text-xs {
+                font-size: 0.65rem;
+            }
+        }
+
+        @media (max-width: 639px) {
+
+            /* Mobile devices */
+            .modal-content {
+                max-height: 90vh;
+            }
+
+            .admin-nav-btn {
+                font-size: 0.7rem;
+                padding: 0.5rem;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .custom-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .hover-lift:hover {
+                transform: none;
+            }
+
+            .menu-card:hover {
+                transform: none;
+            }
+
+            .btn-primary:hover {
+                transform: none;
+                filter: none;
+            }
+
+            /* Larger touch targets */
+            button,
+            .quantity-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* Landscape mode on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .logo-image {
+                width: 4rem;
+                height: 4rem;
+            }
+
+            #action-bar {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            /* Optional dark mode - uncomment if needed */
+        }
+
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .float {
+                animation: none;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+
+            .glass,
+            #action-bar,
+            button {
+                display: none;
+            }
+        }
     </style>
 
 </head>
@@ -807,17 +915,18 @@
                 </div>
 
                 <div id="admin-users-tab" class="admin-tab-content hidden">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-users text-blue-600"></i> จัดการผู้ใช้งาน
                         </h3>
-                        <div class="flex gap-3 mb-6">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
                             <input type="text" id="admin-user-search" placeholder="ค้นหาชื่อลูกค้า..."
-                                class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full max-w-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none">
                             <button onclick="filterAdminUsers()"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">ค้นหา</button>
+                                class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-blue-700 whitespace-nowrap">ค้นหา</button>
                         </div>
-                        <div id="admin-users-list" class="grid gap-4 grid-cols-1 lg:grid-cols-2"></div>
+                        <div id="admin-users-list"
+                            class="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"></div>
                     </div>
                 </div>
 
