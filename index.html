@@ -2842,53 +2842,50 @@
         async function submitAdjustLevel() {
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
+            const wasAdmin = adminList.includes(lineId);
 
-            console.log("submitAdjustLevel called:", { lineId, isSetAdmin });
+            // Debug info
+            alert(`Debug:\nlineId: ${lineId}\nisSetAdmin: ${isSetAdmin}\nwasAdmin: ${wasAdmin}\nadminList: ${JSON.stringify(adminList)}`);
 
             if (lineId === SUPER_ADMIN_ID) return;
 
-            let changed = false;
             let newRank = "";
 
-            if (isSetAdmin && !adminList.includes(lineId)) {
-                adminList.push(lineId);
+            if (isSetAdmin) {
+                // Set as admin
+                if (!wasAdmin) {
+                    adminList.push(lineId);
+                }
                 newRank = "admin";
-                changed = true;
-                console.log("Promoting to admin");
-            } else if (!isSetAdmin && adminList.includes(lineId)) {
-                adminList = adminList.filter(id => id !== lineId);
+            } else {
+                // Set as regular user
+                if (wasAdmin) {
+                    adminList = adminList.filter(id => id !== lineId);
+                }
                 // Get user's total_points to determine correct rank
                 const user = allUsers.find(u => u.line_id === lineId);
                 newRank = getRankNameByPoints(user?.total_points || 0);
-                changed = true;
-                console.log("Demoting to:", newRank);
             }
 
-            console.log("Changed:", changed, "New Rank:", newRank);
+            // Always save to localStorage
+            localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
 
-            if (changed) {
-                // Save to localStorage
-                localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList));
+            // Always save to Supabase database
+            alert(`Saving to database:\nrank: ${newRank}\nline_id: ${lineId}`);
 
-                // Save to Supabase database
-                console.log("Updating database with rank:", newRank, "for line_id:", lineId);
-                const { data, error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId).select();
+            const { data, error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId).select();
 
-                console.log("Database response:", { data, error });
+            alert(`Database response:\ndata: ${JSON.stringify(data)}\nerror: ${error ? error.message : 'none'}`);
 
-                if (error) {
-                    console.error("Error updating rank:", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
-                } else {
-                    showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย (rank: " + newRank + ")");
-                    loadAdminUsers();
-
-                    if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
-                        openUserDetailsModal(selectedUserForDetails.id);
-                    }
-                }
+            if (error) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
             } else {
-                showSuccessToast("ไม่มีการเปลี่ยนแปลง");
+                showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย (rank: " + newRank + ")");
+                loadAdminUsers();
+
+                if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
+                    openUserDetailsModal(selectedUserForDetails.id);
+                }
             }
 
             toggleModal("adjust-level-modal", false);
