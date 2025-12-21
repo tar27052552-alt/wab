@@ -2992,63 +2992,65 @@
                         toggleBtn.className = "py-2 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 text-sm font-medium cursor-not-allowed";
                         toggleBtn.onclick = null;
                     } else {
-                        toggleBtn.innerHTML = '<i class="fa-solid fa-user-gear"></i> ปรับระดับ';
-                        toggleBtn.className = "py-2 rounded-lg border border-slate-800 text-slate-800 hover:bg-slate-100 text-sm font-medium transition";
-                        toggleBtn.onclick = () => openAdjustLevelModal(user.line_id, user.display_name);
-                    }
-                    toggleBtn.style.display = 'block';
-                } else {
-                    toggleBtn.style.display = 'none';
-                }
-
-                const deleteBtn = actionsDiv.children[0].children[1];
-                if (viewerIsSuperAdmin) {
-                    deleteBtn.style.display = 'block';
-                    if (isSuperAdmin) deleteBtn.style.display = 'none';
-                } else {
-                    deleteBtn.style.display = 'none';
-                }
-
-                const banBtn = document.getElementById("ud-btn-ban");
-                if (isSuperAdmin) {
-                    banBtn.style.display = 'none';
-                } else {
-                    banBtn.style.display = 'flex';
-                    if (user.is_banned) {
-                        banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน (Unban)</span>';
-                        banBtn.className = "w-full py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium transition flex items-center justify-center gap-2";
-                        banBtn.onclick = () => unbanUser(user.id);
+                        // Hide the redundant toggle button (User wants only one "Adjust Level" entry point in the main list or via specific flow)
+                        // toggleBtn.style.display = 'none'; 
+                        // Actually, the user said "remove this button, keep the one at adjust level".
+                        // The "Adjust Level" IS the button in the main list. 
+                        // This button in User Details is redundant/confusing if it does the same or different thing.
+                        // Let's just hide it.
+                        toggleBtn.style.display = 'none';
                     } else {
-                        banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>';
-                        banBtn.className = "w-full py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition flex items-center justify-center gap-2";
-                        banBtn.onclick = () => openBanUserModal(user.id, user.display_name);
+                        toggleBtn.style.display = 'none';
                     }
+
+                    const deleteBtn = actionsDiv.children[0].children[1];
+                    if (viewerIsSuperAdmin) {
+                        deleteBtn.style.display = 'block';
+                        if (isSuperAdmin) deleteBtn.style.display = 'none';
+                    } else {
+                        deleteBtn.style.display = 'none';
+                    }
+
+                    const banBtn = document.getElementById("ud-btn-ban");
+                    if (isSuperAdmin) {
+                        banBtn.style.display = 'none';
+                    } else {
+                        banBtn.style.display = 'flex';
+                        if (user.is_banned) {
+                            banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน (Unban)</span>';
+                            banBtn.className = "w-full py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                            banBtn.onclick = () => unbanUser(user.id);
+                        } else {
+                            banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>';
+                            banBtn.className = "w-full py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                            banBtn.onclick = () => openBanUserModal(user.id, user.display_name);
+                        }
+                    }
+
+                } else {
+                    actionsDiv.classList.add("hidden");
                 }
 
-            } else {
-                actionsDiv.classList.add("hidden");
-            }
+                // 2. เปิด Modal ทันที (ไม่รอ)
+                toggleModal("user-details-modal", true);
 
-            // 2. เปิด Modal ทันที (ไม่รอ)
-            toggleModal("user-details-modal", true);
+                // 3. ดึงข้อมูลเบื้องหลัง (Async Fetch)
+                try {
+                    const [countRes, ordersRes] = await Promise.all([
+                        supabase.from("orders").select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+                        supabase.from("orders").select('*').eq('user_id', user.id).order("created_at", { ascending: false }).limit(10)
+                    ]);
 
-            // 3. ดึงข้อมูลเบื้องหลัง (Async Fetch)
-            try {
-                const [countRes, ordersRes] = await Promise.all([
-                    supabase.from("orders").select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-                    supabase.from("orders").select('*').eq('user_id', user.id).order("created_at", { ascending: false }).limit(10)
-                ]);
+                    // อัปเดตข้อมูลเมื่อโหลดเสร็จ
+                    document.getElementById("ud-total-orders").innerText = countRes.count || 0;
 
-                // อัปเดตข้อมูลเมื่อโหลดเสร็จ
-                document.getElementById("ud-total-orders").innerText = countRes.count || 0;
+                    const orders = ordersRes.data;
+                    const historyContainer = document.getElementById("ud-order-history");
 
-                const orders = ordersRes.data;
-                const historyContainer = document.getElementById("ud-order-history");
-
-                if (!orders || orders.length === 0) {
-                    historyContainer.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่มีประวัติการสั่งซื้อ</p>';
-                } else {
-                    historyContainer.innerHTML = orders.map(o => `
+                    if (!orders || orders.length === 0) {
+                        historyContainer.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่มีประวัติการสั่งซื้อ</p>';
+                    } else {
+                        historyContainer.innerHTML = orders.map(o => `
                     <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100 hover:shadow-sm transition">
                         <div>
                             <div class="text-xs font-bold text-slate-700">#${o.id}</div>
@@ -3060,215 +3062,215 @@
                         </div>
                     </div>
                 `).join('');
+                    }
+                } catch (err) {
+                    console.error("Error loading user details:", err);
+                    document.getElementById("ud-total-orders").innerText = "-";
+                    document.getElementById("ud-order-history").innerHTML = '<p class="text-center text-red-400 text-xs py-4">โหลดข้อมูลไม่สำเร็จ</p>';
                 }
-            } catch (err) {
-                console.error("Error loading user details:", err);
-                document.getElementById("ud-total-orders").innerText = "-";
-                document.getElementById("ud-order-history").innerHTML = '<p class="text-center text-red-400 text-xs py-4">โหลดข้อมูลไม่สำเร็จ</p>';
             }
-        }
 
-        async function deleteUserFromDetails() {
-            if (currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
-            if (!selectedUserForDetails) return;
+            async function deleteUserFromDetails() {
+                if (currentUser?.line_id !== SUPER_ADMIN_ID) return alert("สิทธิ์ไม่เพียงพอ: เฉพาะ Super Admin เท่านั้น");
+                if (!selectedUserForDetails) return;
 
-            if (selectedUserForDetails.line_id === SUPER_ADMIN_ID) return alert("ไม่สามารถลบ Super Admin ได้");
+                if (selectedUserForDetails.line_id === SUPER_ADMIN_ID) return alert("ไม่สามารถลบ Super Admin ได้");
 
-            if (confirm(`ต้องการลบผู้ใช้ "${selectedUserForDetails.display_name}" ถาวรหรือไม่? ข้อมูลทั้งหมดจะหายไป`)) {
-                const { error } = await supabase.from("users").delete().eq("id", selectedUserForDetails.id);
+                if (confirm(`ต้องการลบผู้ใช้ "${selectedUserForDetails.display_name}" ถาวรหรือไม่? ข้อมูลทั้งหมดจะหายไป`)) {
+                    const { error } = await supabase.from("users").delete().eq("id", selectedUserForDetails.id);
+                    if (!error) {
+                        showSuccessToast("ลบผู้ใช้เรียบร้อย");
+                        toggleModal("user-details-modal", false);
+                        loadAdminUsers();
+                    } else {
+                        alert("Error: " + error.message);
+                    }
+                }
+            }
+
+            async function openAddPointsModal(userId, userName) {
+                document.getElementById("add-points-user-id").value = userId;
+                document.getElementById("add-points-user-name").innerText = "ลูกค้า: " + userName;
+
+                document.getElementById("wallet-points-adj").value = "";
+                document.getElementById("rank-points-adj").value = "";
+                document.getElementById("current-wallet-points").innerText = "...";
+                document.getElementById("current-rank-points").innerText = "...";
+
+                toggleModal("add-points-modal", true);
+
+                const { data: user } = await supabase.from('users').select('points, total_points').eq('id', userId).single();
+                if (user) {
+                    currentEditingUser = user;
+                    document.getElementById("current-wallet-points").innerText = (user.points || 0).toLocaleString();
+                    document.getElementById("current-rank-points").innerText = (user.total_points || 0).toLocaleString();
+                }
+            }
+
+            function setRankTarget(target) {
+                if (!currentEditingUser) return;
+                const currentTotal = currentEditingUser.total_points || 0;
+                const diff = target - currentTotal;
+                document.getElementById("rank-points-adj").value = diff;
+                const adjInput = document.getElementById("rank-points-adj");
+                adjInput.classList.add("ring-2", "ring-purple-500");
+                setTimeout(() => adjInput.classList.remove("ring-2", "ring-purple-500"), 300);
+            }
+
+            async function submitAddPoints() {
+                const userId = document.getElementById("add-points-user-id").value;
+                const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
+                const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
+
+                if (walletAdj === 0 && rankAdj === 0) return alert("กรุณาระบุจำนวนแต้มที่ต้องการปรับ");
+
+                const { data: user } = await supabase.from('users').select('points, total_points, line_id, rank').eq('id', userId).single();
+                if (!user) return alert("ไม่พบข้อมูลผู้ใช้");
+
+                const currentPoints = user.points || 0;
+                const currentTotal = user.total_points || 0;
+
+                const newPoints = Math.max(0, currentPoints + walletAdj);
+                const newTotal = Math.max(0, currentTotal + rankAdj);
+
+                // Calculate new rank based on total points (only for non-admin users)
+                const isAdmin = user.rank === 'admin' || adminList.includes(user.line_id);
+                const newRank = isAdmin ? "admin" : getRankNameByPoints(newTotal);
+
+                const { error } = await supabase.from('users').update({
+                    points: newPoints,
+                    total_points: newTotal,
+                    rank: newRank
+                }).eq('id', userId);
+
                 if (!error) {
-                    showSuccessToast("ลบผู้ใช้เรียบร้อย");
-                    toggleModal("user-details-modal", false);
+                    let msg = "บันทึกข้อมูลสำเร็จ";
+                    if (rankAdj !== 0) msg += ` (ยศใหม่: ${newRank})`;
+                    showSuccessToast(msg);
+
+                    toggleModal("add-points-modal", false);
                     loadAdminUsers();
+
+                    if (selectedUserForDetails && selectedUserForDetails.id == userId) {
+                        selectedUserForDetails.points = newPoints;
+                        selectedUserForDetails.total_points = newTotal;
+                        selectedUserForDetails.rank = newRank;
+                        openUserDetailsModal(selectedUserForDetails);
+                    }
                 } else {
                     alert("Error: " + error.message);
                 }
             }
-        }
 
-        async function openAddPointsModal(userId, userName) {
-            document.getElementById("add-points-user-id").value = userId;
-            document.getElementById("add-points-user-name").innerText = "ลูกค้า: " + userName;
+            async function openGiveCouponModal(userId, userName) {
+                document.getElementById("give-coupon-user-id").value = userId;
+                document.getElementById("give-coupon-user-name").innerText = "ลูกค้า: " + userName;
 
-            document.getElementById("wallet-points-adj").value = "";
-            document.getElementById("rank-points-adj").value = "";
-            document.getElementById("current-wallet-points").innerText = "...";
-            document.getElementById("current-rank-points").innerText = "...";
+                const rewardSelect = document.getElementById("reward-select");
+                rewardSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
 
-            toggleModal("add-points-modal", true);
+                const { data: rewards } = await supabase.from('rewards').select('*').eq('is_active', true);
 
-            const { data: user } = await supabase.from('users').select('points, total_points').eq('id', userId).single();
-            if (user) {
-                currentEditingUser = user;
-                document.getElementById("current-wallet-points").innerText = (user.points || 0).toLocaleString();
-                document.getElementById("current-rank-points").innerText = (user.total_points || 0).toLocaleString();
-            }
-        }
-
-        function setRankTarget(target) {
-            if (!currentEditingUser) return;
-            const currentTotal = currentEditingUser.total_points || 0;
-            const diff = target - currentTotal;
-            document.getElementById("rank-points-adj").value = diff;
-            const adjInput = document.getElementById("rank-points-adj");
-            adjInput.classList.add("ring-2", "ring-purple-500");
-            setTimeout(() => adjInput.classList.remove("ring-2", "ring-purple-500"), 300);
-        }
-
-        async function submitAddPoints() {
-            const userId = document.getElementById("add-points-user-id").value;
-            const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
-            const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
-
-            if (walletAdj === 0 && rankAdj === 0) return alert("กรุณาระบุจำนวนแต้มที่ต้องการปรับ");
-
-            const { data: user } = await supabase.from('users').select('points, total_points, line_id, rank').eq('id', userId).single();
-            if (!user) return alert("ไม่พบข้อมูลผู้ใช้");
-
-            const currentPoints = user.points || 0;
-            const currentTotal = user.total_points || 0;
-
-            const newPoints = Math.max(0, currentPoints + walletAdj);
-            const newTotal = Math.max(0, currentTotal + rankAdj);
-
-            // Calculate new rank based on total points (only for non-admin users)
-            const isAdmin = user.rank === 'admin' || adminList.includes(user.line_id);
-            const newRank = isAdmin ? "admin" : getRankNameByPoints(newTotal);
-
-            const { error } = await supabase.from('users').update({
-                points: newPoints,
-                total_points: newTotal,
-                rank: newRank
-            }).eq('id', userId);
-
-            if (!error) {
-                let msg = "บันทึกข้อมูลสำเร็จ";
-                if (rankAdj !== 0) msg += ` (ยศใหม่: ${newRank})`;
-                showSuccessToast(msg);
-
-                toggleModal("add-points-modal", false);
-                loadAdminUsers();
-
-                if (selectedUserForDetails && selectedUserForDetails.id == userId) {
-                    selectedUserForDetails.points = newPoints;
-                    selectedUserForDetails.total_points = newTotal;
-                    selectedUserForDetails.rank = newRank;
-                    openUserDetailsModal(selectedUserForDetails);
+                if (!rewards || rewards.length === 0) {
+                    rewardSelect.innerHTML = '<option value="">ไม่มีของรางวัลในระบบ</option>';
+                } else {
+                    rewardSelect.innerHTML = '<option value="">-- เลือกรางวัล --</option>' +
+                        rewards.map(r => `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`).join('');
                 }
-            } else {
-                alert("Error: " + error.message);
-            }
-        }
 
-        async function openGiveCouponModal(userId, userName) {
-            document.getElementById("give-coupon-user-id").value = userId;
-            document.getElementById("give-coupon-user-name").innerText = "ลูกค้า: " + userName;
-
-            const rewardSelect = document.getElementById("reward-select");
-            rewardSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
-
-            const { data: rewards } = await supabase.from('rewards').select('*').eq('is_active', true);
-
-            if (!rewards || rewards.length === 0) {
-                rewardSelect.innerHTML = '<option value="">ไม่มีของรางวัลในระบบ</option>';
-            } else {
-                rewardSelect.innerHTML = '<option value="">-- เลือกรางวัล --</option>' +
-                    rewards.map(r => `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`).join('');
+                toggleModal("give-coupon-modal", true);
             }
 
-            toggleModal("give-coupon-modal", true);
-        }
+            async function submitGiveCoupon() {
+                const userId = document.getElementById("give-coupon-user-id").value;
+                const rewardId = document.getElementById("reward-select").value;
 
-        async function submitGiveCoupon() {
-            const userId = document.getElementById("give-coupon-user-id").value;
-            const rewardId = document.getElementById("reward-select").value;
+                if (!userId || !rewardId) return alert("กรุณาเลือกรางวัล");
 
-            if (!userId || !rewardId) return alert("กรุณาเลือกรางวัล");
+                const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
 
-            const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+                const { error } = await supabase.from("user_coupons").insert([{
+                    user_id: userId,
+                    reward_id: rewardId,
+                    coupon_code: code,
+                    is_used: false
+                }]);
 
-            const { error } = await supabase.from("user_coupons").insert([{
-                user_id: userId,
-                reward_id: rewardId,
-                coupon_code: code,
-                is_used: false
-            }]);
-
-            if (!error) {
-                showSuccessToast("มอบรางวัลเรียบร้อยแล้ว");
-                toggleModal("give-coupon-modal", false);
-            } else {
-                alert("Error: " + error.message);
-            }
-        }
-
-        document.getElementById("dessert-form").onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById("dessert-id").value;
-            const name = document.getElementById("dessert-name").value;
-            const emoji = document.getElementById("dessert-emoji").value;
-            const desc = document.getElementById("dessert-desc").value;
-            const active = document.getElementById("dessert-active").checked;
-            const payload = { name, emoji, description: desc, is_active: active };
-
-            let error;
-            if (id) {
-                const res = await supabase.from("desserts").update(payload).eq("id", id);
-                error = res.error;
-            } else {
-                const res = await supabase.from("desserts").insert([payload]);
-                error = res.error;
+                if (!error) {
+                    showSuccessToast("มอบรางวัลเรียบร้อยแล้ว");
+                    toggleModal("give-coupon-modal", false);
+                } else {
+                    alert("Error: " + error.message);
+                }
             }
 
-            if (!error) {
-                showSuccessToast("บันทึกสำเร็จ");
-                closeDessertModal();
-                loadAdminDesserts();
-            }
-        };
+            document.getElementById("dessert-form").onsubmit = async (e) => {
+                e.preventDefault();
+                const id = document.getElementById("dessert-id").value;
+                const name = document.getElementById("dessert-name").value;
+                const emoji = document.getElementById("dessert-emoji").value;
+                const desc = document.getElementById("dessert-desc").value;
+                const active = document.getElementById("dessert-active").checked;
+                const payload = { name, emoji, description: desc, is_active: active };
 
-        document.getElementById("brownie-form").onsubmit = async (e) => {
-            e.preventDefault();
-            if (!currentAdminDessertId) return alert("Error: No Dessert Selected");
+                let error;
+                if (id) {
+                    const res = await supabase.from("desserts").update(payload).eq("id", id);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from("desserts").insert([payload]);
+                    error = res.error;
+                }
 
-            const id = document.getElementById("brownie-id").value;
-            const type = document.getElementById("brownie-type").value;
-            const name = document.getElementById("brownie-name").value;
-            const desc = document.getElementById("brownie-desc").value;
-            const price = document.getElementById("brownie-price").value;
-            const points = document.getElementById("brownie-points").value;
-            const active = document.getElementById("brownie-active").checked;
-
-            const payload = {
-                dessert_id: currentAdminDessertId,
-                type, name, description: desc, price, points, is_active: active
+                if (!error) {
+                    showSuccessToast("บันทึกสำเร็จ");
+                    closeDessertModal();
+                    loadAdminDesserts();
+                }
             };
 
-            let error;
-            if (id) {
-                const res = await supabase.from("brownie_items").update(payload).eq("id", id);
-                error = res.error;
-            } else {
-                const res = await supabase.from("brownie_items").insert([payload]);
-                error = res.error;
-            }
+            document.getElementById("brownie-form").onsubmit = async (e) => {
+                e.preventDefault();
+                if (!currentAdminDessertId) return alert("Error: No Dessert Selected");
 
-            if (!error) {
-                showSuccessToast("บันทึกสำเร็จ");
-                closeBrownieModal();
-                loadBrownieMenus(currentAdminDessertId);
-            } else {
-                alert("Error: " + error.message);
-            }
-        };
+                const id = document.getElementById("brownie-id").value;
+                const type = document.getElementById("brownie-type").value;
+                const name = document.getElementById("brownie-name").value;
+                const desc = document.getElementById("brownie-desc").value;
+                const price = document.getElementById("brownie-price").value;
+                const points = document.getElementById("brownie-points").value;
+                const active = document.getElementById("brownie-active").checked;
 
-        async function loadAdminStats() {
-            const { data: orders } = await supabase.from("orders").select("total_price, status");
-            const { count } = await supabase.from("users").select("*", { count: 'exact', head: true });
+                const payload = {
+                    dessert_id: currentAdminDessertId,
+                    type, name, description: desc, price, points, is_active: active
+                };
 
-            const totalRev = orders.reduce((s, o) => s + o.total_price, 0);
-            const content = document.getElementById("admin-stats-content");
-            content.innerHTML = `
+                let error;
+                if (id) {
+                    const res = await supabase.from("brownie_items").update(payload).eq("id", id);
+                    error = res.error;
+                } else {
+                    const res = await supabase.from("brownie_items").insert([payload]);
+                    error = res.error;
+                }
+
+                if (!error) {
+                    showSuccessToast("บันทึกสำเร็จ");
+                    closeBrownieModal();
+                    loadBrownieMenus(currentAdminDessertId);
+                } else {
+                    alert("Error: " + error.message);
+                }
+            };
+
+            async function loadAdminStats() {
+                const { data: orders } = await supabase.from("orders").select("total_price, status");
+                const { count } = await supabase.from("users").select("*", { count: 'exact', head: true });
+
+                const totalRev = orders.reduce((s, o) => s + o.total_price, 0);
+                const content = document.getElementById("admin-stats-content");
+                content.innerHTML = `
          <div class="bg-indigo-600 text-white p-4 rounded-xl shadow-lg">
             <div class="text-sm opacity-80">ยอดขายรวม</div>
             <div class="text-2xl font-bold">${totalRev.toLocaleString()} ฿</div>
@@ -3282,36 +3284,36 @@
             <div class="text-2xl font-bold text-slate-800">${count}</div>
          </div>
        `;
-        }
-
-        async function loadOrderSummary() {
-            const date = document.getElementById("summary-delivery-round").value;
-            const status = document.getElementById("summary-status").value;
-            let q = supabase.from("orders").select("*");
-
-            if (date) {
-                q = q.eq("delivery_date", date);
             }
 
-            if (status) q = q.eq("status", status);
-            else q = q.neq("status", "cancelled");
+            async function loadOrderSummary() {
+                const date = document.getElementById("summary-delivery-round").value;
+                const status = document.getElementById("summary-status").value;
+                let q = supabase.from("orders").select("*");
 
-            const { data } = await q;
-            const content = document.getElementById("summary-content");
-            if (!data || data.length === 0) { content.innerHTML = "<p class='text-center text-slate-400 mt-4'>ไม่มีออเดอร์ในรอบนี้</p>"; return; }
+                if (date) {
+                    q = q.eq("delivery_date", date);
+                }
 
-            const counts = {};
-            data.forEach(o => {
-                let items = [];
-                try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch (e) { }
+                if (status) q = q.eq("status", status);
+                else q = q.neq("status", "cancelled");
 
-                items.forEach(i => {
-                    const key = i.baseName + " + " + i.toppingName;
-                    counts[key] = (counts[key] || 0) + (parseInt(i.quantity) || 1);
+                const { data } = await q;
+                const content = document.getElementById("summary-content");
+                if (!data || data.length === 0) { content.innerHTML = "<p class='text-center text-slate-400 mt-4'>ไม่มีออเดอร์ในรอบนี้</p>"; return; }
+
+                const counts = {};
+                data.forEach(o => {
+                    let items = [];
+                    try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch (e) { }
+
+                    items.forEach(i => {
+                        const key = i.baseName + " + " + i.toppingName;
+                        counts[key] = (counts[key] || 0) + (parseInt(i.quantity) || 1);
+                    });
                 });
-            });
 
-            content.innerHTML = `
+                content.innerHTML = `
            <div class="mb-4 text-center">
               <div class="text-2xl font-bold text-indigo-600">${data.length} ออเดอร์</div>
               <div class="text-sm text-slate-500">รวมยอดขาย ${data.reduce((s, o) => s + o.total_price, 0).toLocaleString()} บาท</div>
@@ -3325,68 +3327,68 @@
               `).join('')}
            </div>
         `;
-        }
-
-        async function updateAllFilteredOrders() {
-            const newStatus = document.getElementById("update-status-select").value;
-            if (!newStatus) return alert("เลือกสถานะก่อนครับ");
-            if (!confirm("ยืนยันอัปเดตสถานะทั้งหมดในรอบนี้?")) return;
-
-            const date = document.getElementById("summary-delivery-round").value;
-            const status = document.getElementById("summary-status").value;
-            let q = supabase.from("orders").update({ status: newStatus });
-
-            if (date) {
-                q = q.eq("delivery_date", date);
             }
-            if (status) q = q.eq("status", status);
-            else q = q.neq("status", "cancelled");
 
-            const { error } = await q;
-            if (!error) {
-                showSuccessToast("อัปเดตสถานะหมู่สำเร็จ");
-                loadOrderSummary();
-            } else {
-                alert("Update failed: " + error.message);
+            async function updateAllFilteredOrders() {
+                const newStatus = document.getElementById("update-status-select").value;
+                if (!newStatus) return alert("เลือกสถานะก่อนครับ");
+                if (!confirm("ยืนยันอัปเดตสถานะทั้งหมดในรอบนี้?")) return;
+
+                const date = document.getElementById("summary-delivery-round").value;
+                const status = document.getElementById("summary-status").value;
+                let q = supabase.from("orders").update({ status: newStatus });
+
+                if (date) {
+                    q = q.eq("delivery_date", date);
+                }
+                if (status) q = q.eq("status", status);
+                else q = q.neq("status", "cancelled");
+
+                const { error } = await q;
+                if (!error) {
+                    showSuccessToast("อัปเดตสถานะหมู่สำเร็จ");
+                    loadOrderSummary();
+                } else {
+                    alert("Update failed: " + error.message);
+                }
             }
-        }
 
-        async function openOrderHistory() {
-            document.getElementById("main-app").classList.add("hidden");
-            document.getElementById("order-history").classList.remove("hidden");
+            async function openOrderHistory() {
+                document.getElementById("main-app").classList.add("hidden");
+                document.getElementById("order-history").classList.remove("hidden");
 
-            const { data } = await supabase.from("orders").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
-            const list = document.getElementById("order-list");
-            if (data.length === 0) list.innerHTML = "<p class='text-center text-slate-400 mt-10'>ไม่มีประวัติ</p>";
-            else {
-                list.innerHTML = data.map(o => {
-                    let items = [];
-                    try {
-                        items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
-                    } catch (e) { items = []; }
+                const { data } = await supabase.from("orders").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+                const list = document.getElementById("order-list");
+                if (data.length === 0) list.innerHTML = "<p class='text-center text-slate-400 mt-10'>ไม่มีประวัติ</p>";
+                else {
+                    list.innerHTML = data.map(o => {
+                        let items = [];
+                        try {
+                            items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+                        } catch (e) { items = []; }
 
-                    const totalQty = Array.isArray(items) ? items.reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0) : 0;
+                        const totalQty = Array.isArray(items) ? items.reduce((sum, i) => sum + (parseInt(i.quantity) || 1), 0) : 0;
 
-                    const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-                    const deliveryDateDisplay = o.delivery_date
-                        ? new Date(o.delivery_date).toLocaleDateString('th-TH', dateOptions)
-                        : 'ไม่ระบุวันส่ง';
+                        const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                        const deliveryDateDisplay = o.delivery_date
+                            ? new Date(o.delivery_date).toLocaleDateString('th-TH', dateOptions)
+                            : 'ไม่ระบุวันส่ง';
 
-                    let statusClass = 'bg-gray-100 text-gray-600';
-                    let statusText = o.status;
-                    let cancelBtn = '';
+                        let statusClass = 'bg-gray-100 text-gray-600';
+                        let statusText = o.status;
+                        let cancelBtn = '';
 
-                    if (o.status === 'pending') {
-                        statusClass = 'bg-yellow-100 text-yellow-700';
-                        statusText = 'รอดำเนินการ';
-                        cancelBtn = `<button onclick="cancelOrder('${o.id}')" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded hover:bg-red-50 mt-2 w-full text-center">ยกเลิกออเดอร์</button>`;
-                    }
-                    else if (o.status === 'preparing') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังทำ'; }
-                    else if (o.status === 'ready') { statusClass = 'bg-green-100 text-green-700'; statusText = 'พร้อมส่ง'; }
-                    else if (o.status === 'completed') { statusClass = 'bg-green-100 text-green-700'; statusText = 'สำเร็จ'; }
-                    else if (o.status === 'cancelled') { statusClass = 'bg-red-100 text-red-700'; statusText = 'ยกเลิก'; }
+                        if (o.status === 'pending') {
+                            statusClass = 'bg-yellow-100 text-yellow-700';
+                            statusText = 'รอดำเนินการ';
+                            cancelBtn = `<button onclick="cancelOrder('${o.id}')" class="text-xs text-red-500 font-medium border border-red-200 px-2 py-1 rounded hover:bg-red-50 mt-2 w-full text-center">ยกเลิกออเดอร์</button>`;
+                        }
+                        else if (o.status === 'preparing') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังทำ'; }
+                        else if (o.status === 'ready') { statusClass = 'bg-green-100 text-green-700'; statusText = 'พร้อมส่ง'; }
+                        else if (o.status === 'completed') { statusClass = 'bg-green-100 text-green-700'; statusText = 'สำเร็จ'; }
+                        else if (o.status === 'cancelled') { statusClass = 'bg-red-100 text-red-700'; statusText = 'ยกเลิก'; }
 
-                    const itemsHtml = items.map(i => `
+                        const itemsHtml = items.map(i => `
                     <div class="flex justify-between items-start text-xs text-slate-600 mt-1.5 pl-3 border-l-2 border-slate-200">
                         <div class="flex-1 pr-2">
                             <div class="font-medium text-slate-700">${i.dessertName}</div>
@@ -3396,7 +3398,7 @@
                     </div>
                 `).join('');
 
-                    return `
+                        return `
               <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                  <div class="flex justify-between items-center mb-3">
                     <span class="font-bold text-slate-800 text-lg">Order #${o.id}</span>
@@ -3428,54 +3430,54 @@
                  ${cancelBtn}
               </div>
             `;
-                }).join('');
+                    }).join('');
+                }
             }
-        }
 
-        async function cancelOrder(id) {
-            if (!confirm("ยืนยันการยกเลิกออเดอร์?")) return;
+            async function cancelOrder(id) {
+                if (!confirm("ยืนยันการยกเลิกออเดอร์?")) return;
 
-            const { error } = await supabase.from("orders").update({ status: 'cancelled' }).eq("id", id);
+                const { error } = await supabase.from("orders").update({ status: 'cancelled' }).eq("id", id);
 
-            if (!error) {
-                showSuccessToast("ยกเลิกออเดอร์แล้ว");
-                openOrderHistory();
-            } else {
-                console.error("Cancel Error:", error);
-                alert("ไม่สามารถยกเลิกได้: " + error.message);
+                if (!error) {
+                    showSuccessToast("ยกเลิกออเดอร์แล้ว");
+                    openOrderHistory();
+                } else {
+                    console.error("Cancel Error:", error);
+                    alert("ไม่สามารถยกเลิกได้: " + error.message);
+                }
             }
-        }
 
-        function backToMain() {
-            document.getElementById("order-history").classList.add("hidden");
-            document.getElementById("main-app").classList.remove("hidden");
-        }
+            function backToMain() {
+                document.getElementById("order-history").classList.add("hidden");
+                document.getElementById("main-app").classList.remove("hidden");
+            }
 
-        function showSuccessToast(msg) {
-            const t = document.getElementById("success-message");
-            document.getElementById("success-text").innerText = msg;
-            t.classList.remove("hidden");
-            setTimeout(() => t.classList.add("hidden"), 3000);
-        }
+            function showSuccessToast(msg) {
+                const t = document.getElementById("success-message");
+                document.getElementById("success-text").innerText = msg;
+                t.classList.remove("hidden");
+                setTimeout(() => t.classList.add("hidden"), 3000);
+            }
 
-        function filterAdminOrders() {
-            const txt = document.getElementById("admin-order-search").value.toLowerCase();
-            const filtered = allOrders.filter(o => o.id.toString().includes(txt) || (o.users?.display_name || "").toLowerCase().includes(txt));
-            renderAdminOrderList(filtered);
-        }
+            function filterAdminOrders() {
+                const txt = document.getElementById("admin-order-search").value.toLowerCase();
+                const filtered = allOrders.filter(o => o.id.toString().includes(txt) || (o.users?.display_name || "").toLowerCase().includes(txt));
+                renderAdminOrderList(filtered);
+            }
 
-        function clearOrderFilters() {
-            document.getElementById("admin-order-search").value = "";
-            loadAdminOrders();
-        }
+            function clearOrderFilters() {
+                document.getElementById("admin-order-search").value = "";
+                loadAdminOrders();
+            }
 
-        // --- MISSING FUNCTIONS ---
+            // --- MISSING FUNCTIONS ---
 
-        async function loadAdminDesserts() {
-            const { data } = await supabase.from("desserts").select("*").order("id");
-            const container = document.getElementById("admin-dessert-list");
-            if (!container) return;
-            container.innerHTML = (data || []).map(d => `
+            async function loadAdminDesserts() {
+                const { data } = await supabase.from("desserts").select("*").order("id");
+                const container = document.getElementById("admin-dessert-list");
+                if (!container) return;
+                container.innerHTML = (data || []).map(d => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">${d.emoji || '🍪'}</span>
@@ -3491,14 +3493,14 @@
                     </div>
                 </div>
             `).join('') || '<p class="text-slate-400 text-center">ไม่มีเมนู</p>';
-        }
+            }
 
-        async function loadBrownieMenus(dessertId) {
-            currentAdminDessertId = dessertId;
-            const { data } = await supabase.from("brownie_items").select("*").eq("dessert_id", dessertId).order("type");
-            const container = document.getElementById("admin-brownie-list");
-            if (!container) return;
-            container.innerHTML = (data || []).map(item => `
+            async function loadBrownieMenus(dessertId) {
+                currentAdminDessertId = dessertId;
+                const { data } = await supabase.from("brownie_items").select("*").eq("dessert_id", dessertId).order("type");
+                const container = document.getElementById("admin-brownie-list");
+                if (!container) return;
+                container.innerHTML = (data || []).map(item => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center">
                     <div>
                         <span class="px-2 py-1 text-xs rounded ${item.type === 'base' ? 'bg-indigo-100 text-indigo-600' : 'bg-pink-100 text-pink-600'}">${item.type}</span>
@@ -3511,13 +3513,13 @@
                     </div>
                 </div>
             `).join('') || '<p class="text-slate-400 text-center">ไม่มีส่วนประกอบ</p>';
-        }
+            }
 
-        async function loadAdminRewards() {
-            const { data } = await supabase.from("rewards").select("*").order("id");
-            const container = document.getElementById("admin-rewards-content");
-            if (!container) return;
-            container.innerHTML = (data || []).map(r => `
+            async function loadAdminRewards() {
+                const { data } = await supabase.from("rewards").select("*").order("id");
+                const container = document.getElementById("admin-rewards-content");
+                if (!container) return;
+                container.innerHTML = (data || []).map(r => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200">
                     <div class="flex justify-between items-start mb-2">
                         <div>
@@ -3533,13 +3535,13 @@
                     </div>
                 </div>
             `).join('') || '<p class="text-slate-400 text-center">ไม่มีของรางวัล</p>';
-        }
+            }
 
-        async function loadAdminCoupons() {
-            const { data } = await supabase.from("coupons").select("*").order("id");
-            const container = document.getElementById("admin-coupons-content");
-            if (!container) return;
-            container.innerHTML = (data || []).map(c => `
+            async function loadAdminCoupons() {
+                const { data } = await supabase.from("coupons").select("*").order("id");
+                const container = document.getElementById("admin-coupons-content");
+                if (!container) return;
+                container.innerHTML = (data || []).map(c => `
                 <div class="bg-white p-4 rounded-xl border border-slate-200">
                     <div class="flex justify-between items-start mb-2">
                         <div>
@@ -3555,18 +3557,18 @@
                     </div>
                 </div>
             `).join('') || '<p class="text-slate-400 text-center">ไม่มีคูปอง</p>';
-        }
+            }
 
-        async function loadAdminStats() {
-            const container = document.getElementById("admin-stats-content");
-            if (!container) return;
+            async function loadAdminStats() {
+                const container = document.getElementById("admin-stats-content");
+                if (!container) return;
 
-            const { count: userCount } = await supabase.from("users").select("*", { count: "exact", head: true });
-            const { count: orderCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
-            const { data: totalData } = await supabase.from("orders").select("total_price").eq("status", "completed");
-            const totalRevenue = (totalData || []).reduce((s, o) => s + (o.total_price || 0), 0);
+                const { count: userCount } = await supabase.from("users").select("*", { count: "exact", head: true });
+                const { count: orderCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
+                const { data: totalData } = await supabase.from("orders").select("total_price").eq("status", "completed");
+                const totalRevenue = (totalData || []).reduce((s, o) => s + (o.total_price || 0), 0);
 
-            container.innerHTML = `
+                container.innerHTML = `
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 text-center">
                     <div class="text-4xl mb-2"><i class="fa-solid fa-users text-blue-500"></i></div>
                     <div class="text-3xl font-bold text-slate-800">${userCount || 0}</div>
@@ -3583,254 +3585,254 @@
                     <div class="text-sm text-slate-500">รายได้รวม (฿)</div>
                 </div>
             `;
-        }
-
-        async function createReward(event) {
-            event.preventDefault();
-            const id = document.getElementById("reward-id").value;
-            const payload = {
-                name: document.getElementById("reward-name").value,
-                description: document.getElementById("reward-description").value,
-                points_required: parseInt(document.getElementById("reward-points").value),
-                discount_type: document.getElementById("reward-type").value,
-                discount_value: parseInt(document.getElementById("reward-value").value),
-                min_purchase: parseInt(document.getElementById("reward-min").value) || 0,
-                is_active: document.getElementById("reward-active").checked
-            };
-
-            if (id) {
-                await supabase.from("rewards").update(payload).eq("id", id);
-            } else {
-                await supabase.from("rewards").insert([payload]);
             }
-            closeCreateReward();
-            showSuccessToast(id ? "แก้ไขรางวัลสำเร็จ" : "สร้างรางวัลสำเร็จ");
-            loadAdminRewards();
-            loadRewards();
-        }
 
-        async function createCoupon(event) {
-            event.preventDefault();
-            const id = document.getElementById("coupon-id").value;
-            const payload = {
-                code: document.getElementById("coupon-code").value.toUpperCase(),
-                name: document.getElementById("coupon-title").value,
-                description: document.getElementById("coupon-description").value,
-                type: document.getElementById("coupon-type").value,
-                value: parseInt(document.getElementById("coupon-value").value),
-                min_purchase: parseInt(document.getElementById("coupon-min").value) || 0,
-                usage_limit: parseInt(document.getElementById("coupon-usage").value) || 100,
-                is_active: document.getElementById("coupon-active").checked
-            };
+            async function createReward(event) {
+                event.preventDefault();
+                const id = document.getElementById("reward-id").value;
+                const payload = {
+                    name: document.getElementById("reward-name").value,
+                    description: document.getElementById("reward-description").value,
+                    points_required: parseInt(document.getElementById("reward-points").value),
+                    discount_type: document.getElementById("reward-type").value,
+                    discount_value: parseInt(document.getElementById("reward-value").value),
+                    min_purchase: parseInt(document.getElementById("reward-min").value) || 0,
+                    is_active: document.getElementById("reward-active").checked
+                };
 
-            if (id) {
-                await supabase.from("coupons").update(payload).eq("id", id);
-            } else {
-                await supabase.from("coupons").insert([payload]);
-            }
-            closeCreateCoupon();
-            showSuccessToast(id ? "แก้ไขคูปองสำเร็จ" : "สร้างคูปองสำเร็จ");
-            loadAdminCoupons();
-        }
-
-        async function deleteReward(id) {
-            if (!confirm("ลบของรางวัลนี้?")) return;
-            await supabase.from("rewards").delete().eq("id", id);
-            showSuccessToast("ลบรางวัลแล้ว");
-            loadAdminRewards();
-        }
-
-        async function deleteCoupon(id) {
-            if (!confirm("ลบคูปองนี้?")) return;
-            await supabase.from("coupons").delete().eq("id", id);
-            showSuccessToast("ลบคูปองแล้ว");
-            loadAdminCoupons();
-        }
-
-        async function deleteDessert(id) {
-            if (!confirm("ลบเมนูนี้?")) return;
-            await supabase.from("desserts").delete().eq("id", id);
-            showSuccessToast("ลบเมนูแล้ว");
-            loadAdminDesserts();
-            loadDesserts();
-        }
-
-        async function deleteBrownieItem(id) {
-            if (!confirm("ลบส่วนประกอบนี้?")) return;
-            await supabase.from("brownie_items").delete().eq("id", id);
-            showSuccessToast("ลบแล้ว");
-            if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
-        }
-
-        async function openUserDetailsModal(userId) {
-            const { data: user } = await supabase.from("users").select("*").eq("id", userId).single();
-            if (!user) return;
-
-            selectedUserForDetails = user;
-
-            document.getElementById("ud-pic").src = user.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
-            document.getElementById("ud-name").innerText = user.display_name || 'Guest';
-            document.getElementById("ud-line-id").innerText = "Line ID: " + user.line_id;
-            document.getElementById("ud-points").innerText = user.points || 0;
-            document.getElementById("ud-total-points").innerText = user.total_points || 0;
-
-            const isViewerAdmin = adminList.includes(currentUser?.line_id);
-            const actionsDiv = document.getElementById("ud-admin-actions");
-            if (isViewerAdmin && user.id !== currentUser?.id) {
-                actionsDiv.classList.remove("hidden");
-
-                const isUserAdmin = adminList.includes(user.line_id);
-                const toggleBtn = document.getElementById("ud-btn-admin-toggle");
-                if (isUserAdmin) {
-                    toggleBtn.innerText = "ถอดถอน Admin";
-                    toggleBtn.className = "py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition";
-                    toggleBtn.onclick = () => removeAdmin(user.line_id);
+                if (id) {
+                    await supabase.from("rewards").update(payload).eq("id", id);
                 } else {
-                    toggleBtn.innerText = "ตั้งเป็น Admin";
-                    toggleBtn.className = "py-2 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-sm font-medium transition";
-                    toggleBtn.onclick = () => makeAdmin(user.line_id);
+                    await supabase.from("rewards").insert([payload]);
+                }
+                closeCreateReward();
+                showSuccessToast(id ? "แก้ไขรางวัลสำเร็จ" : "สร้างรางวัลสำเร็จ");
+                loadAdminRewards();
+                loadRewards();
+            }
+
+            async function createCoupon(event) {
+                event.preventDefault();
+                const id = document.getElementById("coupon-id").value;
+                const payload = {
+                    code: document.getElementById("coupon-code").value.toUpperCase(),
+                    name: document.getElementById("coupon-title").value,
+                    description: document.getElementById("coupon-description").value,
+                    type: document.getElementById("coupon-type").value,
+                    value: parseInt(document.getElementById("coupon-value").value),
+                    min_purchase: parseInt(document.getElementById("coupon-min").value) || 0,
+                    usage_limit: parseInt(document.getElementById("coupon-usage").value) || 100,
+                    is_active: document.getElementById("coupon-active").checked
+                };
+
+                if (id) {
+                    await supabase.from("coupons").update(payload).eq("id", id);
+                } else {
+                    await supabase.from("coupons").insert([payload]);
+                }
+                closeCreateCoupon();
+                showSuccessToast(id ? "แก้ไขคูปองสำเร็จ" : "สร้างคูปองสำเร็จ");
+                loadAdminCoupons();
+            }
+
+            async function deleteReward(id) {
+                if (!confirm("ลบของรางวัลนี้?")) return;
+                await supabase.from("rewards").delete().eq("id", id);
+                showSuccessToast("ลบรางวัลแล้ว");
+                loadAdminRewards();
+            }
+
+            async function deleteCoupon(id) {
+                if (!confirm("ลบคูปองนี้?")) return;
+                await supabase.from("coupons").delete().eq("id", id);
+                showSuccessToast("ลบคูปองแล้ว");
+                loadAdminCoupons();
+            }
+
+            async function deleteDessert(id) {
+                if (!confirm("ลบเมนูนี้?")) return;
+                await supabase.from("desserts").delete().eq("id", id);
+                showSuccessToast("ลบเมนูแล้ว");
+                loadAdminDesserts();
+                loadDesserts();
+            }
+
+            async function deleteBrownieItem(id) {
+                if (!confirm("ลบส่วนประกอบนี้?")) return;
+                await supabase.from("brownie_items").delete().eq("id", id);
+                showSuccessToast("ลบแล้ว");
+                if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
+            }
+
+            async function openUserDetailsModal(userId) {
+                const { data: user } = await supabase.from("users").select("*").eq("id", userId).single();
+                if (!user) return;
+
+                selectedUserForDetails = user;
+
+                document.getElementById("ud-pic").src = user.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                document.getElementById("ud-name").innerText = user.display_name || 'Guest';
+                document.getElementById("ud-line-id").innerText = "Line ID: " + user.line_id;
+                document.getElementById("ud-points").innerText = user.points || 0;
+                document.getElementById("ud-total-points").innerText = user.total_points || 0;
+
+                const isViewerAdmin = adminList.includes(currentUser?.line_id);
+                const actionsDiv = document.getElementById("ud-admin-actions");
+                if (isViewerAdmin && user.id !== currentUser?.id) {
+                    actionsDiv.classList.remove("hidden");
+
+                    const isUserAdmin = adminList.includes(user.line_id);
+                    const toggleBtn = document.getElementById("ud-btn-admin-toggle");
+                    if (isUserAdmin) {
+                        toggleBtn.innerText = "ถอดถอน Admin";
+                        toggleBtn.className = "py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition";
+                        toggleBtn.onclick = () => removeAdmin(user.line_id);
+                    } else {
+                        toggleBtn.innerText = "ตั้งเป็น Admin";
+                        toggleBtn.className = "py-2 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-sm font-medium transition";
+                        toggleBtn.onclick = () => makeAdmin(user.line_id);
+                    }
+
+                    const banBtn = document.getElementById("ud-btn-ban");
+                    if (user.is_banned) {
+                        banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน</span>';
+                        banBtn.onclick = () => unbanUser(user.id);
+                    } else {
+                        banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>';
+                        banBtn.onclick = () => openBanUserModal(user);
+                    }
+                } else {
+                    actionsDiv.classList.add("hidden");
                 }
 
-                const banBtn = document.getElementById("ud-btn-ban");
-                if (user.is_banned) {
-                    banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน</span>';
-                    banBtn.onclick = () => unbanUser(user.id);
-                } else {
-                    banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน (Ban)</span>';
-                    banBtn.onclick = () => openBanUserModal(user);
-                }
-            } else {
-                actionsDiv.classList.add("hidden");
-            }
+                const { count } = await supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", userId);
+                document.getElementById("ud-total-orders").innerText = count || 0;
 
-            const { count } = await supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", userId);
-            document.getElementById("ud-total-orders").innerText = count || 0;
-
-            const { data: orders } = await supabase.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5);
-            const historyContainer = document.getElementById("ud-order-history");
-            historyContainer.innerHTML = (orders || []).map(o => `
+                const { data: orders } = await supabase.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5);
+                const historyContainer = document.getElementById("ud-order-history");
+                historyContainer.innerHTML = (orders || []).map(o => `
                 <div class="bg-slate-50 p-2 rounded-lg text-sm">
                     <div class="flex justify-between"><span>#${o.id}</span><span class="font-bold">${o.total_price}฿</span></div>
                     <div class="text-xs text-slate-500">${o.status} - ${new Date(o.created_at).toLocaleDateString('th-TH')}</div>
                 </div>
             `).join('') || '<p class="text-slate-400 text-sm">ไม่มีประวัติ</p>';
 
-            const banStatus = document.getElementById("ud-ban-status");
-            if (user.is_banned) {
-                banStatus.classList.remove("hidden");
-            } else {
-                banStatus.classList.add("hidden");
+                const banStatus = document.getElementById("ud-ban-status");
+                if (user.is_banned) {
+                    banStatus.classList.remove("hidden");
+                } else {
+                    banStatus.classList.add("hidden");
+                }
+
+                // Rank Badge
+                let rankBadge = getRankBadge(user.total_points || 0, adminList.includes(user.line_id));
+                document.getElementById("ud-rank-badge").innerHTML = rankBadge;
+
+                toggleModal('user-details-modal', true);
             }
 
-            // Rank Badge
-            let rankBadge = getRankBadge(user.total_points || 0, adminList.includes(user.line_id));
-            document.getElementById("ud-rank-badge").innerHTML = rankBadge;
+            function getRankBadge(totalPoints, isAdmin) {
+                if (isAdmin) return '<span class="text-xs bg-slate-800 text-white px-2 py-1 rounded-full">⚙️ Admin</span>';
+                if (totalPoints >= 1000) return '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">💎 VIP</span>';
+                if (totalPoints >= 500) return '<span class="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full">🌟 ตัวยง</span>';
+                if (totalPoints >= 100) return '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">🎖️ ประจำ</span>';
+                return '<span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">🌱 ใหม่</span>';
+            }
 
-            toggleModal('user-details-modal', true);
-        }
+            async function makeAdmin(lineId) {
+                if (!adminList.includes(lineId)) {
+                    adminList.push(lineId);
+                    localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
+                    showSuccessToast("ตั้งเป็น Admin แล้ว");
+                    toggleModal('user-details-modal', false);
+                    loadAdminUsers();
+                }
+            }
 
-        function getRankBadge(totalPoints, isAdmin) {
-            if (isAdmin) return '<span class="text-xs bg-slate-800 text-white px-2 py-1 rounded-full">⚙️ Admin</span>';
-            if (totalPoints >= 1000) return '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">💎 VIP</span>';
-            if (totalPoints >= 500) return '<span class="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full">🌟 ตัวยง</span>';
-            if (totalPoints >= 100) return '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">🎖️ ประจำ</span>';
-            return '<span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">🌱 ใหม่</span>';
-        }
-
-        async function makeAdmin(lineId) {
-            if (!adminList.includes(lineId)) {
-                adminList.push(lineId);
+            async function removeAdmin(lineId) {
+                if (lineId === SUPER_ADMIN_ID) {
+                    alert("ไม่สามารถถอดถอน Super Admin ได้");
+                    return;
+                }
+                adminList = adminList.filter(id => id !== lineId);
                 localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
-                showSuccessToast("ตั้งเป็น Admin แล้ว");
+                showSuccessToast("ถอดถอน Admin แล้ว");
                 toggleModal('user-details-modal', false);
                 loadAdminUsers();
             }
-        }
 
-        async function removeAdmin(lineId) {
-            if (lineId === SUPER_ADMIN_ID) {
-                alert("ไม่สามารถถอดถอน Super Admin ได้");
-                return;
-            }
-            adminList = adminList.filter(id => id !== lineId);
-            localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
-            showSuccessToast("ถอดถอน Admin แล้ว");
-            toggleModal('user-details-modal', false);
-            loadAdminUsers();
-        }
-
-        function openBanUserModal(user) {
-            document.getElementById("ban-user-id").value = user.id;
-            document.getElementById("ban-user-name").innerText = user.display_name || 'Guest';
-            document.getElementById("ban-reason").value = "";
-            toggleModal('user-details-modal', false);
-            toggleModal('ban-user-modal', true);
-        }
-
-        async function submitBanUser() {
-            const userId = document.getElementById("ban-user-id").value;
-            const reason = document.getElementById("ban-reason").value || "ไม่ระบุสาเหตุ";
-
-            await supabase.from("users").update({ is_banned: true, ban_reason: reason }).eq("id", userId);
-            toggleModal('ban-user-modal', false);
-            showSuccessToast("แบนผู้ใช้แล้ว");
-            loadAdminUsers();
-        }
-
-        async function unbanUser(userId) {
-            await supabase.from("users").update({ is_banned: false, ban_reason: null }).eq("id", userId);
-            toggleModal('user-details-modal', false);
-            showSuccessToast("ปลดแบนแล้ว");
-            loadAdminUsers();
-        }
-
-        async function deleteUserFromDetails() {
-            if (!selectedUserForDetails) return;
-            if (!confirm("ลบผู้ใช้นี้ถาวร?")) return;
-
-            await supabase.from("users").delete().eq("id", selectedUserForDetails.id);
-            toggleModal('user-details-modal', false);
-            showSuccessToast("ลบผู้ใช้แล้ว");
-            loadAdminUsers();
-        }
-
-        async function loadOrderSummary() {
-            const date = document.getElementById("summary-delivery-round").value;
-            const status = document.getElementById("summary-status").value;
-
-            if (!date) return;
-
-            let query = supabase.from("orders").select("*").eq("delivery_date", date);
-            if (status) {
-                query = query.eq("status", status);
-            } else {
-                query = query.neq("status", "cancelled");
+            function openBanUserModal(user) {
+                document.getElementById("ban-user-id").value = user.id;
+                document.getElementById("ban-user-name").innerText = user.display_name || 'Guest';
+                document.getElementById("ban-reason").value = "";
+                toggleModal('user-details-modal', false);
+                toggleModal('ban-user-modal', true);
             }
 
-            const { data } = await query;
-            const container = document.getElementById("summary-content");
+            async function submitBanUser() {
+                const userId = document.getElementById("ban-user-id").value;
+                const reason = document.getElementById("ban-reason").value || "ไม่ระบุสาเหตุ";
 
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-10">ไม่มีออเดอร์ในรอบนี้</p>';
-                return;
+                await supabase.from("users").update({ is_banned: true, ban_reason: reason }).eq("id", userId);
+                toggleModal('ban-user-modal', false);
+                showSuccessToast("แบนผู้ใช้แล้ว");
+                loadAdminUsers();
             }
 
-            let itemSummary = {};
-            let totalRevenue = 0;
-            let totalPieces = 0;
+            async function unbanUser(userId) {
+                await supabase.from("users").update({ is_banned: false, ban_reason: null }).eq("id", userId);
+                toggleModal('user-details-modal', false);
+                showSuccessToast("ปลดแบนแล้ว");
+                loadAdminUsers();
+            }
 
-            data.forEach(order => {
-                totalRevenue += order.total_price || 0;
-                const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
-                items.forEach(item => {
-                    const key = `${item.dessertName} (${item.baseName} + ${item.toppingName})`;
-                    if (!itemSummary[key]) itemSummary[key] = 0;
-                    itemSummary[key] += item.quantity;
-                    totalPieces += item.quantity;
+            async function deleteUserFromDetails() {
+                if (!selectedUserForDetails) return;
+                if (!confirm("ลบผู้ใช้นี้ถาวร?")) return;
+
+                await supabase.from("users").delete().eq("id", selectedUserForDetails.id);
+                toggleModal('user-details-modal', false);
+                showSuccessToast("ลบผู้ใช้แล้ว");
+                loadAdminUsers();
+            }
+
+            async function loadOrderSummary() {
+                const date = document.getElementById("summary-delivery-round").value;
+                const status = document.getElementById("summary-status").value;
+
+                if (!date) return;
+
+                let query = supabase.from("orders").select("*").eq("delivery_date", date);
+                if (status) {
+                    query = query.eq("status", status);
+                } else {
+                    query = query.neq("status", "cancelled");
+                }
+
+                const { data } = await query;
+                const container = document.getElementById("summary-content");
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 text-center py-10">ไม่มีออเดอร์ในรอบนี้</p>';
+                    return;
+                }
+
+                let itemSummary = {};
+                let totalRevenue = 0;
+                let totalPieces = 0;
+
+                data.forEach(order => {
+                    totalRevenue += order.total_price || 0;
+                    const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                    items.forEach(item => {
+                        const key = `${item.dessertName} (${item.baseName} + ${item.toppingName})`;
+                        if (!itemSummary[key]) itemSummary[key] = 0;
+                        itemSummary[key] += item.quantity;
+                        totalPieces += item.quantity;
+                    });
                 });
-            });
 
-            container.innerHTML = `
+                container.innerHTML = `
                 <div class="grid grid-cols-3 gap-4 mb-6">
                     <div class="bg-white p-4 rounded-xl text-center border">
                         <div class="text-2xl font-bold text-indigo-600">${data.length}</div>
@@ -3855,270 +3857,270 @@
                     `).join('')}
                 </div>
             `;
-        }
-
-        async function updateAllFilteredOrders() {
-            const date = document.getElementById("summary-delivery-round").value;
-            const newStatus = document.getElementById("update-status-select").value;
-
-            if (!date || !newStatus) {
-                alert("กรุณาเลือกรอบส่งและสถานะใหม่");
-                return;
             }
 
-            if (!confirm(`อัปเดตออเดอร์ทั้งหมดในรอบนี้เป็น "${newStatus}"?`)) return;
+            async function updateAllFilteredOrders() {
+                const date = document.getElementById("summary-delivery-round").value;
+                const newStatus = document.getElementById("update-status-select").value;
 
-            const { error } = await supabase.from("orders").update({ status: newStatus }).eq("delivery_date", date).neq("status", "cancelled");
+                if (!date || !newStatus) {
+                    alert("กรุณาเลือกรอบส่งและสถานะใหม่");
+                    return;
+                }
 
-            if (!error) {
-                showSuccessToast("อัปเดตสถานะทั้งหมดแล้ว");
-                loadOrderSummary();
-            } else {
-                alert("Error: " + error.message);
-            }
-        }
+                if (!confirm(`อัปเดตออเดอร์ทั้งหมดในรอบนี้เป็น "${newStatus}"?`)) return;
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showSuccessToast("คัดลอกแล้ว: " + text);
-            });
-        }
+                const { error } = await supabase.from("orders").update({ status: newStatus }).eq("delivery_date", date).neq("status", "cancelled");
 
-        function setRankTarget(targetPoints) {
-            const currentRank = parseInt(document.getElementById("current-rank-points").innerText) || 0;
-            const diff = targetPoints - currentRank;
-            document.getElementById("rank-points-adj").value = diff;
-        }
-
-        function selectLevel(level) {
-            document.getElementById("level-" + level).checked = true;
-        }
-
-        async function submitAddPoints() {
-            const userId = document.getElementById("add-points-user-id").value;
-            const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
-            const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
-
-            const { data: user } = await supabase.from("users").select("points, total_points").eq("id", userId).single();
-            if (!user) return;
-
-            const newPoints = Math.max(0, (user.points || 0) + walletAdj);
-            const newTotal = Math.max(0, (user.total_points || 0) + rankAdj);
-
-            await supabase.from("users").update({ points: newPoints, total_points: newTotal }).eq("id", userId);
-
-            toggleModal('add-points-modal', false);
-            showSuccessToast("อัปเดตแต้มเรียบร้อย");
-            loadAdminUsers();
-        }
-
-        async function submitGiveCoupon() {
-            const userId = document.getElementById("give-coupon-user-id").value;
-            const rewardId = document.getElementById("reward-select").value;
-
-            if (!rewardId) {
-                alert("กรุณาเลือกรางวัล");
-                return;
+                if (!error) {
+                    showSuccessToast("อัปเดตสถานะทั้งหมดแล้ว");
+                    loadOrderSummary();
+                } else {
+                    alert("Error: " + error.message);
+                }
             }
 
-            const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-            await supabase.from("user_coupons").insert([{ user_id: userId, reward_id: rewardId, coupon_code: code }]);
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showSuccessToast("คัดลอกแล้ว: " + text);
+                });
+            }
 
-            toggleModal('give-coupon-modal', false);
-            showSuccessToast("มอบรางวัลสำเร็จ");
-        }
+            function setRankTarget(targetPoints) {
+                const currentRank = parseInt(document.getElementById("current-rank-points").innerText) || 0;
+                const diff = targetPoints - currentRank;
+                document.getElementById("rank-points-adj").value = diff;
+            }
 
-        async function submitAdjustLevel() {
-            const userId = document.getElementById("adjust-level-user-id").value;
-            const lineId = document.getElementById("adjust-level-line-id").value;
-            const level = document.querySelector('input[name="user_level"]:checked').value;
+            function selectLevel(level) {
+                document.getElementById("level-" + level).checked = true;
+            }
 
-            if (level === 'admin') {
-                if (!adminList.includes(lineId)) {
-                    adminList.push(lineId);
+            async function submitAddPoints() {
+                const userId = document.getElementById("add-points-user-id").value;
+                const walletAdj = parseInt(document.getElementById("wallet-points-adj").value) || 0;
+                const rankAdj = parseInt(document.getElementById("rank-points-adj").value) || 0;
+
+                const { data: user } = await supabase.from("users").select("points, total_points").eq("id", userId).single();
+                if (!user) return;
+
+                const newPoints = Math.max(0, (user.points || 0) + walletAdj);
+                const newTotal = Math.max(0, (user.total_points || 0) + rankAdj);
+
+                await supabase.from("users").update({ points: newPoints, total_points: newTotal }).eq("id", userId);
+
+                toggleModal('add-points-modal', false);
+                showSuccessToast("อัปเดตแต้มเรียบร้อย");
+                loadAdminUsers();
+            }
+
+            async function submitGiveCoupon() {
+                const userId = document.getElementById("give-coupon-user-id").value;
+                const rewardId = document.getElementById("reward-select").value;
+
+                if (!rewardId) {
+                    alert("กรุณาเลือกรางวัล");
+                    return;
+                }
+
+                const code = "GIFT-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+                await supabase.from("user_coupons").insert([{ user_id: userId, reward_id: rewardId, coupon_code: code }]);
+
+                toggleModal('give-coupon-modal', false);
+                showSuccessToast("มอบรางวัลสำเร็จ");
+            }
+
+            async function submitAdjustLevel() {
+                const userId = document.getElementById("adjust-level-user-id").value;
+                const lineId = document.getElementById("adjust-level-line-id").value;
+                const level = document.querySelector('input[name="user_level"]:checked').value;
+
+                if (level === 'admin') {
+                    if (!adminList.includes(lineId)) {
+                        adminList.push(lineId);
+                        localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
+                    }
+                } else {
+                    adminList = adminList.filter(id => id !== lineId);
                     localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
                 }
-            } else {
-                adminList = adminList.filter(id => id !== lineId);
-                localStorage.setItem('suan_khanom_admins', JSON.stringify(adminList.filter(id => !ADMIN_IDS.includes(id))));
+
+                toggleModal('adjust-level-modal', false);
+                showSuccessToast("อัปเดตระดับแล้ว");
+                loadAdminUsers();
             }
 
-            toggleModal('adjust-level-modal', false);
-            showSuccessToast("อัปเดตระดับแล้ว");
-            loadAdminUsers();
-        }
+            // Form submissions for dessert and brownie
+            document.getElementById("dessert-form").addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const id = document.getElementById("dessert-id").value;
+                const payload = {
+                    name: document.getElementById("dessert-name").value,
+                    emoji: document.getElementById("dessert-emoji").value || '🍪',
+                    description: document.getElementById("dessert-desc").value,
+                    is_active: document.getElementById("dessert-active").checked
+                };
 
-        // Form submissions for dessert and brownie
-        document.getElementById("dessert-form").addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const id = document.getElementById("dessert-id").value;
-            const payload = {
-                name: document.getElementById("dessert-name").value,
-                emoji: document.getElementById("dessert-emoji").value || '🍪',
-                description: document.getElementById("dessert-desc").value,
-                is_active: document.getElementById("dessert-active").checked
-            };
-
-            if (id) {
-                await supabase.from("desserts").update(payload).eq("id", id);
-            } else {
-                await supabase.from("desserts").insert([payload]);
-            }
-            closeDessertModal();
-            showSuccessToast("บันทึกเมนูแล้ว");
-            loadAdminDesserts();
-            loadDesserts();
-        });
-
-        document.getElementById("brownie-form").addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const id = document.getElementById("brownie-id").value;
-            const payload = {
-                dessert_id: currentAdminDessertId || 1,
-                type: document.getElementById("brownie-type").value,
-                name: document.getElementById("brownie-name").value,
-                description: document.getElementById("brownie-desc").value,
-                price: parseFloat(document.getElementById("brownie-price").value),
-                points: parseInt(document.getElementById("brownie-points").value),
-                is_active: document.getElementById("brownie-active").checked
-            };
-
-            if (id) {
-                await supabase.from("brownie_items").update(payload).eq("id", id);
-            } else {
-                await supabase.from("brownie_items").insert([payload]);
-            }
-            closeBrownieModal();
-            showSuccessToast("บันทึกแล้ว");
-            if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
-        });
-
-        function openAddPointsModal(user) {
-            document.getElementById("add-points-user-id").value = user.id;
-            document.getElementById("add-points-user-name").innerText = user.display_name || 'Guest';
-            document.getElementById("current-wallet-points").innerText = user.points || 0;
-            document.getElementById("current-rank-points").innerText = user.total_points || 0;
-            document.getElementById("wallet-points-adj").value = "";
-            document.getElementById("rank-points-adj").value = "";
-            toggleModal('add-points-modal', true);
-        }
-
-        async function openGiveCouponModal(user) {
-            document.getElementById("give-coupon-user-id").value = user.id;
-            document.getElementById("give-coupon-user-name").innerText = user.display_name || 'Guest';
-
-            const select = document.getElementById("reward-select");
-            select.innerHTML = '<option value="">-- เลือกรางวัล --</option>';
-            availableRewards.forEach(r => {
-                select.innerHTML += `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`;
+                if (id) {
+                    await supabase.from("desserts").update(payload).eq("id", id);
+                } else {
+                    await supabase.from("desserts").insert([payload]);
+                }
+                closeDessertModal();
+                showSuccessToast("บันทึกเมนูแล้ว");
+                loadAdminDesserts();
+                loadDesserts();
             });
 
-            toggleModal('give-coupon-modal', true);
-        }
+            document.getElementById("brownie-form").addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const id = document.getElementById("brownie-id").value;
+                const payload = {
+                    dessert_id: currentAdminDessertId || 1,
+                    type: document.getElementById("brownie-type").value,
+                    name: document.getElementById("brownie-name").value,
+                    description: document.getElementById("brownie-desc").value,
+                    price: parseFloat(document.getElementById("brownie-price").value),
+                    points: parseInt(document.getElementById("brownie-points").value),
+                    is_active: document.getElementById("brownie-active").checked
+                };
 
-        function openAdjustLevelModal(user) {
-            document.getElementById("adjust-level-user-id").value = user.id;
-            document.getElementById("adjust-level-line-id").value = user.line_id;
-            document.getElementById("adjust-level-user-name").innerText = user.display_name || 'Guest';
+                if (id) {
+                    await supabase.from("brownie_items").update(payload).eq("id", id);
+                } else {
+                    await supabase.from("brownie_items").insert([payload]);
+                }
+                closeBrownieModal();
+                showSuccessToast("บันทึกแล้ว");
+                if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
+            });
 
-            const isAdmin = adminList.includes(user.line_id);
-            document.getElementById("level-user").checked = !isAdmin;
-            document.getElementById("level-admin").checked = isAdmin;
-
-            toggleModal('adjust-level-modal', true);
-        }
-
-        window.addEventListener("load", init);
-
-        window.closeCreateReward = () => toggleModal('create-reward-modal', false);
-        window.showCreateRewardForm = () => {
-            document.getElementById('reward-id').value = '';
-            document.getElementById('reward-name').value = '';
-            document.getElementById('reward-description').value = '';
-            document.getElementById('reward-points').value = '';
-            document.getElementById('reward-value').value = '';
-            document.getElementById('reward-min').value = 0;
-            document.getElementById('reward-modal-title').innerText = 'สร้างของรางวัล';
-            toggleModal('create-reward-modal', true);
-        };
-
-        window.closeCreateCoupon = () => toggleModal('create-coupon-modal', false);
-        window.showCreateCouponForm = () => {
-            document.getElementById('coupon-id').value = '';
-            document.getElementById('coupon-code').value = '';
-            document.getElementById('coupon-title').value = '';
-            document.getElementById('coupon-description').value = '';
-            document.getElementById('coupon-value').value = '';
-            document.getElementById('coupon-min').value = 0;
-            document.getElementById('coupon-usage').value = 100;
-            document.getElementById('coupon-modal-title').innerText = 'สร้างคูปอง';
-            toggleModal('create-coupon-modal', true);
-        };
-
-        window.openEditRewardModal = (data) => {
-            document.getElementById('reward-id').value = data.id;
-            document.getElementById('reward-name').value = data.name;
-            document.getElementById('reward-description').value = data.description;
-            document.getElementById('reward-points').value = data.points_required;
-            document.getElementById('reward-type').value = data.discount_type;
-            document.getElementById('reward-value').value = data.discount_value;
-            document.getElementById('reward-min').value = data.min_purchase;
-            document.getElementById('reward-modal-title').innerText = 'แก้ไขของรางวัล';
-            toggleModal('create-reward-modal', true);
-        };
-
-        window.openEditCouponModal = (data) => {
-            document.getElementById('coupon-id').value = data.id;
-            document.getElementById('coupon-code').value = data.code;
-            document.getElementById('coupon-title').value = data.name;
-            document.getElementById('coupon-description').value = data.description;
-            document.getElementById('coupon-type').value = data.type;
-            document.getElementById('coupon-value').value = data.value;
-            document.getElementById('coupon-min').value = data.min_purchase;
-            document.getElementById('coupon-usage').value = data.usage_limit;
-            document.getElementById('coupon-active').checked = data.is_active;
-            document.getElementById('coupon-modal-title').innerText = 'แก้ไขคูปอง';
-            toggleModal('create-coupon-modal', true);
-        };
-
-        window.openDessertModal = (type, data) => {
-            const form = document.getElementById("dessert-form");
-            form.reset();
-            document.getElementById("dessert-id").value = "";
-            document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนู";
-            if (type === 'edit' && data) {
-                document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนู";
-                document.getElementById("dessert-id").value = data.id;
-                document.getElementById("dessert-name").value = data.name;
-                document.getElementById("dessert-emoji").value = data.emoji;
-                document.getElementById("dessert-desc").value = data.description;
-                document.getElementById("dessert-active").checked = data.is_active;
-            }
-            toggleModal('dessert-modal', true);
-        };
-        window.closeDessertModal = () => toggleModal('dessert-modal', false);
-
-        window.openBrownieModal = (type, data) => {
-            const form = document.getElementById("brownie-form");
-            form.reset();
-            document.getElementById("brownie-modal-title").innerText = "เพิ่มส่วนประกอบ (" + type + ")";
-            document.getElementById("brownie-type").value = type;
-            document.getElementById("brownie-active").checked = true;
-            document.getElementById("brownie-id").value = "";
-
-            if (data && typeof data === 'object') {
-                document.getElementById("brownie-id").value = data.id;
-                document.getElementById("brownie-modal-title").innerText = "แก้ไขส่วนประกอบ";
-                document.getElementById("brownie-name").value = data.name;
-                document.getElementById("brownie-desc").value = data.description || '';
-                document.getElementById("brownie-price").value = data.price;
-                document.getElementById("brownie-points").value = data.points;
-                document.getElementById("brownie-active").checked = data.is_active;
+            function openAddPointsModal(user) {
+                document.getElementById("add-points-user-id").value = user.id;
+                document.getElementById("add-points-user-name").innerText = user.display_name || 'Guest';
+                document.getElementById("current-wallet-points").innerText = user.points || 0;
+                document.getElementById("current-rank-points").innerText = user.total_points || 0;
+                document.getElementById("wallet-points-adj").value = "";
+                document.getElementById("rank-points-adj").value = "";
+                toggleModal('add-points-modal', true);
             }
 
-            toggleModal('brownie-modal', true);
-        };
-        window.closeBrownieModal = () => toggleModal('brownie-modal', false);
+            async function openGiveCouponModal(user) {
+                document.getElementById("give-coupon-user-id").value = user.id;
+                document.getElementById("give-coupon-user-name").innerText = user.display_name || 'Guest';
+
+                const select = document.getElementById("reward-select");
+                select.innerHTML = '<option value="">-- เลือกรางวัล --</option>';
+                availableRewards.forEach(r => {
+                    select.innerHTML += `<option value="${r.id}">${r.name} (${r.points_required} แต้ม)</option>`;
+                });
+
+                toggleModal('give-coupon-modal', true);
+            }
+
+            function openAdjustLevelModal(user) {
+                document.getElementById("adjust-level-user-id").value = user.id;
+                document.getElementById("adjust-level-line-id").value = user.line_id;
+                document.getElementById("adjust-level-user-name").innerText = user.display_name || 'Guest';
+
+                const isAdmin = adminList.includes(user.line_id);
+                document.getElementById("level-user").checked = !isAdmin;
+                document.getElementById("level-admin").checked = isAdmin;
+
+                toggleModal('adjust-level-modal', true);
+            }
+
+            window.addEventListener("load", init);
+
+            window.closeCreateReward = () => toggleModal('create-reward-modal', false);
+            window.showCreateRewardForm = () => {
+                document.getElementById('reward-id').value = '';
+                document.getElementById('reward-name').value = '';
+                document.getElementById('reward-description').value = '';
+                document.getElementById('reward-points').value = '';
+                document.getElementById('reward-value').value = '';
+                document.getElementById('reward-min').value = 0;
+                document.getElementById('reward-modal-title').innerText = 'สร้างของรางวัล';
+                toggleModal('create-reward-modal', true);
+            };
+
+            window.closeCreateCoupon = () => toggleModal('create-coupon-modal', false);
+            window.showCreateCouponForm = () => {
+                document.getElementById('coupon-id').value = '';
+                document.getElementById('coupon-code').value = '';
+                document.getElementById('coupon-title').value = '';
+                document.getElementById('coupon-description').value = '';
+                document.getElementById('coupon-value').value = '';
+                document.getElementById('coupon-min').value = 0;
+                document.getElementById('coupon-usage').value = 100;
+                document.getElementById('coupon-modal-title').innerText = 'สร้างคูปอง';
+                toggleModal('create-coupon-modal', true);
+            };
+
+            window.openEditRewardModal = (data) => {
+                document.getElementById('reward-id').value = data.id;
+                document.getElementById('reward-name').value = data.name;
+                document.getElementById('reward-description').value = data.description;
+                document.getElementById('reward-points').value = data.points_required;
+                document.getElementById('reward-type').value = data.discount_type;
+                document.getElementById('reward-value').value = data.discount_value;
+                document.getElementById('reward-min').value = data.min_purchase;
+                document.getElementById('reward-modal-title').innerText = 'แก้ไขของรางวัล';
+                toggleModal('create-reward-modal', true);
+            };
+
+            window.openEditCouponModal = (data) => {
+                document.getElementById('coupon-id').value = data.id;
+                document.getElementById('coupon-code').value = data.code;
+                document.getElementById('coupon-title').value = data.name;
+                document.getElementById('coupon-description').value = data.description;
+                document.getElementById('coupon-type').value = data.type;
+                document.getElementById('coupon-value').value = data.value;
+                document.getElementById('coupon-min').value = data.min_purchase;
+                document.getElementById('coupon-usage').value = data.usage_limit;
+                document.getElementById('coupon-active').checked = data.is_active;
+                document.getElementById('coupon-modal-title').innerText = 'แก้ไขคูปอง';
+                toggleModal('create-coupon-modal', true);
+            };
+
+            window.openDessertModal = (type, data) => {
+                const form = document.getElementById("dessert-form");
+                form.reset();
+                document.getElementById("dessert-id").value = "";
+                document.getElementById("dessert-modal-title").innerText = "เพิ่มเมนู";
+                if (type === 'edit' && data) {
+                    document.getElementById("dessert-modal-title").innerText = "แก้ไขเมนู";
+                    document.getElementById("dessert-id").value = data.id;
+                    document.getElementById("dessert-name").value = data.name;
+                    document.getElementById("dessert-emoji").value = data.emoji;
+                    document.getElementById("dessert-desc").value = data.description;
+                    document.getElementById("dessert-active").checked = data.is_active;
+                }
+                toggleModal('dessert-modal', true);
+            };
+            window.closeDessertModal = () => toggleModal('dessert-modal', false);
+
+            window.openBrownieModal = (type, data) => {
+                const form = document.getElementById("brownie-form");
+                form.reset();
+                document.getElementById("brownie-modal-title").innerText = "เพิ่มส่วนประกอบ (" + type + ")";
+                document.getElementById("brownie-type").value = type;
+                document.getElementById("brownie-active").checked = true;
+                document.getElementById("brownie-id").value = "";
+
+                if (data && typeof data === 'object') {
+                    document.getElementById("brownie-id").value = data.id;
+                    document.getElementById("brownie-modal-title").innerText = "แก้ไขส่วนประกอบ";
+                    document.getElementById("brownie-name").value = data.name;
+                    document.getElementById("brownie-desc").value = data.description || '';
+                    document.getElementById("brownie-price").value = data.price;
+                    document.getElementById("brownie-points").value = data.points;
+                    document.getElementById("brownie-active").checked = data.is_active;
+                }
+
+                toggleModal('brownie-modal', true);
+            };
+            window.closeBrownieModal = () => toggleModal('brownie-modal', false);
 
     </script>
 </body>
