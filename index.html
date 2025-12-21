@@ -1640,6 +1640,7 @@
                 alert("เกิดข้อผิดพลาด: " + (error.message || JSON.stringify(error)));
             }
         }
+        console.log("Init Function Defined Correctly");
 
         function checkMaintenanceMode() {
             const isAdmin = adminList.includes(userProfile?.userId);
