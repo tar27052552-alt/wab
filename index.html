@@ -3411,34 +3411,6 @@
             `;
         }
 
-        async function loadAdminUsers() {
-            const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
-            allUsers = data || [];
-            renderAdminUserList(allUsers);
-        }
-
-        function renderAdminUserList(users) {
-            const container = document.getElementById("admin-users-list");
-            if (!container) return;
-            container.innerHTML = users.map(u => `
-                <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-3">
-                    <img src="${u.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png'}" class="w-12 h-12 rounded-full object-cover border">
-                    <div class="flex-1 min-w-0">
-                        <div class="font-bold text-slate-800 truncate">${u.display_name || 'Guest'}</div>
-                        <div class="text-xs text-slate-500">${u.points || 0} แต้ม</div>
-                        ${u.is_banned ? '<span class="text-xs text-red-500">ถูกแบน</span>' : ''}
-                    </div>
-                    <button onclick="openUserDetailsModal(${u.id})" class="text-indigo-500 text-sm"><i class="fa-solid fa-eye"></i></button>
-                </div>
-            `).join('') || '<p class="text-slate-400 text-center">ไม่มีผู้ใช้</p>';
-        }
-
-        function filterAdminUsers() {
-            const txt = document.getElementById("admin-user-search").value.toLowerCase();
-            const filtered = allUsers.filter(u => (u.display_name || "").toLowerCase().includes(txt));
-            renderAdminUserList(filtered);
-        }
-
         async function createReward(event) {
             event.preventDefault();
             const id = document.getElementById("reward-id").value;
