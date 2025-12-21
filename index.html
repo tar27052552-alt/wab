@@ -3983,9 +3983,11 @@
             if (currentAdminDessertId) loadBrownieMenus(currentAdminDessertId);
         });
 
-        function openAddPointsModal(user) {
+        function openAddPointsModal(userId, displayName) {
+            // Find user from allUsers cache
+            const user = allUsers.find(u => u.id == userId) || { id: userId, display_name: displayName, points: 0, total_points: 0 };
             document.getElementById("add-points-user-id").value = user.id;
-            document.getElementById("add-points-user-name").innerText = user.display_name || 'Guest';
+            document.getElementById("add-points-user-name").innerText = user.display_name || displayName || 'Guest';
             document.getElementById("current-wallet-points").innerText = user.points || 0;
             document.getElementById("current-rank-points").innerText = user.total_points || 0;
             document.getElementById("wallet-points-adj").value = "";
@@ -3993,9 +3995,9 @@
             toggleModal('add-points-modal', true);
         }
 
-        async function openGiveCouponModal(user) {
-            document.getElementById("give-coupon-user-id").value = user.id;
-            document.getElementById("give-coupon-user-name").innerText = user.display_name || 'Guest';
+        async function openGiveCouponModal(userId, displayName) {
+            document.getElementById("give-coupon-user-id").value = userId;
+            document.getElementById("give-coupon-user-name").innerText = displayName || 'Guest';
 
             const select = document.getElementById("reward-select");
             select.innerHTML = '<option value="">-- เลือกรางวัล --</option>';
@@ -4006,6 +4008,82 @@
             toggleModal('give-coupon-modal', true);
         }
 
+        function openAdjustLevelModal(lineId, displayName) {
+            // Find user from allUsers cache
+            const user = allUsers.find(u => u.line_id === lineId);
+            const isAdmin = user ? (user.rank === 'admin' || adminList.includes(user.line_id)) : false;
+
+            document.getElementById("adjust-level-user-name").innerText = `ผู้ใช้: ${displayName || 'Guest'}`;
+            document.getElementById("adjust-level-line-id").value = lineId;
+            document.getElementById("adjust-level-user-id").value = user ? user.id : '';
+
+            // Pre-select current level
+            if (isAdmin) {
+                document.getElementById("level-admin").checked = true;
+            } else {
+                document.getElementById("level-user").checked = true;
+            }
+
+            toggleModal('adjust-level-modal', true);
+        }
+
+        async function submitAdjustLevel() {
+            const lineId = document.getElementById("adjust-level-line-id").value;
+            const userId = document.getElementById("adjust-level-user-id").value;
+            const selectedLevel = document.querySelector('input[name="user_level"]:checked')?.value;
+
+            if (!lineId || !selectedLevel) {
+                alert("กรุณาเลือกระดับสมาชิก");
+                return;
+            }
+
+            const newRank = selectedLevel === 'admin' ? 'admin' : getRankNameByPoints(0);
+
+            // Update database
+            const { error } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
+
+            if (error) {
+                console.error("Error updating rank:", error);
+                alert("บันทึกไม่สำเร็จ: " + error.message);
+                return;
+            }
+
+            // Update local adminList
+            if (selectedLevel === 'admin') {
+                if (!adminList.includes(lineId)) {
+                    adminList.push(lineId);
+                }
+            } else {
+                adminList = adminList.filter(id => id !== lineId && id !== SUPER_ADMIN_ID);
+                if (!adminList.includes(SUPER_ADMIN_ID)) adminList.push(SUPER_ADMIN_ID);
+            }
+
+            toggleModal('adjust-level-modal', false);
+            showSuccessToast("บันทึกระดับสมาชิกเรียบร้อย");
+            loadAdminUsers();
+        }
+
+        async function openUserDetailsModal(userId) {
+            const user = allUsers.find(u => u.id == userId);
+            if (!user) {
+                alert("ไม่พบข้อมูลผู้ใช้");
+                return;
+            }
+
+            // Show user info in an alert for now (can be enhanced with a dedicated modal later)
+            const info = `
+📋 ข้อมูลผู้ใช้
+
+ชื่อ: ${user.display_name || 'Guest'}
+LINE ID: ${user.line_id}
+แต้มสะสม: ${user.points || 0}
+แต้มรวม: ${user.total_points || 0}
+ระดับ: ${user.rank || 'ลูกค้าใหม่'}
+สถานะ: ${user.is_banned ? '🚫 ถูกระงับ' : '✅ ปกติ'}
+            `.trim();
+
+            alert(info);
+        }
 
 
 
