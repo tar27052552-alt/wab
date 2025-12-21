@@ -397,8 +397,44 @@
     <div id="loading-screen" class="loading-screen flex-col gap-4">
         <div class="loader"></div>
         <p class="text-slate-500 font-medium animate-pulse">กำลังเข้าสู่ร้าน...</p>
-        <div id="debug-log" class="text-xs text-slate-400 font-mono mt-4 max-w-xs text-center h-32 overflow-y-auto">
+        <div id="debug-log"
+            class="fixed bottom-4 left-4 right-4 h-32 bg-black/80 text-green-400 text-xs font-mono p-2 overflow-y-auto rounded-lg z-[9999] pointer-events-none text-left">
+            <div>Waiting for logs...</div>
         </div>
+
+        <script>
+            // Global Error Handler
+            window.onerror = function (msg, url, line, col, error) {
+                const el = document.getElementById("debug-log");
+                if (el) {
+                    el.innerHTML += `<div style="color:red; font-weight:bold;">Global Error: ${msg} <br> ${url}:${line}:${col}</div>`;
+                    el.scrollTop = el.scrollHeight;
+                }
+                return false;
+            };
+
+            // Console Override
+            (function () {
+                const oldLog = console.log;
+                console.log = function (...args) {
+                    oldLog.apply(console, args);
+                    const el = document.getElementById("debug-log");
+                    if (el) {
+                        el.innerHTML += `<div>${args.join(' ')}</div>`;
+                        el.scrollTop = el.scrollHeight;
+                    }
+                };
+                const oldErr = console.error;
+                console.error = function (...args) {
+                    oldErr.apply(console, args);
+                    const el = document.getElementById("debug-log");
+                    if (el) {
+                        el.innerHTML += `<div style="color:#ff6b6b;">${args.join(' ')}</div>`;
+                        el.scrollTop = el.scrollHeight;
+                    }
+                }
+            })();
+        </script>
     </div>
 
     <!-- Shop Closed Overlay (For Closed Order Status - Triggered manually now) -->
@@ -1525,35 +1561,28 @@
 
         // --- Logic Implementation ---
 
-        function logDebug(msg) {
-            const el = document.getElementById("debug-log");
-            if (el) {
-                el.innerHTML += `<div>${msg}</div>`;
-                el.scrollTop = el.scrollHeight;
-            }
-            console.log(msg);
-        }
+
 
         async function init() {
             try {
-                logDebug("Starting Init...");
+                console.log("Starting Init...");
 
                 // Check if Supabase SDK is loaded
                 if (!window.supabase || !window.supabase.createClient) {
                     throw new Error("Supabase SDK ยังโหลดไม่เสร็จ กรุณารีเฟรชหน้าเว็บ");
                 }
-                logDebug("Supabase SDK Loaded");
+                console.log("Supabase SDK Loaded");
 
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                logDebug("Supabase Client Created");
+                console.log("Supabase Client Created");
 
                 // --- ADMIN SETUP (Migrated to DB-First) ---
-                logDebug("Fetching Admins...");
+                console.log("Fetching Admins...");
                 const { data: dbAdmins, error: adminError } = await supabase.from("users").select("line_id").eq("rank", "admin");
-                if (adminError) logDebug("Admin Fetch Error: " + adminError.message);
+                if (adminError) console.error("Admin Fetch Error: " + adminError.message);
 
                 const dbAdminIds = dbAdmins ? dbAdmins.map(u => u.line_id) : [];
-                logDebug(`Found ${dbAdminIds.length} admins`);
+                console.log(`Found ${dbAdminIds.length} admins`);
 
                 // Global adminList Source of Truth
                 adminList = [...new Set([...ADMIN_IDS, ...dbAdminIds])];
@@ -1564,35 +1593,35 @@
                 }
 
                 // --- PRODUCTION: Enable LIFF ---
-                logDebug("Initializing LIFF...");
+                console.log("Initializing LIFF...");
                 await liff.init({ liffId: LIFF_ID });
-                logDebug("LIFF Init Done");
+                console.log("LIFF Init Done");
 
                 if (!liff.isLoggedIn()) {
-                    logDebug("Not Logged In - Redirecting...");
+                    console.log("Not Logged In - Redirecting...");
                     liff.login();
                     return;
                 }
-                logDebug("Getting Profile...");
+                console.log("Getting Profile...");
                 userProfile = await liff.getProfile();
-                logDebug("Profile: " + (userProfile ? userProfile.displayName : "null"));
+                console.log("Profile: " + (userProfile ? userProfile.displayName : "null"));
 
                 // -------------------------------
 
-                logDebug("Loading Cart...");
+                console.log("Loading Cart...");
                 loadCartFromStorage();
 
-                logDebug("Saving User...");
+                console.log("Saving User...");
                 await saveUserToSupabase(userProfile);
 
-                logDebug("Loading Data...");
+                console.log("Loading Data...");
                 await Promise.all([
                     loadRewards(),
                     loadUserCoupons(),
                     loadDesserts(),
                     loadShopStatus()
                 ]);
-                logDebug("All Data Loaded");
+                console.log("All Data Loaded");
 
                 if (adminList.includes(userProfile.userId)) {
                     document.getElementById("admin-container").classList.remove("hidden");
@@ -1601,12 +1630,12 @@
                 // Check Maintenance Mode
                 checkMaintenanceMode();
 
-                logDebug("Hiding Loading Screen");
+                console.log("Hiding Loading Screen");
                 document.getElementById("loading-screen").classList.add("hidden");
                 // Main header/app visibility is handled in checkMaintenanceMode
             } catch (error) {
                 console.error("Init Error:", error);
-                logDebug("ERROR: " + error.message);
+                console.error("ERROR: " + error.message);
                 alert("เกิดข้อผิดพลาด: " + (error.message || JSON.stringify(error)));
             }
         }
