@@ -2792,8 +2792,12 @@
             const viewerIsSuperAdmin = currentUser?.line_id === SUPER_ADMIN_ID;
 
             container.innerHTML = users.map(u => {
-                const isAdmin = adminList.includes(u.line_id);
+                // Check both adminList AND direct rank value from database
+                const isAdmin = adminList.includes(u.line_id) || u.rank === 'admin';
                 const isSuperAdmin = u.line_id === SUPER_ADMIN_ID;
+
+                // Debug Log
+                console.log("Render User:", u.display_name, "| line_id:", u.line_id, "| rank:", u.rank, "| isAdmin:", isAdmin);
 
                 let adminBadge = '';
                 if (isSuperAdmin) adminBadge = '<span class="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full ml-1 border border-red-200 whitespace-nowrap shadow-sm">👑 Super Admin</span>';
