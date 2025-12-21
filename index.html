@@ -2892,66 +2892,62 @@
             const lineId = document.getElementById("adjust-level-line-id").value;
             const isSetAdmin = document.getElementById("level-admin").checked;
 
-            // DEBUG ALERT - TO BE REMOVED
-            alert(`[DEBUG] submitAdjustLevel called!\nLine ID: ${lineId}\nisSetAdmin (Admin checked): ${isSetAdmin}`);
+            console.log("=== submitAdjustLevel START ===");
+            console.log("Line ID:", lineId);
+            console.log("Set as Admin:", isSetAdmin);
 
-            if (lineId === SUPER_ADMIN_ID) return;
-
-            // 1. Fetch fresh user data (Get ID and current state)
-            const { data: user, error: fetchError } = await supabase.from("users").select("id, total_points, rank").eq("line_id", lineId).single();
-            if (fetchError || !user) {
-                alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้: " + (fetchError?.message || "User not found"));
+            if (!lineId) {
+                alert("Error: ไม่พบ Line ID");
                 return;
             }
 
-            // 2. Determine new Rank
-            let newRank = "";
-            if (isSetAdmin) {
-                newRank = "admin";
-            } else {
-                newRank = getRankNameByPoints(user.total_points || 0);
+            if (lineId === SUPER_ADMIN_ID) {
+                alert("ไม่สามารถแก้ไข Super Admin ได้");
+                return;
             }
 
-            // 3. Update Database using Primary Key (ID)
-            console.log("Updating Rank for ID:", user.id, "to", newRank);
+            // Step 1: Determine new rank
+            const newRank = isSetAdmin ? "admin" : "ลูกค้าใหม่"; // Simplified for testing
+            console.log("New Rank to set:", newRank);
 
-            // Add .select() to see if the row was actually returned (if RLS allows)
-            const { data: updatedData, error: updateError } = await supabase
+            // Step 2: Perform UPDATE directly using line_id (most reliable)
+            console.log("Attempting update...");
+            const updateResult = await supabase
                 .from("users")
                 .update({ rank: newRank })
-                .eq("id", user.id)
-                .select(); // Important: Request the updated row back
+                .eq("line_id", lineId);
 
-            if (updateError) {
-                const msg = "บันทึกฐานข้อมูลล้มเหลว (Error): " + updateError.message;
-                console.error(msg);
-                alert(msg);
-            } else if (!updatedData || updatedData.length === 0) {
-                // RLS BLOCKING or ROW NOT FOUND
-                const msg = "บันทึกไม่สำเร็จ: ฐานข้อมูลไม่อนุญาตให้แก้ไข (อาจเป็นเพราะ Row Level Security)";
-                console.error("Update Success but 0 rows returned. RLS likely blocking update.");
-                alert(msg + "\n\nคำแนะนำ: กรุณาตรวจสอบ Policy ใน Supabase หรือปิด RLS ของตาราง users ชั่วคราว");
-            } else {
-                // Success path
-                const updatedUser = updatedData[0];
-                if (updatedUser.rank !== newRank) {
-                    alert(`แจ้งเตือน: ค่าที่บันทึก (${newRank}) ไม่ตรงกับค่าที่เซิร์ฟเวอร์ตอบกลับ (${updatedUser.rank})`);
-                    return;
-                }
+            console.log("Update Result:", updateResult);
 
-                console.log("Update Verified and Returned:", updatedUser.rank);
-                showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
-
-                // 4. Reload Users & Refresh Admin List
-                await loadAdminUsers();
-
-                // Update selected user details modal if open
-                if (selectedUserForDetails && selectedUserForDetails.line_id === lineId) {
-                    selectedUserForDetails.rank = newRank;
-                    openUserDetailsModal(selectedUserForDetails.id);
-                }
+            if (updateResult.error) {
+                alert("❌ Update Failed!\nError: " + updateResult.error.message);
+                console.error("Update Error:", updateResult.error);
+                toggleModal("adjust-level-modal", false);
+                return;
             }
+
+            // Step 3: VERIFY by re-fetching (completely fresh query)
+            console.log("Verifying by re-fetch...");
+            const verifyResult = await supabase
+                .from("users")
+                .select("rank")
+                .eq("line_id", lineId)
+                .single();
+
+            console.log("Verify Result:", verifyResult);
+
+            if (verifyResult.error) {
+                alert("❌ Verify Fetch Failed!\nError: " + verifyResult.error.message);
+            } else if (verifyResult.data.rank !== newRank) {
+                alert(`⚠️ Update ไม่สำเร็จ!\n\nค่าที่ต้องการ: ${newRank}\nค่าในฐานข้อมูล: ${verifyResult.data.rank}\n\nสาเหตุที่เป็นไปได้:\n1. Row Level Security (RLS) ยังเปิดอยู่\n2. มี Trigger หรือ Policy บล็อก\n3. Column "rank" มีปัญหา`);
+            } else {
+                console.log("✅ Update VERIFIED! Rank is now:", verifyResult.data.rank);
+                showSuccessToast(`✅ บันทึกสำเร็จ! (Rank: ${newRank})`);
+                await loadAdminUsers();
+            }
+
             toggleModal("adjust-level-modal", false);
+            console.log("=== submitAdjustLevel END ===");
         }
 
         function filterAdminUsers() {
