@@ -397,6 +397,8 @@
     <div id="loading-screen" class="loading-screen flex-col gap-4">
         <div class="loader"></div>
         <p class="text-slate-500 font-medium animate-pulse">กำลังเข้าสู่ร้าน...</p>
+        <div id="debug-log" class="text-xs text-slate-400 font-mono mt-4 max-w-xs text-center h-32 overflow-y-auto">
+        </div>
     </div>
 
     <!-- Shop Closed Overlay (For Closed Order Status - Triggered manually now) -->
@@ -1523,18 +1525,35 @@
 
         // --- Logic Implementation ---
 
+        function logDebug(msg) {
+            const el = document.getElementById("debug-log");
+            if (el) {
+                el.innerHTML += `<div>${msg}</div>`;
+                el.scrollTop = el.scrollHeight;
+            }
+            console.log(msg);
+        }
+
         async function init() {
             try {
+                logDebug("Starting Init...");
+
                 // Check if Supabase SDK is loaded
                 if (!window.supabase || !window.supabase.createClient) {
                     throw new Error("Supabase SDK ยังโหลดไม่เสร็จ กรุณารีเฟรชหน้าเว็บ");
                 }
+                logDebug("Supabase SDK Loaded");
+
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                logDebug("Supabase Client Created");
 
                 // --- ADMIN SETUP (Migrated to DB-First) ---
-                // Fetch admins from Supabase
-                const { data: dbAdmins } = await supabase.from("users").select("line_id").eq("rank", "admin");
+                logDebug("Fetching Admins...");
+                const { data: dbAdmins, error: adminError } = await supabase.from("users").select("line_id").eq("rank", "admin");
+                if (adminError) logDebug("Admin Fetch Error: " + adminError.message);
+
                 const dbAdminIds = dbAdmins ? dbAdmins.map(u => u.line_id) : [];
+                logDebug(`Found ${dbAdminIds.length} admins`);
 
                 // Global adminList Source of Truth
                 adminList = [...new Set([...ADMIN_IDS, ...dbAdminIds])];
@@ -1545,37 +1564,35 @@
                 }
 
                 // --- PRODUCTION: Enable LIFF ---
+                logDebug("Initializing LIFF...");
                 await liff.init({ liffId: LIFF_ID });
+                logDebug("LIFF Init Done");
+
                 if (!liff.isLoggedIn()) {
+                    logDebug("Not Logged In - Redirecting...");
                     liff.login();
                     return;
                 }
+                logDebug("Getting Profile...");
                 userProfile = await liff.getProfile();
+                logDebug("Profile: " + (userProfile ? userProfile.displayName : "null"));
+
                 // -------------------------------
 
-                // --- DEV MODE (Disabled) ---
-                /*
-                userProfile = {
-                    userId: "mock_user_001",
-                    displayName: "Dev User",
-                    pictureUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                };
-                if (!adminList.includes(userProfile.userId)) {
-                     adminList.push(userProfile.userId);
-                }
-                */
-
+                logDebug("Loading Cart...");
                 loadCartFromStorage();
 
+                logDebug("Saving User...");
                 await saveUserToSupabase(userProfile);
-                await loadUserData(userProfile.userId);
 
+                logDebug("Loading Data...");
                 await Promise.all([
                     loadRewards(),
                     loadUserCoupons(),
                     loadDesserts(),
                     loadShopStatus()
                 ]);
+                logDebug("All Data Loaded");
 
                 if (adminList.includes(userProfile.userId)) {
                     document.getElementById("admin-container").classList.remove("hidden");
@@ -1584,10 +1601,12 @@
                 // Check Maintenance Mode
                 checkMaintenanceMode();
 
+                logDebug("Hiding Loading Screen");
                 document.getElementById("loading-screen").classList.add("hidden");
                 // Main header/app visibility is handled in checkMaintenanceMode
             } catch (error) {
                 console.error("Init Error:", error);
+                logDebug("ERROR: " + error.message);
                 alert("เกิดข้อผิดพลาด: " + (error.message || JSON.stringify(error)));
             }
         }
