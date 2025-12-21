@@ -1559,6 +1559,7 @@
 
                 loadCartFromStorage();
                 await saveUserToSupabase(userProfile);
+                await loadUserData(userProfile.userId);
 
                 await Promise.all([
                     loadRewards(),
