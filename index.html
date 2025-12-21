@@ -1429,7 +1429,6 @@
     </div>
 
     <script>
-        console.log("Main Script Block Started");
         // Configuration
         const LIFF_ID = "2008357926-Ly07A5w2";
         const SUPABASE_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co";
@@ -1640,8 +1639,6 @@
                 alert("เกิดข้อผิดพลาด: " + (error.message || JSON.stringify(error)));
             }
         }
-        console.log("Init Function Defined Correctly");
-        console.log("Checkpoint 1: After Init");
 
         function checkMaintenanceMode() {
             const isAdmin = adminList.includes(userProfile?.userId);
@@ -2007,7 +2004,6 @@
         }
 
         async function loadRewards() {
-            console.log("Checkpoint 2: Approx Line 2000");
             const { data } = await supabase.from("rewards").select("*").eq("is_active", true);
             availableRewards = data || [];
         }
@@ -2400,7 +2396,6 @@
                 loadOrderSummary();
             } else {
                 const opt = document.createElement("option");
-                console.log("Checkpoint 3: Approx Line 2400");
                 opt.text = "ไม่มีรอบส่งเร็วๆ นี้";
                 sel.appendChild(opt);
             }
