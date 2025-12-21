@@ -2874,7 +2874,9 @@
             toggleModal("adjust-level-modal", true);
 
             // Fetch REAL status from DB to confirm
-            const { data: user } = await supabase.from("users").select("rank").eq("line_id", lineId).single();
+            const { data: user, error } = await supabase.from("users").select("rank").eq("line_id", lineId).single();
+            console.log("Debug Admin Check:", { lineId, rank: user?.rank, error });
+
             if (user) {
                 const isDbAdmin = user.rank === 'admin';
                 document.getElementById("level-admin").checked = isDbAdmin;
@@ -2905,12 +2907,14 @@
             }
 
             // 3. Update Database (Source of Truth)
+            console.log("Updating Rank:", { lineId, newRank });
             const { error: updateError } = await supabase.from("users").update({ rank: newRank }).eq("line_id", lineId);
 
             if (updateError) {
                 console.error("Update Error:", updateError);
                 alert("บันทึกฐานข้อมูลล้มเหลว: " + updateError.message);
             } else {
+                console.log("Update Success for", lineId, "to", newRank);
                 showSuccessToast(`บันทึกสำเร็จ (Rank: ${newRank})`);
 
                 // 4. Reload Users & Refresh Admin List
