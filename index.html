@@ -1044,8 +1044,8 @@
             <input type="hidden" id="adjust-level-line-id">
 
             <div class="space-y-3 mb-6">
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition"
-                    onclick="selectLevel('user')">
+                <label for="level-user"
+                    class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-300">
                     <input type="radio" name="user_level" value="user" id="level-user"
                         class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
                     <div class="ml-3">
@@ -1054,8 +1054,8 @@
                     </div>
                 </label>
 
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition"
-                    onclick="selectLevel('admin')">
+                <label for="level-admin"
+                    class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-300">
                     <input type="radio" name="user_level" value="admin" id="level-admin"
                         class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
                     <div class="ml-3">
@@ -2718,13 +2718,7 @@
             document.getElementById("level-admin").checked = isAdmin;
             document.getElementById("level-user").checked = !isAdmin;
 
-            selectLevel(isAdmin ? 'admin' : 'user');
-
             toggleModal("adjust-level-modal", true);
-        }
-
-        function selectLevel(level) {
-            document.getElementById("level-" + level).checked = true;
         }
 
         function submitAdjustLevel() {
