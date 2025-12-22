@@ -2647,6 +2647,98 @@
             await sendLinePushMessage(order.line_id, flexMessage);
         }
 
+        // 🚫 Build Ban/Unban Flex Message
+        function buildBanFlexMessage(isBanned, reason = "") {
+            if (isBanned) {
+                return {
+                    type: "flex",
+                    altText: "⚠️ บัญชีของคุณถูกระงับ",
+                    contents: {
+                        type: "bubble",
+                        size: "mega",
+                        header: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "🚫", size: "3xl", align: "center", margin: "md" },
+                                { type: "text", text: "บัญชีถูกระงับ", weight: "bold", size: "xl", color: "#ffffff", align: "center", margin: "md" },
+                                { type: "text", text: "การเข้าใช้งานถูกจำกัด", size: "sm", color: "#ffffffcc", align: "center", margin: "sm" }
+                            ],
+                            backgroundColor: "#EF4444",
+                            paddingAll: "20px"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "เหตุผล:", size: "sm", color: "#888888", margin: "md" },
+                                { type: "text", text: reason || "ไม่ระบุ", size: "md", weight: "bold", color: "#333333", wrap: true },
+                                { type: "separator", margin: "lg" },
+                                { type: "text", text: "หากมีข้อสงสัย กรุณาติดต่อผู้ดูแลระบบ", size: "xs", color: "#888888", margin: "lg", align: "center", wrap: true }
+                            ],
+                            paddingAll: "20px"
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "🍪 SUAN KHANOM", size: "xs", color: "#888888", align: "center" }
+                            ],
+                            paddingAll: "15px"
+                        }
+                    }
+                };
+            } else {
+                return {
+                    type: "flex",
+                    altText: "✅ บัญชีของคุณถูกปลดแบนแล้ว",
+                    contents: {
+                        type: "bubble",
+                        size: "mega",
+                        header: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "🎉", size: "3xl", align: "center", margin: "md" },
+                                { type: "text", text: "ปลดแบนแล้ว!", weight: "bold", size: "xl", color: "#ffffff", align: "center", margin: "md" },
+                                { type: "text", text: "ยินดีต้อนรับกลับ", size: "sm", color: "#ffffffcc", align: "center", margin: "sm" }
+                            ],
+                            backgroundColor: "#10B981",
+                            paddingAll: "20px"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "บัญชีของคุณถูกปลดแบนแล้ว", size: "md", color: "#333333", align: "center", margin: "md" },
+                                { type: "text", text: "สามารถเข้าใช้งานได้ตามปกติ", size: "sm", color: "#888888", align: "center", margin: "sm" }
+                            ],
+                            paddingAll: "20px"
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                { type: "text", text: "🍪 SUAN KHANOM - ขอบคุณที่ใช้บริการ", size: "xs", color: "#888888", align: "center" }
+                            ],
+                            paddingAll: "15px"
+                        }
+                    }
+                };
+            }
+        }
+
+        // 🔔 Send Ban/Unban Notification
+        async function sendBanNotification(lineId, isBanned, reason = "") {
+            if (!lineId) {
+                console.log("No LINE ID found");
+                return;
+            }
+
+            const flexMessage = buildBanFlexMessage(isBanned, reason);
+            await sendLinePushMessage(lineId, flexMessage);
+        }
+
         // 🌟 ADDED: Helper to send message to LINE (Client-side)
         // Note: This only works if opened in LINE App context
         async function sendToLine(orderData) {
@@ -4842,14 +4934,32 @@
             const userId = document.getElementById("ban-user-id").value;
             const reason = document.getElementById("ban-reason").value || "ไม่ระบุสาเหตุ";
 
+            // Get user's LINE ID before banning
+            const { data: user } = await supabase.from("users").select("line_id").eq("id", userId).single();
+
             await supabase.from("users").update({ is_banned: true, ban_reason: reason }).eq("id", userId);
+
+            // Send notification to user
+            if (user?.line_id) {
+                await sendBanNotification(user.line_id, true, reason);
+            }
+
             toggleModal('ban-user-modal', false);
             showSuccessToast("แบนผู้ใช้แล้ว");
             loadAdminUsers();
         }
 
         async function unbanUser(userId) {
+            // Get user's LINE ID before unbanning
+            const { data: user } = await supabase.from("users").select("line_id").eq("id", userId).single();
+
             await supabase.from("users").update({ is_banned: false, ban_reason: null }).eq("id", userId);
+
+            // Send notification to user
+            if (user?.line_id) {
+                await sendBanNotification(user.line_id, false);
+            }
+
             toggleModal('user-details-modal', false);
             showSuccessToast("ปลดแบนแล้ว");
             loadAdminUsers();
