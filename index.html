@@ -920,6 +920,10 @@
                                 class="w-full py-3 rounded-xl font-bold text-lg shadow-sm border transition-all flex items-center justify-center gap-2 hover:scale-105">
                                 <i class="fa-solid fa-screwdriver-wrench"></i> ปิดปรับปรุง
                             </button>
+                            <button onclick="openDailyStockModal()"
+                                class="w-full py-3 rounded-xl font-bold text-lg shadow-sm border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-2 hover:scale-105 mt-4">
+                                <i class="fa-solid fa-clipboard-list"></i> จัดการสต็อกรายวัน
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -1426,6 +1430,45 @@
                     <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow">บันทึก</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="daily-stock-modal"
+        class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list text-indigo-600"></i> จัดการสต็อกรายวัน
+            </h3>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700 mb-1">เลือกวันที่</label>
+                <input type="date" id="stock-date"
+                    class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                    onchange="loadDailyStock(this.value)">
+                <p class="text-xs text-slate-500 mt-1">เลือกวันที่เพื่อกำหนดจำนวนสินค้าที่รับได้ (0 = ไม่จำกัด, -1 =
+                    ปิดรับ)</p>
+            </div>
+
+            <div id="stock-loading" class="hidden text-center py-8">
+                <i class="fa-solid fa-circle-notch fa-spin text-indigo-500 text-2xl"></i>
+            </div>
+
+            <div id="stock-list" class="space-y-3 mb-6">
+                <div
+                    class="text-center text-slate-400 py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <i class="fa-regular fa-calendar-days text-3xl mb-2"></i>
+                    <p>กรุณาเลือกวันที่</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 justify-end pt-4 border-t border-slate-100">
+                <button type="button" onclick="toggleModal('daily-stock-modal', false)"
+                    class="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-50 font-medium">ปิด</button>
+                <button type="button" onclick="saveDailyStock()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow-lg shadow-indigo-200 transition-all font-medium">
+                    บันทึกข้อมูล
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2825,6 +2868,12 @@
 
             const date = document.getElementById("delivery-date").value;
             if (!date) return alert("เลือกวันส่งด้วยครับ");
+
+            // 🛡️ Check Daily Stock Limit
+            const stockCheck = await checkStockAvailability(date, cart);
+            if (!stockCheck.allowed) {
+                return alert("ขออภัย: " + stockCheck.message);
+            }
 
             const subtotal = cart.reduce((a, b) => a + b.totalPrice, 0);
             const totalEarnedPoints = cart.reduce((a, b) => a + (b.earnedPoints || 0), 0);
@@ -4401,6 +4450,161 @@
                 closeCreateCoupon();
                 showSuccessToast(id ? "แก้ไขคูปองสำเร็จ" : "สร้างคูปองสำเร็จ");
                 loadAdminCoupons();
+            }
+
+            // 📦 Daily Stock Management Logic
+            let currentDailyLimits = {};
+
+            window.openDailyStockModal = function () {
+                toggleModal('daily-stock-modal', true);
+                // Set today as default
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('stock-date').value = today;
+                loadDailyStock(today);
+            }
+
+            window.loadDailyStock = async function (date) {
+                if (!date) return;
+
+                const list = document.getElementById('stock-list');
+                const loading = document.getElementById('stock-loading');
+
+                list.classList.add('hidden');
+                loading.classList.remove('hidden');
+
+                try {
+                    // 1. Get all active desserts
+                    const { data: desserts } = await supabase.from('desserts').select('*').eq('is_active', true).order('name');
+
+                    // 2. Get current limits from shop_settings
+                    const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                    const allLimits = settings?.daily_limits || {};
+                    currentDailyLimits = allLimits[date] || {};
+
+                    // 3. Render list
+                    list.innerHTML = desserts.map(d => {
+                        const limit = currentDailyLimits[d.id] !== undefined ? currentDailyLimits[d.id] : 0; // 0 = unlimited
+                        return `
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">${d.emoji}</span>
+                                    <div>
+                                        <p class="font-bold text-slate-800">${d.name}</p>
+                                        <p class="text-xs text-slate-500">โควต้าต่อวัน</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" 
+                                        class="w-20 p-2 text-center rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                        value="${limit}" 
+                                        onchange="updateStockLimit(${d.id}, this.value)"
+                                        placeholder="0">
+                                    <span class="text-xs text-slate-400 w-12 text-center whitespace-nowrap">${limit == 0 ? 'ไม่จำกัด' : (limit == -1 ? 'ปิดรับ' : 'ชิ้น')}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                } catch (error) {
+                    console.error('Error loading stock:', error);
+                    showSuccessToast('โหลดข้อมูลล้มเหลว');
+                } finally {
+                    loading.classList.add('hidden');
+                    list.classList.remove('hidden');
+                }
+            }
+
+            window.updateStockLimit = function (dessertId, value) {
+                currentDailyLimits[dessertId] = parseInt(value);
+                // Update label
+                const input = document.activeElement;
+                if (input && input.nextElementSibling) {
+                    const val = parseInt(value);
+                    input.nextElementSibling.innerText = val == 0 ? 'ไม่จำกัด' : (val == -1 ? 'ปิดรับ' : 'ชิ้น');
+                }
+            }
+
+            window.saveDailyStock = async function () {
+                const date = document.getElementById('stock-date').value;
+                if (!date) return alert('กรุณาเลือกวันที่');
+
+                try {
+                    // 1. Get current settings
+                    const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                    let allLimits = settings?.daily_limits || {};
+
+                    // 2. Update specific date
+                    allLimits[date] = currentDailyLimits;
+
+                    // 3. Save back to DB
+                    const { error } = await supabase.from('shop_settings').update({ daily_limits: allLimits }).eq('id', 1);
+
+                    if (error) throw error;
+
+                    showSuccessToast('บันทึกสต็อกเรียบร้อย');
+                    toggleModal('daily-stock-modal', false);
+
+                } catch (error) {
+                    console.error('Error saving stock:', error);
+                    alert('บันทึกไม่สำเร็จ: ' + error.message);
+                }
+            }
+
+            // 🛡️ Check Stock Availability (for Checkout)
+            async function checkStockAvailability(date, cartItems) {
+                try {
+                    // 1. Get limits for the date
+                    const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                    const limits = settings?.daily_limits?.[date];
+
+                    if (!limits) return { allowed: true }; // No limits set for this date
+
+                    // 2. Get existing orders for that date
+                    const { data: orders } = await supabase.from('orders')
+                        .select('items')
+                        .eq('delivery_date', date)
+                        .neq('status', 'cancelled'); // Don't count cancelled orders
+
+                    // 3. Calculate current usage
+                    const currentUsage = {};
+                    orders?.forEach(order => {
+                        order.items.forEach(item => {
+                            // item.dessertId could be directly on item or nested depending on structure
+                            const dId = item.dessertId || item.id;
+                            if (dId) {
+                                currentUsage[dId] = (currentUsage[dId] || 0) + (item.quantity || 1);
+                            }
+                        });
+                    });
+
+                    // 4. Check against limits
+                    for (const item of cartItems) {
+                        const dId = item.dessertId || item.id;
+                        const limit = limits[dId];
+
+                        // Limit 0 = Unlimited
+                        if (limit === undefined || limit === 0) continue;
+
+                        // Limit -1 = Closed for this item
+                        if (limit === -1) {
+                            return { allowed: false, message: `"${item.dessertName || item.name}" ปิดรับออเดอร์แล้วสำหรับวันที่ ${formatDate(date)}` };
+                        }
+
+                        const currentAmount = currentUsage[dId] || 0;
+                        const newAmount = currentAmount + (item.quantity || 1);
+
+                        if (newAmount > limit) {
+                            const remaining = Math.max(0, limit - currentAmount);
+                            return { allowed: false, message: `"${item.dessertName || item.name}" วันที่ ${formatDate(date)} เหลือว่างเพียง ${remaining} ชิ้น` };
+                        }
+                    }
+
+                    return { allowed: true };
+
+                } catch (error) {
+                    console.error('Stock check error:', error);
+                    return { allowed: true }; // Allow if check fails to avoid blocking users
+                }
             }
 
             async function deleteReward(id) {
