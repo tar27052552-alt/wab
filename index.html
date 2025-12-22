@@ -1533,46 +1533,57 @@
             }
         }
 
-        // Toast notification function
+        // Success Modal notification function
         function showSuccessToast(message) {
-            // Remove any existing toast
-            const existingToast = document.querySelector('.success-toast');
-            if (existingToast) existingToast.remove();
+            // Remove any existing modal
+            const existingModal = document.querySelector('.success-modal-overlay');
+            if (existingModal) existingModal.remove();
 
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = 'success-toast fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-slate-800 px-6 py-4 rounded-2xl shadow-2xl z-[9999] flex items-center gap-3 border border-slate-100';
-            toast.innerHTML = `
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-check text-green-500 text-lg"></i>
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'success-modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4';
+
+            overlay.innerHTML = `
+                <div class="success-modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform scale-95 opacity-0 transition-all duration-300">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-green-500 flex items-center justify-center">
+                        <i class="fa-solid fa-check text-green-500 text-4xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">สำเร็จ!</h2>
+                    <p class="text-slate-500 mb-6">${message}</p>
+                    <button onclick="closeSuccessModal()" class="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-2.5 rounded-lg transition-colors">
+                        ตกลง
+                    </button>
                 </div>
-                <span class="font-medium text-sm">${message}</span>
             `;
-            toast.style.animation = 'fadeInScale 0.3s ease-out';
-            document.body.appendChild(toast);
 
-            // Add CSS animation if not exists
-            if (!document.getElementById('toast-animation-style')) {
-                const style = document.createElement('style');
-                style.id = 'toast-animation-style';
-                style.textContent = `
-                    @keyframes fadeInScale {
-                        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                        100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                    }
-                    @keyframes fadeOutScale {
-                        0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-                        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+            document.body.appendChild(overlay);
 
-            // Remove after 2 seconds with animation
+            // Animate in
             setTimeout(() => {
-                toast.style.animation = 'fadeOutScale 0.3s ease-out forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 1700);
+                const content = overlay.querySelector('.success-modal-content');
+                if (content) {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }
+            }, 10);
+
+            // Auto close after 3 seconds
+            setTimeout(() => {
+                closeSuccessModal();
+            }, 3000);
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            const overlay = document.querySelector('.success-modal-overlay');
+            if (overlay) {
+                const content = overlay.querySelector('.success-modal-content');
+                if (content) {
+                    content.classList.remove('scale-100', 'opacity-100');
+                    content.classList.add('scale-95', 'opacity-0');
+                }
+                setTimeout(() => overlay.remove(), 300);
+            }
         }
 
         function showAdmin() {
