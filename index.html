@@ -777,6 +777,32 @@
         </div>
     </div>
 
+    <!-- Custom Confirm Modal -->
+    <div id="custom-confirm-modal"
+        class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300"
+            id="custom-confirm-content">
+            <div class="text-center mb-6">
+                <div id="custom-confirm-icon"
+                    class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 flex items-center justify-center">
+                    <i class="fa-solid fa-gift text-3xl text-purple-500"></i>
+                </div>
+                <h3 id="custom-confirm-title" class="text-xl font-bold text-slate-800 mb-2">ยืนยันการแลกของรางวัล</h3>
+                <p id="custom-confirm-message" class="text-slate-500"></p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="handleCustomConfirm(false)"
+                    class="flex-1 py-3 px-4 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition">
+                    ยกเลิก
+                </button>
+                <button onclick="handleCustomConfirm(true)"
+                    class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold hover:opacity-90 transition shadow-lg shadow-purple-200">
+                    ยืนยัน
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Modal (Full Screen) -->
     <div id="admin-modal" class="fixed inset-0 z-[70] hidden bg-white overflow-hidden flex flex-col">
         <div class="bg-slate-900 text-white px-4 py-3 md:py-4 flex justify-between items-center shadow-md shrink-0">
@@ -1535,6 +1561,38 @@
             if (tabId === 'users') loadAdminUsers();
         }
 
+        async function loadAdminStats() {
+            const container = document.getElementById("admin-stats-content");
+            if (!container) return;
+
+            try {
+                const { count: userCount } = await supabase.from("users").select("*", { count: "exact", head: true });
+                const { count: orderCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
+                const { data: totalData } = await supabase.from("orders").select("total_price").eq("status", "completed");
+                const totalRevenue = (totalData || []).reduce((s, o) => s + (o.total_price || 0), 0);
+
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 text-center">
+                        <div class="text-4xl mb-2"><i class="fa-solid fa-users text-blue-500"></i></div>
+                        <div class="text-3xl font-bold text-slate-800">${userCount || 0}</div>
+                        <div class="text-sm text-slate-500">สมาชิกทั้งหมด</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 text-center">
+                        <div class="text-4xl mb-2"><i class="fa-solid fa-shopping-cart text-orange-500"></i></div>
+                        <div class="text-3xl font-bold text-slate-800">${orderCount || 0}</div>
+                        <div class="text-sm text-slate-500">ออเดอร์ทั้งหมด</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 text-center">
+                        <div class="text-4xl mb-2"><i class="fa-solid fa-coins text-green-500"></i></div>
+                        <div class="text-3xl font-bold text-slate-800">${totalRevenue.toLocaleString()}</div>
+                        <div class="text-sm text-slate-500">รายได้รวม (฿)</div>
+                    </div>
+                `;
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-500 text-center">เกิดข้อผิดพลาดในการโหลดสถิติ</p>';
+            }
+        }
+
         // --- Logic Implementation ---
 
 
@@ -1959,6 +2017,91 @@
             else document.getElementById("discount-row").classList.add("hidden");
         }
 
+        // Order History Functions
+        async function openOrderHistory() {
+            document.getElementById("main-app").classList.add("hidden");
+            document.getElementById("main-header").classList.add("hidden");
+            document.getElementById("order-history").classList.remove("hidden");
+
+            const { data } = await supabase.from("orders").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+            const list = document.getElementById("order-list");
+            if (!data || data.length === 0) {
+                list.innerHTML = `<p class='text-center text-slate-400 mt-10'>ไม่มีประวัติ</p>`;
+            } else {
+                list.innerHTML = data.map(o => {
+                    let items = [];
+                    try { items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items; } catch (e) { }
+
+                    const statusColors = {
+                        pending: 'bg-yellow-100 text-yellow-700',
+                        confirmed: 'bg-blue-100 text-blue-700',
+                        completed: 'bg-green-100 text-green-700',
+                        cancelled: 'bg-red-100 text-red-700'
+                    };
+                    const statusLabels = {
+                        pending: 'รอยืนยัน',
+                        confirmed: 'ยืนยันแล้ว',
+                        completed: 'เสร็จสิ้น',
+                        cancelled: 'ยกเลิก'
+                    };
+                    const statusClass = statusColors[o.status] || 'bg-slate-100 text-slate-600';
+                    const statusLabel = statusLabels[o.status] || o.status;
+
+                    const cancelBtn = o.status === 'pending' ? `<button onclick="cancelMyOrder(${o.id})" class="mt-3 w-full py-2 rounded-lg border border-red-200 text-red-500 text-sm hover:bg-red-50 transition">ยกเลิกคำสั่งซื้อ</button>` : '';
+
+                    return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-bold text-slate-800">คำสั่งซื้อ #${o.id}</div>
+                                <div class="text-xs text-slate-400">รอบส่ง: ${o.delivery_date || '-'}</div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${statusClass}">${statusLabel}</span>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            ${items.map(item => `
+                                <div class="flex justify-between text-sm border-b border-slate-50 pb-1">
+                                    <span class="text-slate-700">${item.dessert} - ${item.base || '-'} + ${item.topping || '-'} x${item.quantity}</span>
+                                    <span class="text-indigo-600 font-medium">${item.totalPrice?.toLocaleString()} ฿</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                            <div class="text-xs text-slate-400">สั่งเมื่อ: ${new Date(o.created_at).toLocaleDateString('th-TH')}</div>
+                            <div class="text-right">
+                                <div class="text-xs text-slate-400">ยอดสุทธิ</div>
+                                <div class="font-bold text-xl text-indigo-600">${o.total_price?.toLocaleString()} ฿</div>
+                                ${o.status === 'completed' ? `<div class="text-[10px] text-green-500">+${o.earned_points || 0} แต้ม</div>` : ''}
+                            </div>
+                        </div>
+                        ${cancelBtn}
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function backToMain() {
+            document.getElementById("order-history").classList.add("hidden");
+            document.getElementById("main-app").classList.remove("hidden");
+            document.getElementById("main-header").classList.remove("hidden");
+        }
+
+        async function cancelMyOrder(orderId) {
+            const confirmed = await showCustomConfirm(
+                'ต้องการยกเลิกคำสั่งซื้อนี้หรือไม่?',
+                'ยืนยันการยกเลิก',
+                'times-circle',
+                'red'
+            );
+            if (!confirmed) return;
+
+            const { error } = await supabase.from("orders").update({ status: 'cancelled' }).eq("id", orderId);
+            if (!error) {
+                showSuccessToast("ยกเลิกคำสั่งซื้อแล้ว");
+                openOrderHistory();
+            }
+        }
+
         async function loadRewards() {
             const { data } = await supabase.from("rewards").select("*").eq("is_active", true);
             availableRewards = data || [];
@@ -1990,9 +2133,56 @@
             }
         }
 
+        // Custom Confirm Modal Functions
+        let customConfirmResolve = null;
+
+        function showCustomConfirm(message, title = 'ยืนยันการดำเนินการ', icon = 'gift', iconBg = 'purple') {
+            return new Promise((resolve) => {
+                customConfirmResolve = resolve;
+                const modal = document.getElementById('custom-confirm-modal');
+                const content = document.getElementById('custom-confirm-content');
+                const titleEl = document.getElementById('custom-confirm-title');
+                const messageEl = document.getElementById('custom-confirm-message');
+                const iconEl = document.getElementById('custom-confirm-icon');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                iconEl.className = `w-16 h-16 mx-auto mb-4 rounded-full bg-${iconBg}-100 flex items-center justify-center`;
+                iconEl.innerHTML = `<i class="fa-solid fa-${icon} text-3xl text-${iconBg}-500"></i>`;
+
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            });
+        }
+
+        function handleCustomConfirm(result) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const content = document.getElementById('custom-confirm-content');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (customConfirmResolve) {
+                    customConfirmResolve(result);
+                    customConfirmResolve = null;
+                }
+            }, 200);
+        }
+
         async function redeemReward(id) {
             const r = availableRewards.find(x => x.id === id);
-            if (!confirm(`แลก "${r.name}" ด้วย ${r.points_required} แต้ม?`)) return;
+            const confirmed = await showCustomConfirm(
+                `ต้องการแลก "${r.name}" ด้วย ${r.points_required} แต้มหรือไม่?`,
+                'ยืนยันการแลกของรางวัล',
+                'gift',
+                'purple'
+            );
+            if (!confirmed) return;
             const { error } = await supabase.from("users").update({ points: userPoints - r.points_required }).eq("id", currentUser.id);
             if (!error) {
                 const code = "REW-" + Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -2355,6 +2545,69 @@
                 opt.text = "ไม่มีรอบส่งเร็วๆ นี้";
                 sel.appendChild(opt);
             }
+        }
+
+        async function loadOrderSummary() {
+            const date = document.getElementById("summary-delivery-round").value;
+            const status = document.getElementById("summary-status").value;
+
+            if (!date) return;
+
+            let query = supabase.from("orders").select("*").eq("delivery_date", date);
+            if (status) {
+                query = query.eq("status", status);
+            } else {
+                query = query.neq("status", "cancelled");
+            }
+
+            const { data } = await query;
+            const container = document.getElementById("summary-content");
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center mt-10">ไม่มีออเดอร์ในรอบนี้</p>';
+                return;
+            }
+
+            // Calculate summary
+            const itemSummary = {};
+            let totalRevenue = 0;
+
+            data.forEach(order => {
+                totalRevenue += order.total_price || 0;
+                let items = [];
+                try {
+                    items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                } catch (e) { }
+
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        const key = `${item.dessert || item.dessertName || ''} - ${item.base || item.baseName || ''} + ${item.topping || item.toppingName || ''}`;
+                        itemSummary[key] = (itemSummary[key] || 0) + (item.quantity || 1);
+                    });
+                }
+            });
+
+            container.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-indigo-50 p-4 rounded-xl text-center">
+                        <div class="text-3xl font-bold text-indigo-600">${data.length}</div>
+                        <div class="text-xs text-slate-500">ออเดอร์</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-xl text-center">
+                        <div class="text-3xl font-bold text-green-600">${totalRevenue.toLocaleString()}</div>
+                        <div class="text-xs text-slate-500">รายได้ (฿)</div>
+                    </div>
+                </div>
+                <h4 class="font-bold mb-3 text-slate-700">สรุปสินค้า</h4>
+                <div class="space-y-2">
+                    ${Object.entries(itemSummary).map(([name, qty]) => `
+                        <div class="flex justify-between bg-white p-3 rounded-lg border">
+                            <span class="text-sm text-slate-700">${name}</span>
+                            <span class="font-bold text-indigo-600">x${qty}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
 
         function renderAdminOrderList(orders) {
@@ -4078,25 +4331,115 @@
         }
 
         async function openUserDetailsModal(userId) {
-            const user = allUsers.find(u => u.id == userId);
+            // Try to find user from cache first
+            let user = allUsers.find(u => u.id == userId);
+
+            // If not found (e.g. self profile), fetch from database
             if (!user) {
-                alert("ไม่พบข้อมูลผู้ใช้");
-                return;
+                const { data } = await supabase.from('users').select('*').eq('id', userId).single();
+                if (data) user = data;
+                else {
+                    showSuccessToast("ไม่พบข้อมูลผู้ใช้");
+                    return;
+                }
             }
 
-            // Show user info in an alert for now (can be enhanced with a dedicated modal later)
-            const info = `
-📋 ข้อมูลผู้ใช้
+            selectedUserForDetails = user;
 
-ชื่อ: ${user.display_name || 'Guest'}
-LINE ID: ${user.line_id}
-แต้มสะสม: ${user.points || 0}
-แต้มรวม: ${user.total_points || 0}
-ระดับ: ${user.rank || 'ลูกค้าใหม่'}
-สถานะ: ${user.is_banned ? '🚫 ถูกระงับ' : '✅ ปกติ'}
-            `.trim();
+            // Populate modal with user data
+            document.getElementById("ud-pic").src = user.picture_url || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+            document.getElementById("ud-name").innerText = user.display_name || 'Guest';
+            document.getElementById("ud-line-id").innerText = "Line ID: " + user.line_id;
+            document.getElementById("ud-points").innerText = (user.points || 0).toLocaleString();
+            document.getElementById("ud-total-points").innerText = (user.total_points || 0).toLocaleString();
 
-            alert(info);
+            // Load order count
+            const { data: orders } = await supabase.from("orders").select("id").eq("user_id", userId);
+            document.getElementById("ud-total-orders").innerText = orders?.length || 0;
+
+            // Load recent order history
+            const { data: recentOrders } = await supabase.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5);
+            const historyEl = document.getElementById("ud-order-history");
+            historyEl.innerHTML = (recentOrders || []).map(o => {
+                const statusColors = {
+                    pending: 'bg-yellow-100 text-yellow-700',
+                    confirmed: 'bg-blue-100 text-blue-700',
+                    completed: 'bg-green-100 text-green-700',
+                    cancelled: 'bg-red-100 text-red-700'
+                };
+                return `
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
+                    <div>
+                        <div class="text-sm font-medium text-slate-700">#${o.id}</div>
+                        <div class="text-[10px] text-slate-400">${new Date(o.created_at).toLocaleDateString('th-TH')}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-indigo-600">${(o.total_price || 0).toLocaleString()} ฿</div>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded-full ${statusColors[o.status] || 'bg-slate-100'}">${o.status}</span>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="text-slate-400 text-sm">ไม่มีประวัติ</p>';
+
+            // Handle ban status display
+            const banStatus = document.getElementById("ud-ban-status");
+            if (user.is_banned) {
+                banStatus.classList.remove("hidden");
+            } else {
+                banStatus.classList.add("hidden");
+            }
+
+            // Rank Badge
+            const isAdmin = adminList.includes(user.line_id) || user.rank === 'admin';
+            let rankBadge = '';
+            if (isAdmin) {
+                rankBadge = '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-white text-xs font-bold">👑 Admin</span>';
+            } else {
+                rankBadge = getUserRankBadge(user.total_points || 0);
+            }
+            document.getElementById("ud-rank-badge").innerHTML = rankBadge;
+
+            // Show/hide admin actions based on viewer's admin status
+            const adminActions = document.getElementById("ud-admin-actions");
+            const viewerIsAdmin = adminList.includes(currentUser?.line_id);
+
+            if (viewerIsAdmin && user.id !== currentUser?.id) {
+                adminActions.classList.remove("hidden");
+
+                // Setup admin toggle button
+                const toggleBtn = document.getElementById("ud-btn-admin-toggle");
+                if (isAdmin) {
+                    toggleBtn.innerText = "ถอดสิทธิ์ Admin";
+                    toggleBtn.className = "py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition";
+                    toggleBtn.onclick = () => removeAdmin(user.line_id);
+                } else {
+                    toggleBtn.innerText = "แต่งตั้ง Admin";
+                    toggleBtn.className = "py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium transition";
+                    toggleBtn.onclick = () => addAdmin(user.line_id);
+                }
+
+                // Setup ban button
+                const banBtn = document.getElementById("ud-btn-ban");
+                if (user.is_banned) {
+                    banBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> <span>ปลดแบน</span>';
+                    banBtn.className = "w-full py-2 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                    banBtn.onclick = () => unbanUser(user.id);
+                } else {
+                    banBtn.innerHTML = '<i class="fa-solid fa-ban"></i> <span>ระงับการใช้งาน</span>';
+                    banBtn.className = "w-full py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition flex items-center justify-center gap-2";
+                    banBtn.onclick = () => openBanUserModal(user);
+                }
+            } else {
+                adminActions.classList.add("hidden");
+            }
+
+            toggleModal('user-details-modal', true);
+        }
+
+        // Function to open self profile
+        function openSelfProfile() {
+            if (currentUser) {
+                openUserDetailsModal(currentUser.id);
+            }
         }
 
 
