@@ -3080,7 +3080,25 @@
             const dbAdmins = allUsers.filter(u => u.rank === 'admin').map(u => u.line_id);
             adminList = [...new Set([...ADMIN_IDS, ...dbAdmins, SUPER_ADMIN_ID])];
 
+            // Auto-fix incorrect ranks in background (silent)
+            autoFixUserRanks(allUsers);
+
             renderAdminUsers(allUsers);
+        }
+
+        // Automatically fix user ranks without user interaction
+        async function autoFixUserRanks(users) {
+            for (const user of users) {
+                // Skip admins
+                if (user.rank === 'admin') continue;
+
+                const correctRank = getRankNameByPoints(user.total_points || 0);
+                if (user.rank !== correctRank) {
+                    await supabase.from("users").update({ rank: correctRank }).eq("id", user.id);
+                    // Update local cache too
+                    user.rank = correctRank;
+                }
+            }
         }
 
         // Fix all user ranks based on total_points
