@@ -1732,6 +1732,7 @@
                 }
 
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                window.supabaseClient = supabase; // Expose globally
 
                 // --- ADMIN SETUP (Migrated to DB-First) ---
                 const { data: dbAdmins } = await supabase.from("users").select("line_id").eq("rank", "admin");
@@ -2870,7 +2871,7 @@
             if (!date) return alert("เลือกวันส่งด้วยครับ");
 
             // 🛡️ Check Daily Stock Limit
-            const stockCheck = await checkStockAvailability(date, cart);
+            const stockCheck = await window.validateDailyStock(date, cart);
             if (!stockCheck.allowed) {
                 return alert("ขออภัย: " + stockCheck.message);
             }
@@ -5312,6 +5313,147 @@
             toggleModal('brownie-modal', true);
         };
         window.closeBrownieModal = () => toggleModal('brownie-modal', false);
+
+        // 📦 Daily Stock Management Logic (Global Fix)
+        // Using window.supabaseClient because locally scoped supabase is not available here
+
+        let currentDailyLimits = {};
+
+        window.openDailyStockModal = function () {
+            toggleModal('daily-stock-modal', true);
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('stock-date').value = today;
+            window.loadDailyStock(today);
+        }
+
+        window.loadDailyStock = async function (date) {
+            if (!date) return;
+            const list = document.getElementById('stock-list');
+            const loading = document.getElementById('stock-loading');
+
+            list.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            try {
+                const supabase = window.supabaseClient;
+                if (!supabase) throw new Error("Supabase client not initialized");
+
+                const { data: desserts } = await supabase.from('desserts').select('*').eq('is_active', true).order('name');
+                const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                const allLimits = settings?.daily_limits || {};
+                currentDailyLimits = allLimits[date] || {};
+
+                list.innerHTML = desserts.map(d => {
+                    const limit = currentDailyLimits[d.id] !== undefined ? currentDailyLimits[d.id] : 0;
+                    return `
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">${d.emoji}</span>
+                                <div>
+                                    <p class="font-bold text-slate-800">${d.name}</p>
+                                    <p class="text-xs text-slate-500">โควต้าต่อวัน</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="number" 
+                                    class="w-20 p-2 text-center rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                    value="${limit}" 
+                                    onchange="window.updateStockLimit(${d.id}, this.value)"
+                                    placeholder="0">
+                                <span class="text-xs text-slate-400 w-12 text-center whitespace-nowrap">${limit == 0 ? 'ไม่จำกัด' : (limit == -1 ? 'ปิดรับ' : 'ชิ้น')}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading stock:', error);
+                // showSuccessToast might be local? No, it's defined at top level usually. 
+                // Wait, showSuccessToast is at 1537 inside init?
+                // If showSuccessToast is inside init, I can't call it here easily unless attached to window.
+                // Assuming showSuccessToast is Global or I see window.showSuccessToast somewhere?
+                // I will use alert/console for fallback or try showSuccessToast.
+                if (typeof showSuccessToast === 'function') showSuccessToast('โหลดข้อมูลล้มเหลว');
+                else console.error('showSuccessToast not found');
+            } finally {
+                loading.classList.add('hidden');
+                list.classList.remove('hidden');
+            }
+        }
+
+        window.updateStockLimit = function (dessertId, value) {
+            currentDailyLimits[dessertId] = parseInt(value);
+            const input = document.activeElement;
+            if (input && input.nextElementSibling) {
+                const val = parseInt(value);
+                input.nextElementSibling.innerText = val == 0 ? 'ไม่จำกัด' : (val == -1 ? 'ปิดรับ' : 'ชิ้น');
+            }
+        }
+
+        window.saveDailyStock = async function () {
+            const date = document.getElementById('stock-date').value;
+            if (!date) return alert('กรุณาเลือกวันที่');
+
+            try {
+                const supabase = window.supabaseClient;
+                const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                let allLimits = settings?.daily_limits || {};
+                allLimits[date] = currentDailyLimits;
+
+                const { error } = await supabase.from('shop_settings').update({ daily_limits: allLimits }).eq('id', 1);
+                if (error) throw error;
+
+                if (typeof showSuccessToast === 'function') showSuccessToast('บันทึกสต็อกเรียบร้อย');
+                toggleModal('daily-stock-modal', false);
+            } catch (error) {
+                console.error('Error saving stock:', error);
+                alert('บันทึกไม่สำเร็จ: ' + error.message);
+            }
+        }
+
+        window.validateDailyStock = async function (date, cartItems) {
+            try {
+                const supabase = window.supabaseClient;
+                const { data: settings } = await supabase.from('shop_settings').select('daily_limits').eq('id', 1).single();
+                const limits = settings?.daily_limits?.[date];
+
+                if (!limits) return { allowed: true };
+
+                const { data: orders } = await supabase.from('orders')
+                    .select('items')
+                    .eq('delivery_date', date)
+                    .neq('status', 'cancelled');
+
+                const currentUsage = {};
+                orders?.forEach(order => {
+                    order.items.forEach(item => {
+                        const dId = item.dessertId || item.id;
+                        if (dId) {
+                            currentUsage[dId] = (currentUsage[dId] || 0) + (item.quantity || 1);
+                        }
+                    });
+                });
+
+                for (const item of cartItems) {
+                    const dId = item.dessertId || item.id;
+                    const limit = limits[dId];
+                    if (limit === undefined || limit === 0) continue;
+                    if (limit === -1) {
+                        return { allowed: false, message: `"${item.dessertName || item.name}" ปิดรับออเดอร์สำหรับ ${formatDate(date)}` };
+                    }
+                    const currentAmount = currentUsage[dId] || 0;
+                    const newAmount = currentAmount + (item.quantity || 1);
+                    if (newAmount > limit) {
+                        const remaining = Math.max(0, limit - currentAmount);
+                        return { allowed: false, message: `"${item.dessertName || item.name}" เหลือว่าง ${remaining} ชิ้น สำหรับ ${formatDate(date)}` };
+                    }
+                }
+                return { allowed: true };
+            } catch (error) {
+                console.error('Stock check error:', error);
+                return { allowed: true };
+            }
+        }
 
     </script>
 </body>
