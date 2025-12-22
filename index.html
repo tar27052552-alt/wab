@@ -2416,16 +2416,17 @@
         }
 
         // 🔔 LINE Push Message Configuration
-        const LINE_CHANNEL_ACCESS_TOKEN = "PIn1Pc3CyNUyb0cDN0aYcKjQg/hOxsW+jO3KXPvpUr9RzjzwL/gSNTknAYdtvPUN/GZ4jA2Jn2OkJSr/tIbbDS39n/pHBJwhXEat4BEdIhNK40rjqPRPu4l5hAKYQuNM8l4pJaYQ/UxX3RJUmPCcygdB04t89/1O/w1cDnyilFU=";
+        // Using Supabase Edge Function to bypass CORS
+        const SUPABASE_FUNCTIONS_URL = "https://dyorwbjagjlkqpbrdjwk.supabase.co/functions/v1";
 
-        // 🔔 Send LINE Push Message with Flex Message
+        // 🔔 Send LINE Push Message via Edge Function
         async function sendLinePushMessage(lineUserId, flexContent) {
             try {
-                const response = await fetch("https://api.line.me/v2/bot/message/push", {
+                const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/send-line-message`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
                     },
                     body: JSON.stringify({
                         to: lineUserId,
@@ -2433,12 +2434,13 @@
                     })
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (response.ok && result.success) {
                     console.log("LINE Push Message sent successfully");
                     return true;
                 } else {
-                    const errorData = await response.json();
-                    console.error("LINE Push Message error:", errorData);
+                    console.error("LINE Push Message error:", result);
                     return false;
                 }
             } catch (error) {
