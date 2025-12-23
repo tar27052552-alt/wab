@@ -4648,7 +4648,7 @@
                 loadAdminCoupons();
             }
 
-            // 🛡️ Check Stock Availability (for Checkout) - Updated for daily_limits table
+            // 🛡️ Check Stock Availability (for Checkout) - Updated for daily_limits + default_limit
             async function checkStockAvailability(date, cartItems) {
                 try {
                     // 1. Get limits from daily_limits table for this date
@@ -4659,6 +4659,15 @@
                     const limitMap = {};
                     if (limits) {
                         limits.forEach(l => limitMap[l.dessert_id] = l.limit_quantity);
+                    }
+
+                    // 1.1 Get default limits from desserts table (fallback)
+                    const { data: desserts } = await supabase.from('desserts')
+                        .select('id, default_limit');
+
+                    const defaultLimitMap = {};
+                    if (desserts) {
+                        desserts.forEach(d => defaultLimitMap[d.id] = d.default_limit);
                     }
 
                     // 2. Get existing orders for that date to count usage
@@ -4688,8 +4697,14 @@
                     for (const item of cartItems) {
                         const dId = item.dessertId || item.id;
 
-                        // Default to 0 (unlimited) if no record found
-                        const limit = limitMap[dId] !== undefined ? limitMap[dId] : 0;
+                        // Priority: 1. Specific Daily Limit, 2. Default Limit, 3. Unlimited (0)
+                        let limit = 0; // Default Unlimited
+
+                        if (limitMap[dId] !== undefined) {
+                            limit = limitMap[dId]; // Use specific date limit
+                        } else if (defaultLimitMap[dId] !== undefined && defaultLimitMap[dId] !== null) {
+                            limit = defaultLimitMap[dId]; // Use default limit
+                        }
 
                         // Limit 0 = Unlimited
                         if (limit === 0) continue;
@@ -5699,12 +5714,21 @@
             let d = new Date();
             let count = 0;
 
-            // Get blocked dates
-            const { data: blockedData } = await supabase.from('blocked_dates').select('date');
-            const blockedDates = blockedData ? blockedData.map(b => b.date) : [];
+            let blockedDates = [];
+            try {
+                // Get blocked dates
+                const { data: blockedData, error } = await supabase.from('blocked_dates').select('date');
+                if (!error && blockedData) {
+                    blockedDates = blockedData.map(b => b.date);
+                }
+            } catch (err) {
+                console.warn('Could not fetch blocked dates, proceeding without them:', err);
+                blockedDates = [];
+            }
 
             while (count < 8) {
                 d.setDate(d.getDate() + 1);
+                // Check if it's a delivery day (Mon, Wed, Fri)
                 if (deliveryDays.includes(d.getDay())) {
                     const dateStr = d.toISOString().split('T')[0];
                     if (!blockedDates.includes(dateStr)) {
@@ -5795,23 +5819,37 @@
                 }
             });
 
-            // Upsert to Supabase
-            for (const u of updates) {
-                const { data: existing } = await supabase.from('daily_limits')
-                    .select('id')
-                    .eq('date', u.date)
-                    .eq('dessert_id', u.dessert_id)
-                    .single();
-
-                if (existing) {
-                    await supabase.from('daily_limits').update({ limit_quantity: u.limit_quantity }).eq('id', existing.id);
+            try {
+                if (currentStockDate === 'DEFAULT') {
+                    // Update desserts table (default_limit column)
+                    for (const u of updates) {
+                        await supabase.from('desserts')
+                            .update({ default_limit: u.limit_quantity })
+                            .eq('id', u.dessert_id);
+                    }
+                    showSuccessToast('บันทึกค่าเริ่มต้นเรียบร้อย!');
                 } else {
-                    await supabase.from('daily_limits').insert(u);
-                }
-            }
+                    // Upsert to daily_limits table
+                    for (const u of updates) {
+                        const { data: existing } = await supabase.from('daily_limits')
+                            .select('id')
+                            .eq('date', u.date)
+                            .eq('dessert_id', u.dessert_id)
+                            .single();
 
-            showSuccessToast('บันทึกโควต้าสำเร็จ!');
-            toggleModal('daily-stock-modal', false);
+                        if (existing) {
+                            await supabase.from('daily_limits').update({ limit_quantity: u.limit_quantity }).eq('id', existing.id);
+                        } else {
+                            await supabase.from('daily_limits').insert(u);
+                        }
+                    }
+                    showSuccessToast('บันทึกโควต้าเรียบร้อย!');
+                }
+                toggleModal('daily-stock-modal', false);
+            } catch (err) {
+                console.error('Error saving stock:', err);
+                alert('บันทึกไม่สำเร็จ: ' + err.message);
+            }
         }
 
         // Load theme on page load
