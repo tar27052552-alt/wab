@@ -297,164 +297,9 @@
             background: rgba(15, 23, 42, 0.8);
         }
 
-        /* ===== CHRISTMAS THEME ===== */
-        .christmas-theme {
-            --primary-gradient: linear-gradient(135deg, #c41e3a 0%, #228b22 100%);
-            --bg-gradient: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
-            --glass-bg: rgba(26, 71, 42, 0.9);
-            --glass-border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        .christmas-theme body,
-        body.christmas-theme {
-            background: linear-gradient(135deg, #0d2818 0%, #1a472a 50%, #2d5a3d 100%);
-            color: #e8f5e9;
-        }
-
-        /* Snowfall Animation */
-        .christmas-theme .snowfall {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9998;
-            overflow: hidden;
-        }
-
-        .christmas-theme .snowflake {
-            position: absolute;
-            top: -20px;
-            color: white;
-            font-size: 1.5rem;
-            opacity: 0.8;
-            animation: snowfall 8s linear infinite;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-        }
-
-        @keyframes snowfall {
-            0% {
-                transform: translateY(-20px) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0.3;
-            }
-        }
-
-        /* Christmas Lights */
-        .christmas-theme .christmas-lights {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: linear-gradient(90deg,
-                    #ff0000 0%, #ff0000 10%, transparent 10%, transparent 12%,
-                    #00ff00 12%, #00ff00 22%, transparent 22%, transparent 24%,
-                    #ffd700 24%, #ffd700 34%, transparent 34%, transparent 36%,
-                    #0000ff 36%, #0000ff 46%, transparent 46%, transparent 48%,
-                    #ff69b4 48%, #ff69b4 58%, transparent 58%, transparent 60%,
-                    #ff0000 60%, #ff0000 70%, transparent 70%, transparent 72%,
-                    #00ff00 72%, #00ff00 82%, transparent 82%, transparent 84%,
-                    #ffd700 84%, #ffd700 94%, transparent 94%);
-            z-index: 9999;
-            animation: lights-blink 1.5s ease-in-out infinite;
-        }
-
-        @keyframes lights-blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.6;
-            }
-        }
-
-        /* Christmas Cards */
-        .christmas-theme .card,
-        .christmas-theme .menu-card {
-            background: linear-gradient(145deg, #1e4d2b 0%, #2d5a3d 100%);
-            border: 2px solid rgba(255, 215, 0, 0.2);
-            color: #e8f5e9;
-        }
-
-        .christmas-theme .menu-card:hover {
-            border-color: #ffd700;
-            box-shadow: 0 12px 25px rgba(255, 215, 0, 0.2);
-        }
-
-        .christmas-theme .menu-card.selected {
-            border-color: #ffd700;
-            background: linear-gradient(145deg, #c41e3a 0%, #a01830 100%);
-        }
-
-        /* Christmas Buttons */
-        .christmas-theme .btn-primary {
-            background: linear-gradient(135deg, #c41e3a 0%, #a01830 100%);
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
-        }
-
-        .christmas-theme .btn-primary:hover {
-            background: linear-gradient(135deg, #d42a46 0%, #b01f3a 100%);
-        }
-
-        /* Christmas Header */
-        .christmas-theme .glass {
-            background: rgba(26, 71, 42, 0.95);
-            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-        }
-
-        /* Christmas Text Colors */
-        .christmas-theme .text-slate-800,
-        .christmas-theme .text-slate-700,
-        .christmas-theme .text-slate-600 {
-            color: #e8f5e9 !important;
-        }
-
-        .christmas-theme .text-slate-500,
-        .christmas-theme .text-slate-400 {
-            color: #a7d8b8 !important;
-        }
-
-        .christmas-theme .text-indigo-600,
-        .christmas-theme .text-purple-600 {
-            color: #ffd700 !important;
-        }
-
-        /* Christmas Backgrounds */
-        .christmas-theme .bg-white {
-            background: linear-gradient(145deg, #1e4d2b 0%, #2d5a3d 100%) !important;
-        }
-
-        .christmas-theme .bg-slate-50,
-        .christmas-theme .bg-slate-100 {
-            background: rgba(45, 90, 61, 0.5) !important;
-        }
-
-        /* Santa Hat on User Icon */
-        .christmas-theme .user-avatar-container {
-            position: relative;
-        }
-
-        .christmas-theme .santa-hat {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.2rem;
-            z-index: 10;
-        }
-
         /* Theme Toggle Button */
         .theme-toggle-btn {
-            background: linear-gradient(135deg, #c41e3a 0%, #228b22 100%);
+            background: linear-gradient(135deg, #FFB7B2 0%, #AEC6CF 100%);
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -469,10 +314,183 @@
 
         .theme-toggle-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 183, 178, 0.4);
         }
 
-        /* Safe Area for notch and home indicator (iPhone X+) */
+        /* ===== SONGKRAN PASTEL THEME ===== */
+        .songkran-theme {
+            --primary-gradient: linear-gradient(135deg, #FFB7B2 0%, #AEC6CF 100%);
+            --bg-gradient: linear-gradient(135deg, #FFF9F5 0%, #F0F8FF 100%);
+            --glass-bg: rgba(255, 249, 245, 0.95);
+            --glass-border: 1px solid rgba(255, 183, 178, 0.4);
+        }
+
+        .songkran-theme body,
+        body.songkran-theme {
+            background: linear-gradient(135deg, #FFF9F5 0%, #F0F8FF 50%, #FFF9F5 100%);
+            color: #6D5E5E;
+        }
+
+        /* Songkran Cards - Extra Rounded */
+        .songkran-theme .card,
+        .songkran-theme .menu-card {
+            background: linear-gradient(145deg, #FFFFFF 0%, #FFF9F5 100%);
+            border: 2px solid rgba(255, 183, 178, 0.3);
+            border-radius: 20px;
+            color: #6D5E5E;
+            box-shadow: 0 8px 25px rgba(255, 183, 178, 0.15);
+        }
+
+        .songkran-theme .menu-card:hover {
+            border-color: #FFB7B2;
+            box-shadow: 0 12px 30px rgba(255, 183, 178, 0.25);
+        }
+
+        .songkran-theme .menu-card.selected {
+            border-color: #AEC6CF;
+            background: linear-gradient(145deg, #AEC6CF 0%, #B2EBF2 100%);
+            color: #fff;
+        }
+
+        /* Songkran Buttons - Pastel Pink/Blue */
+        .songkran-theme .btn-primary {
+            background: linear-gradient(135deg, #FFB7B2 0%, #AEC6CF 100%);
+            box-shadow: 0 6px 20px rgba(255, 183, 178, 0.35);
+            color: #fff;
+            border-radius: 15px;
+        }
+
+        .songkran-theme .btn-primary:hover {
+            background: linear-gradient(135deg, #FFC4C0 0%, #BACED9 100%);
+            box-shadow: 0 8px 25px rgba(255, 183, 178, 0.45);
+        }
+
+        /* Songkran Header - Pastel Gradient */
+        .songkran-theme .glass {
+            background: linear-gradient(135deg, rgba(255, 183, 178, 0.9) 0%, rgba(174, 198, 207, 0.9) 100%);
+            border-bottom: 2px solid rgba(253, 253, 150, 0.5);
+            backdrop-filter: blur(16px);
+        }
+
+        /* Songkran Text Colors */
+        .songkran-theme .text-slate-800,
+        .songkran-theme .text-slate-700,
+        .songkran-theme .text-slate-600 {
+            color: #6D5E5E !important;
+        }
+
+        .songkran-theme .text-slate-500,
+        .songkran-theme .text-slate-400 {
+            color: #8B7E7E !important;
+        }
+
+        .songkran-theme .text-indigo-600,
+        .songkran-theme .text-purple-600 {
+            color: #FFB7B2 !important;
+        }
+
+        /* Songkran Backgrounds */
+        .songkran-theme .bg-white {
+            background: linear-gradient(145deg, #FFFFFF 0%, #FFF9F5 100%) !important;
+        }
+
+        .songkran-theme .bg-slate-50,
+        .songkran-theme .bg-slate-100 {
+            background: rgba(240, 248, 255, 0.7) !important;
+        }
+
+        /* Water Droplets Animation */
+        .songkran-theme .water-drops {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            overflow: hidden;
+        }
+
+        .songkran-theme .water-drop {
+            position: absolute;
+            top: -30px;
+            color: #AEC6CF;
+            font-size: 1.5rem;
+            opacity: 0.6;
+            animation: waterfall 6s linear infinite;
+            text-shadow: 0 0 10px rgba(174, 198, 207, 0.5);
+        }
+
+        @keyframes waterfall {
+            0% {
+                transform: translateY(-30px) rotate(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(180deg);
+                opacity: 0.2;
+            }
+        }
+
+        /* Jasmine Flower Decoration */
+        .songkran-theme .jasmine-decoration::before {
+            content: '🌸';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .songkran-theme .jasmine-decoration::after {
+            content: '💧';
+            position: absolute;
+            bottom: -8px;
+            left: -8px;
+            font-size: 0.9rem;
+            animation: float 3s ease-in-out infinite 1.5s;
+        }
+
+        /* Songkran Pastel Festive Banner */
+        .songkran-theme .songkran-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg,
+                    #FFB7B2 0%, #FDFD96 25%, #B2EBF2 50%, #AEC6CF 75%, #FFB7B2 100%);
+            z-index: 9999;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Soft Input Fields */
+        .songkran-theme input,
+        .songkran-theme select,
+        .songkran-theme textarea {
+            border-radius: 15px;
+            border: 2px solid rgba(174, 198, 207, 0.4);
+            background: #FFFFFF;
+        }
+
+        .songkran-theme input:focus,
+        .songkran-theme select:focus,
+        .songkran-theme textarea:focus {
+            border-color: #FFB7B2;
+            box-shadow: 0 0 0 3px rgba(255, 183, 178, 0.2);
+        }
+
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
@@ -584,9 +602,9 @@
 </head>
 
 <body class="min-h-full pb-28 md:pb-10">
-    <!-- Christmas Decorations (shown when theme is active) -->
-    <div class="christmas-lights"></div>
-    <div class="snowfall" id="snowfall-container"></div>
+    <!-- Songkran Decorations (shown when theme is active) -->
+    <div class="songkran-banner"></div>
+    <div class="water-drops" id="water-drops-container"></div>
 
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen flex-col gap-4">
@@ -692,7 +710,7 @@
 
             <!-- Admin Button -->
             <div id="admin-container" class="mt-2 text-right hidden flex items-center justify-end gap-2">
-                <button id="theme-toggle-btn" onclick="toggleChristmasTheme()" class="theme-toggle-btn text-xs">
+                <button id="theme-toggle-btn" onclick="cycleTheme()" class="theme-toggle-btn text-xs">
                     <i class="fa-solid fa-snowflake"></i> ธีมคริสต์มาส
                 </button>
                 <button id="admin-btn" onclick="showAdmin()"
@@ -5676,66 +5694,104 @@
         }
 
 
-        // ===== CHRISTMAS THEME FUNCTIONS =====
-        function toggleChristmasTheme() {
-            const body = document.body;
-            const isChristmas = body.classList.toggle('christmas-theme');
-            localStorage.setItem('suan_khanom_theme', isChristmas ? 'christmas' : 'classic');
+        // ===== GLOBAL THEME SWITCHER (2 THEMES) =====
+        const THEMES = ['classic', 'songkran'];
 
-            if (isChristmas) {
-                createSnowflakes();
-                showSuccessToast("🎄 เปิดธีมคริสต์มาสแล้ว!");
-            } else {
-                clearSnowflakes();
-                showSuccessToast("✨ กลับสู่ธีมคลาสสิค");
+        async function cycleTheme() {
+            const currentTheme = getCurrentTheme();
+            const currentIndex = THEMES.indexOf(currentTheme);
+            const nextIndex = (currentIndex + 1) % THEMES.length;
+            const nextTheme = THEMES[nextIndex];
+
+            // Save to Supabase for global effect
+            try {
+                const { error } = await supabase.from('settings').upsert({
+                    key: 'global_theme',
+                    value: nextTheme
+                }, { onConflict: 'key' });
+
+                if (error) throw error;
+
+                applyTheme(nextTheme);
+                const messages = {
+                    'classic': '✨ กลับสู่ธีมคลาสสิค (ทุกคน)',
+                    'songkran': '🌸💧 เปิดธีมสงกรานต์พาสเทล (ทุกคน)!'
+                };
+                showSuccessToast(messages[nextTheme]);
+                updateThemeButtonText();
+            } catch (error) {
+                console.error('Theme save error:', error);
+                // Fallback to local
+                applyTheme(nextTheme);
+                updateThemeButtonText();
             }
-            updateThemeButtonText();
         }
 
-        function createSnowflakes() {
-            const container = document.getElementById('snowfall-container');
+        function getCurrentTheme() {
+            if (document.body.classList.contains('songkran-theme')) return 'songkran';
+            return 'classic';
+        }
+
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('songkran-theme');
+            clearWaterDrops();
+
+            if (theme === 'songkran') {
+                body.classList.add('songkran-theme');
+                createWaterDrops();
+            }
+        }
+
+        function createWaterDrops() {
+            const container = document.getElementById('water-drops-container');
             if (!container) return;
             container.innerHTML = '';
 
-            const snowflakes = ['❄', '❅', '❆', '✻', '✼', '❉'];
-            for (let i = 0; i < 30; i++) {
-                const flake = document.createElement('div');
-                flake.className = 'snowflake';
-                flake.innerText = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-                flake.style.left = Math.random() * 100 + '%';
-                flake.style.animationDelay = Math.random() * 8 + 's';
-                flake.style.animationDuration = (5 + Math.random() * 5) + 's';
-                flake.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
-                flake.style.opacity = 0.3 + Math.random() * 0.5;
-                container.appendChild(flake);
+            const drops = ['💧', '💦', '🌸', '🪷', '✿'];
+            for (let i = 0; i < 25; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'water-drop';
+                drop.innerText = drops[Math.floor(Math.random() * drops.length)];
+                drop.style.left = Math.random() * 100 + '%';
+                drop.style.animationDelay = Math.random() * 6 + 's';
+                drop.style.animationDuration = (4 + Math.random() * 4) + 's';
+                drop.style.fontSize = (0.8 + Math.random() * 1) + 'rem';
+                drop.style.opacity = 0.4 + Math.random() * 0.4;
+                container.appendChild(drop);
             }
         }
 
-        function clearSnowflakes() {
-            const container = document.getElementById('snowfall-container');
+        function clearWaterDrops() {
+            const container = document.getElementById('water-drops-container');
             if (container) container.innerHTML = '';
         }
 
         function updateThemeButtonText() {
             const btn = document.getElementById('theme-toggle-btn');
             if (!btn) return;
-            const isChristmas = document.body.classList.contains('christmas-theme');
-            btn.innerHTML = isChristmas
-                ? '<i class="fa-solid fa-sun"></i> ธีมคลาสสิค'
-                : '<i class="fa-solid fa-snowflake"></i> ธีมคริสต์มาส';
+            const theme = getCurrentTheme();
+            const buttonContent = {
+                'classic': '<i class="fa-solid fa-water"></i> ธีมสงกรานต์',
+                'songkran': '<i class="fa-solid fa-sun"></i> ธีมคลาสสิค'
+            };
+            btn.innerHTML = buttonContent[theme];
         }
 
-        function loadSavedTheme() {
-            const savedTheme = localStorage.getItem('suan_khanom_theme');
-            if (savedTheme === 'christmas') {
-                document.body.classList.add('christmas-theme');
-                createSnowflakes();
+        async function loadGlobalTheme() {
+            try {
+                const { data } = await supabase.from('settings').select('value').eq('key', 'global_theme').single();
+                const theme = data?.value || 'classic';
+                applyTheme(theme);
+            } catch (error) {
+                console.log('No global theme set, using classic');
+                applyTheme('classic');
             }
             updateThemeButtonText();
         }
 
         // Load theme on page load
-        document.addEventListener('DOMContentLoaded', loadSavedTheme);
+        document.addEventListener('DOMContentLoaded', loadGlobalTheme);
 
     </script>
 </body>
